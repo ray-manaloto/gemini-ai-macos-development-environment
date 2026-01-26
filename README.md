@@ -19,19 +19,42 @@ Mise > Bun > Pixi > Uv
 
 ## Quick Start
 
+### 1. Clone and Run Setup
 ```bash
-# 1. Bootstrap the environment
+git clone https://github.com/YOUR_USERNAME/gemini-ai-macos-development-environment.git
+cd gemini-ai-macos-development-environment
 ./setup.sh
-
-# 2. Activate mise in your shell
-eval "$(mise activate zsh)"
-
-# 3. Launch the dashboard
-mise run dashboard
-
-# 4. Validate the installation
-mise run validate
 ```
+
+### 2. Restart Terminal
+```bash
+# Or reload your shell config
+source ~/.zshrc
+```
+
+### 3. Apply Dotfile Templates (Optional)
+```bash
+chezmoi diff     # Preview changes
+chezmoi apply    # Apply changes
+```
+
+### 4. Verify Installation
+```bash
+mise doctor                      # Check mise health
+./config/scripts/validate.sh     # Run health check
+bats tests/                      # Run test suite
+```
+
+### What Gets Installed
+| Tool | Purpose |
+|------|---------|
+| mise | Tool version manager (orchestrator) |
+| bun | JavaScript runtime (node backend) |
+| uv | Python package manager (pip backend) |
+| pixi | Conda-forge packages |
+| starship | Cross-shell prompt |
+| chezmoi | Dotfile manager |
+| zoxide, fd, ripgrep, bat, eza, fzf, jq, yq, delta | Modern CLI utilities |
 
 ## Architecture
 
@@ -166,11 +189,46 @@ To return your Mac to stock:
 3. Uninstall OrbStack: `brew uninstall --cask orbstack` (or drag to Trash)
 4. Remove shell activation from `~/.zshrc`
 
+## Testing
+
+### Run Full Test Suite
+```bash
+# Install BATS if needed
+mise use -g npm:bats
+
+# Run all tests
+bats tests/
+```
+
+### Test Files
+| File | Tests |
+|------|-------|
+| `tests/test_mise.bats` | Mise installation, backends, tasks |
+| `tests/test_tools.bats` | CLI tool availability |
+| `tests/test_chezmoi.bats` | Dotfile template validation |
+| `tests/test_starship.bats` | Prompt configuration |
+| `tests/test_integration.bats` | End-to-end project structure |
+
+### Health Check
+```bash
+# Quick validation
+./config/scripts/validate.sh
+
+# Mise diagnostics
+mise doctor
+mise ls
+```
+
+---
+
 ## Documentation
 
 | Document | Purpose |
 |----------|---------|
 | `CLAUDE.md` | AI assistant context and development patterns |
+| `PROJECT_PLAN.md` | Agile project plan and sprint status |
+| `OPENCODE_PROMPTS.md` | OpenCode + oh-my-opencode usage guide |
+| `OPENCODE_SETUP.md` | Automated setup with ultrawork mode |
 | `MANUAL.md` | System manual (accessible via `mise run help`) |
 | `PREFLIGHT_CHECKLIST.md` | Pre-installation requirements |
 | `research/` | Research documentation and findings |

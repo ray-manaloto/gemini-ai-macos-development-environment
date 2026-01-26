@@ -1,8 +1,98 @@
 # Project Plan: God-Tier macOS Development Environment
 
 **Last Updated**: 2026-01-26
-**Status**: Phase 1 Implementation
+**Status**: P1 Complete - Ready for Setup
 **Context Recovery Document**: This file maintains project state for AI context resets
+
+---
+
+## Quick Start
+
+### Prerequisites
+- macOS 14+ (Sonoma)
+- Xcode Command Line Tools: `xcode-select --install`
+
+### Installation (One Command)
+```bash
+git clone https://github.com/YOUR_USERNAME/gemini-ai-macos-development-environment.git
+cd gemini-ai-macos-development-environment
+./setup.sh
+```
+
+### What Gets Installed
+The setup script installs and configures:
+- **mise** - Tool version manager (orchestrator)
+- **bun** - Fast JavaScript runtime (node backend)
+- **uv** - Fast Python package manager (pip backend)
+- **pixi** - Conda-forge package manager
+- **starship** - Cross-shell prompt
+- **chezmoi** - Dotfile manager
+- **CLI tools** - zoxide, fd, ripgrep, bat, eza, fzf, jq, yq, delta
+
+### Post-Installation
+```bash
+# Restart terminal or reload shell
+source ~/.zshrc
+
+# Apply dotfile templates
+chezmoi diff     # Preview changes
+chezmoi apply    # Apply changes
+
+# Verify installation
+mise doctor
+./config/scripts/validate.sh
+```
+
+---
+
+## Testing
+
+### Run All Tests
+```bash
+# Install BATS (if not installed)
+mise use -g npm:bats
+
+# Run full test suite
+bats tests/
+
+# Run specific test file
+bats tests/test_mise.bats
+bats tests/test_tools.bats
+bats tests/test_chezmoi.bats
+bats tests/test_starship.bats
+bats tests/test_integration.bats
+```
+
+### Test Coverage
+| Test File | Coverage |
+|-----------|----------|
+| `test_mise.bats` | Mise installation, backends, tasks |
+| `test_tools.bats` | All CLI tool availability |
+| `test_chezmoi.bats` | Template validation |
+| `test_starship.bats` | Prompt configuration |
+| `test_integration.bats` | End-to-end project structure |
+
+### Health Check
+```bash
+# Quick validation script
+./config/scripts/validate.sh
+
+# Mise diagnostics
+mise doctor
+mise ls
+mise config
+```
+
+### Expected Test Output
+```
+1..61
+ok 1 mise is installed
+ok 2 mise doctor reports no critical issues
+...
+ok 61 starship can render prompt
+
+61 tests, 0 failures
+```
 
 ---
 
@@ -285,6 +375,15 @@ ls -la tests/            # Test files
 
 ## Changelog
 
+### 2026-01-26 (Session 3)
+- Added Quick Start section with installation instructions
+- Added Testing section with BATS test commands
+- Added test coverage table and expected output
+- Created `OPENCODE_SETUP.md` with automation prompts
+- Enhanced `setup.sh` with full tool installation (222 lines)
+- Validated all configuration files (TOML, Pkl, shell scripts)
+- All 61 BATS tests passing
+
 ### 2026-01-26 (Session 2)
 - **COMPLETED**: P1 Sprint - Core Completeness
 - Added comprehensive oh-my-opencode documentation to `OPENCODE_PROMPTS.md`
@@ -292,7 +391,6 @@ ls -la tests/            # Test files
 - Documented magic keywords: `ultrawork`, `ulw`, `search`, `analyze`
 - Documented agents: Sisyphus, Oracle, Librarian, Explore, Prometheus, Metis, Momus
 - Added project-specific prompts for OpenCode usage
-- Cloned oh-my-opencode repo for research: `/sessions/practical-jolly-planck/research_repos/oh-my-opencode`
 
 ### 2026-01-26 (Session 1)
 - Initial commit with full tool configuration
