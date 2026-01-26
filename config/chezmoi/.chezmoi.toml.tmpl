@@ -1,0 +1,24 @@
+# =============================================================================
+# .chezmoi.toml - Chezmoi configuration
+# =============================================================================
+# This file configures chezmoi itself and provides template data.
+# After running `chezmoi init`, edit ~/.config/chezmoi/chezmoi.toml
+# =============================================================================
+
+[data]
+    # Personal information (used in templates)
+    name = "{{ .name | default "Your Name" }}"
+    email = "{{ .email | default "you@example.com" }}"
+    github_user = "{{ .github_user | default "your-username" }}"
+
+[edit]
+    command = "zed"
+    args = ["--wait"]
+
+[diff]
+    command = "delta"
+    pager = "less"
+
+[merge]
+    command = "zed"
+    args = ["--wait", "{{ "{{" }} .Destination {{ "}}" }}"]

@@ -1,0 +1,49 @@
+# =============================================================================
+# .chezmoiignore - Files to ignore during chezmoi apply
+# =============================================================================
+
+# README and documentation
+README.md
+LICENSE
+
+# macOS
+.DS_Store
+.Spotlight-V100
+.Trashes
+
+# Editor
+*.swp
+*.swo
+*~
+
+# Local overrides (user manages these manually)
+.zshrc.local
+.gitconfig.local
+.env.local
+
+# SSH (managed separately for security)
+.ssh/
+
+# GPG (managed separately for security)
+.gnupg/
+
+# Application caches
+.cache/
+.npm/
+.bun/
+
+# History files (too large/personal)
+.zsh_history
+.bash_history
+.python_history
+.node_repl_history
+
+# 1Password (security)
+.1password/
+.op/
+
+# Secrets (never sync)
+*.pem
+*.key
+*.secret
+credentials.json
