@@ -71,7 +71,7 @@ fi
 # ============================================================================
 log_step "Installing core generator tools (Pkl, Pixi, Gum)..."
 
-mise use -g pkl prefix-dev/pixi charmbracelet/gum
+mise use -g pkl pixi ubi:charmbracelet/gum
 log_success "Generator tools installed"
 
 # ============================================================================
