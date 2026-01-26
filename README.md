@@ -21,8 +21,11 @@ Mise > Bun > Pixi > Uv
 
 ### 1. Clone and Run Setup
 ```bash
-git clone https://github.com/YOUR_USERNAME/gemini-ai-macos-development-environment.git
-cd gemini-ai-macos-development-environment
+# If not already cloned:
+git clone https://github.com/ray-manaloto/gemini-ai-macos-development-environment.git ~/dev/github/ray-manaloto/gemini-ai-macos-development-environment
+
+# Run setup:
+cd ~/dev/github/ray-manaloto/gemini-ai-macos-development-environment
 ./setup.sh
 ```
 

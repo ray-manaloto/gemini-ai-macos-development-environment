@@ -15,7 +15,7 @@ This document provides the exact commands to run OpenCode with oh-my-opencode to
 Open a terminal in the project directory and run:
 
 ```bash
-cd ~/gemini-ai-macos-development-environment
+cd ~/dev/github/ray-manaloto/gemini-ai-macos-development-environment
 opencode
 ```
 
@@ -25,7 +25,7 @@ Then paste this prompt:
 ulw complete the God-Tier macOS Development Environment setup
 
 Context:
-- Project location: ~/gemini-ai-macos-development-environment
+- Project location: ~/dev/github/ray-manaloto/gemini-ai-macos-development-environment
 - Key files: PROJECT_PLAN.md, CLAUDE.md, setup.sh, config/main.pkl
 - Principle: Mise-first (Mise > Bun > Pixi > Uv)
 
@@ -52,7 +52,7 @@ For more control, use Prometheus planning mode:
 
 1. **Start OpenCode**:
    ```bash
-   cd ~/gemini-ai-macos-development-environment
+   cd ~/dev/github/ray-manaloto/gemini-ai-macos-development-environment
    opencode
    ```
 

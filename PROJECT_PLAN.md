@@ -14,8 +14,7 @@
 
 ### Installation (One Command)
 ```bash
-git clone https://github.com/YOUR_USERNAME/gemini-ai-macos-development-environment.git
-cd gemini-ai-macos-development-environment
+cd ~/dev/github/ray-manaloto/gemini-ai-macos-development-environment
 ./setup.sh
 ```
 
