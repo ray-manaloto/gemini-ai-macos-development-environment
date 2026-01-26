@@ -1,0 +1,12 @@
+[project]
+name = "god-tier-env"
+channels = ["conda-forge"]
+platforms = ["osx-arm64", "osx-64", "linux-64"]
+
+[dependencies]
+# System Binaries (Pixi manages these isolated)
+python = "3.12.*"
+
+[pypi-dependencies]
+# Python Libs (Pixi uses 'uv' to install these instantly)
+textual = "*"

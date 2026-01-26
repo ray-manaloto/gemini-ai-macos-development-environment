@@ -1,0 +1,19 @@
+name: ai-dev-agent
+
+resources:
+  cloud: aws
+  region: us-east-1
+  use_spot: true
+  instance_type: t3.xlarge
+
+setup: |
+  # 1. Install Infisical on the Cloud VM
+  curl -1sLf 'https://dl.cloudsmith.io/public/infisical/infisical-cli/setup.deb.sh' | sudo bash
+  sudo apt-get install -y infisical
+
+  # 2. Install Mise & Claude Code
+  curl https://mise.run | sh
+  ~/.local/bin/mise use -g bun npm:@anthropic-ai/claude-code
+
+run: |
+  echo "Agent Ready on AWS."
