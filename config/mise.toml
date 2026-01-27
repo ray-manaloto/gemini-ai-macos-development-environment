@@ -253,9 +253,18 @@ echo "Agent started. Use 'ssh $CLUSTER' to connect."
 [tasks."agent:restart"]
 description = "Restart Cloud Agent (CLUSTER=name)"
 run = """
+if ! command -v sky &> /dev/null; then
+  echo "ERROR: SkyPilot not installed. Run: mise install"
+  exit 1
+fi
+
+echo "WARNING: Spot instances cannot be stopped."
+echo "To recreate: mise run agent:down && mise run agent:up"
+echo ""
+
 CLUSTER="${CLUSTER:-${1:-ai-agent}}"
 echo "Restarting cloud agent: $CLUSTER"
-sky stop "$CLUSTER" -y 2>/dev/null || true
+sky stop "$CLUSTER" -y
 sky start "$CLUSTER" -y
 echo "Cloud agent $CLUSTER restarted."
 """
