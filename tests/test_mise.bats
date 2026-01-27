@@ -15,11 +15,13 @@ setup() {
   [[ "$output" =~ ^[0-9]+\.[0-9]+ ]]
 }
 
-@test "mise doctor reports no critical issues" {
+@test "mise doctor reports no critical errors" {
   run mise doctor
-  [ "$status" -eq 0 ]
-  # Should not contain "ERROR" (warnings are OK)
+  # mise doctor may return non-zero for warnings (shims on path, missing shims, etc.)
+  # We only fail on actual ERROR messages, not warnings
   [[ ! "$output" =~ "ERROR" ]]
+  # Verify mise doctor actually ran and produced output
+  [[ "$output" =~ "version:" ]]
 }
 
 @test "mise has experimental features enabled" {
@@ -28,16 +30,30 @@ setup() {
   [ "$output" = "true" ]
 }
 
-@test "mise has bun as node backend" {
-  run mise config get settings.node_backend
+@test "mise has bun installed" {
+  run mise ls bun
   [ "$status" -eq 0 ]
-  [ "$output" = "bun" ]
+  [[ "$output" =~ "bun" ]]
 }
 
-@test "mise has uv as pip backend" {
-  run mise config get settings.pip_backend
+@test "mise has uv installed" {
+  run mise ls uv
   [ "$status" -eq 0 ]
-  [ "$output" = "uv" ]
+  [[ "$output" =~ "uv" ]]
+}
+
+@test "mise has bun configured as npm backend" {
+  # Verify bun is configured as the npm/node backend (core architecture principle)
+  run mise settings get npm.bun
+  [ "$status" -eq 0 ]
+  [ "$output" = "true" ]
+}
+
+@test "mise has uv configured for python venvs" {
+  # Verify uv is configured for automatic venv management (core architecture principle)
+  run mise settings get python.uv_venv_auto
+  [ "$status" -eq 0 ]
+  [ "$output" = "true" ]
 }
 
 @test "mise tasks are available" {
