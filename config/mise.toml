@@ -669,7 +669,7 @@ echo "Bun: $(bun --version 2>/dev/null || echo 'not found')"
 echo "Uv: $(uv --version 2>/dev/null | head -1 || echo 'not found')"
 echo "Node: $(node --version 2>/dev/null || echo 'not found')"
 echo ""
-echo "=== Cloud (SkyPilot + AWS) ==="
+echo "=== Cloud (SkyPilot) ==="
 if command -v sky &> /dev/null; then
   sky status -v 2>/dev/null | head -12 || echo "No SkyPilot clusters"
   echo ""
@@ -677,13 +677,55 @@ if command -v sky &> /dev/null; then
   if [ -n "$COST" ]; then
     echo "$COST"
   fi
-  echo ""
-  echo "SkyPilot details: mise run agent:status"
-  echo "All AWS services: mise run aws:status"
 else
   echo "SkyPilot not installed"
-  echo "AWS services: mise run aws:status"
 fi
+echo ""
+
+echo "=== AWS Services ==="
+# Check for AWS CLI
+AWS_CMD=""
+if command -v aws &> /dev/null; then
+  AWS_CMD="aws"
+elif [ -f "$HOME/.local/share/mise/shims/aws" ]; then
+  AWS_PATH=$(find "$HOME/.local/share/mise/installs/awscli" -name "aws" -type f 2>/dev/null | head -1)
+  if [ -n "$AWS_PATH" ]; then
+    AWS_CMD="$AWS_PATH"
+  fi
+fi
+
+if [ -z "$AWS_CMD" ]; then
+  echo "AWS CLI not installed. Install with: mise use -g awscli@latest"
+elif ! $AWS_CMD sts get-caller-identity &> /dev/null; then
+  echo "AWS credentials not configured. Run: aws configure"
+else
+  ACCOUNT=$($AWS_CMD sts get-caller-identity --query 'Account' --output text 2>/dev/null)
+  REGION=$($AWS_CMD configure get region 2>/dev/null || echo "us-east-1")
+  echo "Account: $ACCOUNT | Region: $REGION"
+  echo ""
+  
+  echo "EC2 Instances (Running):"
+  EC2_QUERY='Reservations[*].Instances[*].[Tags[?Key==`Name`]|[0].Value,InstanceId,InstanceType,PublicIpAddress,State.Name]'
+  $AWS_CMD ec2 describe-instances --filters Name=instance-state-name,Values=running --query "$EC2_QUERY" --output table 2>/dev/null || echo "  No running instances"
+  echo ""
+  
+  echo "RDS Databases:"
+  RDS_QUERY='DBInstances[*].[DBInstanceIdentifier,Engine,DBInstanceStatus,Endpoint.Address]'
+  $AWS_CMD rds describe-db-instances --query "$RDS_QUERY" --output table 2>/dev/null || echo "  No RDS instances"
+  echo ""
+  
+  echo "Load Balancers:"
+  ELB_QUERY='LoadBalancers[*].[LoadBalancerName,State.Code,DNSName]'
+  $AWS_CMD elbv2 describe-load-balancers --query "$ELB_QUERY" --output table 2>/dev/null || echo "  No load balancers"
+  echo ""
+  
+  echo "S3 Buckets:"
+  S3_QUERY='Buckets[*].[Name,CreationDate]'
+  $AWS_CMD s3api list-buckets --query "$S3_QUERY" --output table 2>/dev/null || echo "  No S3 buckets"
+fi
+echo ""
+echo "For detailed SkyPilot info: mise run agent:status"
+echo "For standalone AWS view: mise run aws:status"
 """
 
 [tasks."env:start"]
