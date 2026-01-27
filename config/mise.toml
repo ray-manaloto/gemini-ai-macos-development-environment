@@ -1,0 +1,760 @@
+# God-Tier macOS Development Environment - Mise Configuration
+# This is the source of truth for mise tools and tasks
+# To apply: cp config/mise.toml ~/.config/mise/config.toml
+
+[settings]
+experimental = true
+not_found_auto_install = true
+status = { missing_tools = "if_other_versions_installed" }
+
+[settings.npm]
+bun = true
+package_manager = "bun"
+
+[settings.python]
+uv_venv_auto = true
+
+[tools]
+# Strict Hierarchy: Mise > Bun > Pixi > Uv
+
+# --- Core Runtimes ---
+bun = "latest"
+pixi = "latest"
+uv = "latest"
+chezmoi = "latest"
+usage = "latest"
+pkl = "latest"
+node = "latest"
+
+# --- Modern Rust-Based Utilities ---
+starship = "latest"
+ripgrep = "latest"
+fd = "latest"
+zoxide = "latest"
+"github:ast-grep/ast-grep" = "latest"
+
+# --- AI-Assisted Code Search ---
+"pipx:mgrep" = "latest"
+
+# --- Infrastructure ---
+"1password-cli" = "latest"
+
+# --- Development Daemon Manager ---
+pitchfork = "latest"
+
+# --- CLI Tools ---
+github-cli = "latest"
+
+# --- Test Tools ---
+"npm:bats" = "latest"
+"ubi:charmbracelet/gum" = "latest"
+
+# NOTE: AI Agents (claude-code, opencode-ai, gemini-cli) are installed
+# separately via npm/bun due to mise npm backend issues
+
+[tasks.dashboard]
+description = "Launch Unified TUI"
+dir = "{{config_root}}"
+run = "pixi run python config/scripts/dashboard.py"
+
+[tasks.validate]
+description = "Validate environment health"
+run = "sh {{config_root}}/config/scripts/validate.sh"
+
+[tasks.help]
+description = "Show System Manual"
+run = "gum format --theme=pink < {{config_root}}/MANUAL.md"
+
+[tasks."agent:check"]
+description = "Verify AWS/cloud credentials are configured"
+run = """
+echo "=== Checking Cloud Credentials ==="
+ERRORS=0
+
+if ! command -v sky &> /dev/null; then
+  echo "ERROR: SkyPilot not installed. Run: mise install"
+  exit 1
+fi
+
+if ! sky check aws 2>&1 | grep -q "enabled"; then
+  echo "ERROR: AWS not enabled in SkyPilot"
+  echo ""
+  echo "To configure AWS credentials:"
+  echo "  1. Run: aws configure"
+  echo "  2. Or set: AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY"
+  echo "  3. Then run: sky check"
+  echo ""
+  echo "See SKYPILOT.md for detailed setup instructions."
+  exit 1
+fi
+
+echo "AWS credentials: OK"
+sky check aws 2>&1 | grep -E "AWS|enabled" || true
+"""
+
+[tasks."agent:up"]
+description = "Launch Cloud Agent (CLUSTER=name to customize)"
+depends = ["agent:check"]
+run = """
+CLUSTER="${CLUSTER:-ai-agent}"
+echo "Launching cloud agent: $CLUSTER"
+sky launch -c "$CLUSTER" {{config_root}}/templates/agent.yaml --detach
+"""
+
+[tasks."agent:down"]
+description = "Terminate Cloud Agent (CLUSTER=name or -- name)"
+run = """
+CLUSTER="${CLUSTER:-${1:-ai-agent}}"
+echo "Terminating cloud agent: $CLUSTER"
+sky down "$CLUSTER" -y
+"""
+
+[tasks."agent:status"]
+description = "Show Cloud Agent status (CLUSTER=name for specific agent)"
+run = """
+echo "=== Cloud Agent Status ==="
+if ! command -v sky &> /dev/null; then
+  echo "SkyPilot not installed. Run: mise install"
+  exit 1
+fi
+
+CLUSTER="${CLUSTER:-${1:-}}"
+
+if [ -n "$CLUSTER" ]; then
+  # Specific cluster - show detailed info
+  echo "Cluster: $CLUSTER"
+  echo ""
+  
+  # Check if cluster exists
+  if ! sky status 2>/dev/null | grep -q "^$CLUSTER "; then
+    echo "ERROR: Cluster '$CLUSTER' not found"
+    echo ""
+    echo "Available clusters:"
+    sky status 2>/dev/null | tail -n +2 | awk '{print "  " $1 " (" $NF ")"}'
+    exit 1
+  fi
+  
+  # Get IP address
+  IP=$(sky status --ip "$CLUSTER" 2>/dev/null)
+  if [ -n "$IP" ]; then
+    echo "IP Address: $IP"
+    echo "SSH: ssh $CLUSTER"
+    echo ""
+  fi
+  
+  # Verbose status for this cluster
+  sky status -v 2>/dev/null | grep -E "(NAME|$CLUSTER)" | head -5
+  echo ""
+  
+  ENDPOINTS=$(sky status --endpoints "$CLUSTER" 2>&1 || true)
+  if [ -n "$ENDPOINTS" ] && [[ ! "$ENDPOINTS" =~ "does not have any ports" ]] && [ "$ENDPOINTS" != "{}" ]; then
+    echo "Endpoints:"
+    echo "$ENDPOINTS"
+    echo ""
+  fi
+  
+  echo "Cost Report:"
+  sky cost-report 2>/dev/null | grep -E "(NAME|$CLUSTER)" || echo "  No cost data available"
+else
+  # All clusters - show overview with verbose info
+  sky status -v 2>/dev/null || echo "No clusters found"
+  echo ""
+  
+  # Show cost report
+  echo "=== Cost Report ==="
+  sky cost-report 2>/dev/null || echo "No cost data available"
+  echo ""
+  
+  CLUSTERS=$(sky status 2>/dev/null | grep -E "\\s+(UP|STOPPED|INIT)\\s+" | awk '{print $1}')
+  if [ -n "$CLUSTERS" ]; then
+    echo "=== Quick Reference ==="
+    for c in $CLUSTERS; do
+      IP=$(sky status --ip "$c" 2>/dev/null)
+      if [ -n "$IP" ]; then
+        echo "  $c: ssh $c (IP: $IP)"
+      else
+        echo "  $c: (no IP - may be stopped)"
+      fi
+    done
+  fi
+  echo ""
+  echo "For ALL AWS services (EC2, RDS, ALB, S3): mise run aws:status"
+fi
+"""
+
+[tasks."agent:stop"]
+description = "Stop Cloud Agent (CLUSTER=name or -- name)"
+run = """
+if ! command -v sky &> /dev/null; then
+  echo "ERROR: SkyPilot not installed. Run: mise install"
+  exit 1
+fi
+
+echo "WARNING: Spot instances cannot be stopped, only terminated."
+echo "Use 'mise run agent:down' to terminate completely."
+echo ""
+
+CLUSTER="${CLUSTER:-${1:-}}"
+if [ -z "$CLUSTER" ]; then
+  echo "Available clusters:"
+  sky status 2>/dev/null | grep -E "UP|STOPPED" | awk '{print "  " $1 " (" $NF ")"}'
+  echo ""
+  echo "Usage: CLUSTER=<name> mise run agent:stop"
+  echo "   or: mise run agent:stop -- <name>"
+  exit 1
+fi
+echo "Stopping cloud agent: $CLUSTER"
+sky stop "$CLUSTER" -y
+echo ""
+echo "Agent stopped. Use 'mise run agent:start' to resume."
+echo "Use 'mise run agent:down' to terminate completely."
+"""
+
+[tasks."agent:start"]
+description = "Start stopped Cloud Agent (CLUSTER=name or -- name)"
+run = """
+if ! command -v sky &> /dev/null; then
+  echo "ERROR: SkyPilot not installed. Run: mise install"
+  exit 1
+fi
+
+if ! sky check aws 2>&1 | grep -q "enabled"; then
+  echo "ERROR: AWS credentials not configured"
+  echo "Run: mise run agent:check"
+  exit 1
+fi
+
+echo "⚠️  WARNING: Spot instances cannot be stopped or restarted."
+echo "   Spot instances are terminated when stopped (not paused)."
+echo "   If no stopped clusters found, use 'mise run agent:up' to launch new."
+echo ""
+
+CLUSTER="${CLUSTER:-${1:-}}"
+if [ -z "$CLUSTER" ]; then
+  STOPPED=$(sky status 2>/dev/null | grep "STOPPED" | awk '{print $1}')
+  if [ -z "$STOPPED" ]; then
+    echo "No stopped clusters found."
+    sky status
+    exit 1
+  fi
+  echo "Stopped clusters:"
+  echo "$STOPPED" | while read c; do echo "  $c"; done
+  echo ""
+  echo "Usage: CLUSTER=<name> mise run agent:start"
+  echo "   or: mise run agent:start -- <name>"
+  exit 1
+fi
+echo "Starting cloud agent: $CLUSTER"
+sky start "$CLUSTER" -y
+echo ""
+echo "Agent started. Use 'ssh $CLUSTER' to connect."
+"""
+
+[tasks."agent:restart"]
+description = "Restart Cloud Agent (CLUSTER=name)"
+run = """
+CLUSTER="${CLUSTER:-${1:-ai-agent}}"
+echo "Restarting cloud agent: $CLUSTER"
+sky stop "$CLUSTER" -y 2>/dev/null || true
+sky start "$CLUSTER" -y
+echo "Cloud agent $CLUSTER restarted."
+"""
+
+[tasks."agent:ssh"]
+description = "SSH into Cloud Agent (CLUSTER=name or -- name)"
+run = """
+CLUSTER="${CLUSTER:-${1:-}}"
+if [ -z "$CLUSTER" ]; then
+  RUNNING=$(sky status 2>/dev/null | grep "UP" | awk '{print $1}')
+  if [ -z "$RUNNING" ]; then
+    echo "No running clusters found."
+    sky status
+    exit 1
+  fi
+  if [ $(echo "$RUNNING" | wc -l) -eq 1 ]; then
+    CLUSTER="$RUNNING"
+  else
+    echo "Multiple running clusters:"
+    echo "$RUNNING" | while read c; do echo "  $c"; done
+    echo ""
+    echo "Usage: CLUSTER=<name> mise run agent:ssh"
+    exit 1
+  fi
+fi
+echo "Connecting to: $CLUSTER"
+ssh "$CLUSTER"
+"""
+
+[tasks."agent:logs"]
+description = "View Cloud Agent logs (CLUSTER=name)"
+run = """
+CLUSTER="${CLUSTER:-${1:-ai-agent}}"
+sky logs "$CLUSTER"
+"""
+
+[tasks."agent:exec"]
+description = "Execute command on Cloud Agent (CLUSTER=name -- <cmd>)"
+run = """
+CLUSTER="${CLUSTER:-ai-agent}"
+if [ -z "$1" ]; then
+  echo "Usage: mise run agent:exec -- <command>"
+  echo "   or: CLUSTER=<name> mise run agent:exec -- <command>"
+  echo "Example: mise run agent:exec -- 'python train.py'"
+  exit 1
+fi
+sky exec "$CLUSTER" "$@"
+"""
+
+[tasks."aws:status"]
+description = "Show all AWS services (EC2, RDS, ALB, S3)"
+run = """
+echo "=== AWS Services Status ==="
+
+AWS_CMD=""
+if command -v aws &> /dev/null; then
+  AWS_CMD="aws"
+elif [ -f "$HOME/.local/share/mise/shims/aws" ]; then
+  AWS_PATH=$(find "$HOME/.local/share/mise/installs/awscli" -name "aws" -type f 2>/dev/null | head -1)
+  if [ -n "$AWS_PATH" ]; then
+    AWS_CMD="$AWS_PATH"
+  fi
+fi
+
+if [ -z "$AWS_CMD" ]; then
+  echo "AWS CLI not installed."
+  echo "Install with: mise use -g awscli@latest"
+  exit 1
+fi
+
+if ! $AWS_CMD sts get-caller-identity &> /dev/null; then
+  echo "ERROR: AWS credentials not configured"
+  echo "Run: aws configure"
+  exit 1
+fi
+
+ACCOUNT=$($AWS_CMD sts get-caller-identity --query 'Account' --output text 2>/dev/null)
+REGION=$($AWS_CMD configure get region 2>/dev/null || echo "us-east-1")
+echo "Account: $ACCOUNT | Region: $REGION"
+echo ""
+
+echo "=== EC2 Instances (Running) ==="
+EC2_QUERY='Reservations[*].Instances[*].[Tags[?Key==`Name`]|[0].Value,InstanceId,InstanceType,PublicIpAddress,State.Name]'
+$AWS_CMD ec2 describe-instances --filters Name=instance-state-name,Values=running --query "$EC2_QUERY" --output table 2>/dev/null || echo "No running instances"
+echo ""
+
+echo "=== RDS Databases ==="
+RDS_QUERY='DBInstances[*].[DBInstanceIdentifier,Engine,DBInstanceStatus,Endpoint.Address]'
+$AWS_CMD rds describe-db-instances --query "$RDS_QUERY" --output table 2>/dev/null || echo "No RDS instances"
+echo ""
+
+echo "=== Load Balancers ==="
+ELB_QUERY='LoadBalancers[*].[LoadBalancerName,State.Code,DNSName]'
+$AWS_CMD elbv2 describe-load-balancers --query "$ELB_QUERY" --output table 2>/dev/null || echo "No load balancers"
+echo ""
+
+echo "=== S3 Buckets ==="
+S3_QUERY='Buckets[*].[Name,CreationDate]'
+$AWS_CMD s3api list-buckets --query "$S3_QUERY" --output table 2>/dev/null || echo "No S3 buckets"
+echo ""
+
+echo "=== SkyPilot Clusters ==="
+if command -v sky &> /dev/null; then
+  sky status 2>/dev/null | head -15 || echo "No SkyPilot clusters"
+else
+  echo "SkyPilot not installed"
+fi
+echo ""
+
+echo "For SkyPilot details: mise run agent:status"
+echo "For cost report: mise run agent:status (includes costs)"
+"""
+
+[tasks.setup-extensions]
+description = "Install AI extensions"
+run = "gh extension install github/gh-copilot --force"
+
+[tasks.setup-mac]
+description = "Configure macOS defaults"
+run = "sh {{config_root}}/config/scripts/macos-defaults.sh"
+
+[tasks.setup-mcp]
+description = "Configure mise MCP"
+run = "sh {{config_root}}/config/scripts/setup-mcp.sh"
+
+# =============================================================================
+# Tool Management Tasks
+# =============================================================================
+
+[tasks."tools:status"]
+description = "Show status of all managed tools"
+run = """
+echo "=== Mise Tools Status ==="
+mise ls --current
+echo ""
+echo "=== Backend Settings ==="
+echo "npm.bun: $(mise settings get npm.bun 2>/dev/null || echo 'not set')"
+echo "npm.package_manager: $(mise settings get npm.package_manager 2>/dev/null || echo 'not set')"
+echo "python.uv_venv_auto: $(mise settings get python.uv_venv_auto 2>/dev/null || echo 'not set')"
+echo ""
+echo "=== Shims Status ==="
+echo "Shims directory: ~/.local/share/mise/shims"
+ls ~/.local/share/mise/shims 2>/dev/null | wc -l | xargs -I {} echo "Total shims: {}"
+"""
+
+[tasks."tools:install"]
+description = "Install all configured tools"
+run = """
+echo "Installing all tools from config..."
+mise install
+mise reshim
+echo "Done. Run 'mise run tools:status' to verify."
+"""
+
+[tasks."tools:update"]
+description = "Update all tools to latest versions"
+run = """
+echo "Updating all tools..."
+mise upgrade --bump
+mise reshim
+echo "Done. Updated tools:"
+mise ls --current
+"""
+
+[tasks."tools:uninstall"]
+description = "Uninstall a specific tool (usage: mise run tools:uninstall -- <tool>)"
+run = """
+if [ -z "$1" ]; then
+  echo "Usage: mise run tools:uninstall -- <tool>"
+  echo "Example: mise run tools:uninstall -- node"
+  exit 1
+fi
+echo "Uninstalling $1..."
+mise uninstall "$1"
+mise reshim
+echo "Done."
+"""
+
+[tasks."tools:reinstall"]
+description = "Reinstall a specific tool (usage: mise run tools:reinstall -- <tool>)"
+run = """
+if [ -z "$1" ]; then
+  echo "Usage: mise run tools:reinstall -- <tool>"
+  echo "Example: mise run tools:reinstall -- bun"
+  exit 1
+fi
+echo "Reinstalling $1..."
+mise uninstall "$1" 2>/dev/null || true
+mise install "$1"
+mise reshim
+echo "Done."
+"""
+
+[tasks."tools:doctor"]
+description = "Run mise doctor and show environment health"
+run = """
+echo "=== Mise Doctor ==="
+mise doctor
+echo ""
+echo "=== Environment Check ==="
+echo "PATH contains shims: $(echo $PATH | grep -q 'mise/shims' && echo 'YES' || echo 'NO')"
+echo "Bun available: $(which bun 2>/dev/null && echo 'YES' || echo 'NO')"
+echo "Uv available: $(which uv 2>/dev/null && echo 'YES' || echo 'NO')"
+"""
+
+[tasks."validate:rules"]
+description = "Check for anti-patterns and rule violations"
+run = """
+echo "=== Checking Project Rules ==="
+ERRORS=0
+
+echo "Checking for hardcoded paths in mise.toml..."
+if grep -q '~/.config/dev-env' "{{config_root}}/config/mise.toml" 2>/dev/null; then
+  echo "  ERROR: Found hardcoded ~/.config/dev-env - use {{config_root}} instead"
+  ERRORS=$((ERRORS + 1))
+else
+  echo "  OK: No hardcoded paths"
+fi
+
+echo "Checking for sudo in scripts..."
+if grep -rn 'sudo ' "{{config_root}}/config/scripts/" 2>/dev/null | grep -v '#'; then
+  echo "  ERROR: Found sudo usage - all tools should be user-space"
+  ERRORS=$((ERRORS + 1))
+else
+  echo "  OK: No sudo usage"
+fi
+
+echo "Checking for global npm/pip installs in scripts..."
+if grep -n -e 'npm install -g' -e 'npm i -g' -e 'pip install ' "{{config_root}}/setup.sh" "{{config_root}}/config/scripts/"*.sh 2>/dev/null | grep -v 'mise' | grep -v '#'; then
+  echo "  ERROR: Found direct npm/pip installs - use mise instead"
+  ERRORS=$((ERRORS + 1))
+else
+  echo "  OK: No direct package manager installs"
+fi
+
+echo "Checking for secrets in config files..."
+if grep -n -e 'sk-ant-' -e 'sk-proj-' -e 'ghp_' -e 'gho_' "{{config_root}}/config/mise.toml" "{{config_root}}/.env" 2>/dev/null | grep -v '.example' | grep -v '#'; then
+  echo "  ERROR: Potential secrets found in tracked files"
+  ERRORS=$((ERRORS + 1))
+else
+  echo "  OK: No secrets detected"
+fi
+
+echo ""
+if [ $ERRORS -eq 0 ]; then
+  echo "All rules passed!"
+  exit 0
+else
+  echo "Found $ERRORS rule violation(s)"
+  exit 1
+fi
+"""
+
+# =============================================================================
+# Platform Setup Tasks (Unified Setup)
+# =============================================================================
+
+[tasks."setup:common"]
+description = "Common setup for all platforms"
+run = """
+echo "=== Common Setup ==="
+# Install all mise tools
+mise install
+mise reshim
+
+# Setup shell activation (idempotent)
+SHELL_RC="${HOME}/.zshrc"
+if [ -f "${HOME}/.bashrc" ] && [ ! -f "${HOME}/.zshrc" ]; then
+  SHELL_RC="${HOME}/.bashrc"
+fi
+
+if ! grep -q 'mise activate' "$SHELL_RC" 2>/dev/null; then
+  echo 'eval "$(mise activate zsh)"' >> "$SHELL_RC"
+  echo "Added mise activation to $SHELL_RC"
+fi
+
+echo "Common setup complete."
+"""
+
+[tasks."setup:macos"]
+description = "macOS-specific setup"
+depends = ["setup:common"]
+run = """
+echo "=== macOS Setup ==="
+# Check we're on macOS
+if [ "$(uname)" != "Darwin" ]; then
+  echo "Skipping - not on macOS"
+  exit 0
+fi
+
+# Configure macOS defaults (if script exists)
+if [ -f "{{config_root}}/config/scripts/macos-defaults.sh" ]; then
+  sh "{{config_root}}/config/scripts/macos-defaults.sh"
+fi
+
+# Setup starship config
+mkdir -p ~/.config
+cp "{{config_root}}/config/starship.toml" ~/.config/starship.toml 2>/dev/null || true
+
+# Initialize pixi for dashboard
+if [ -f "{{config_root}}/pixi.toml" ]; then
+  cd "{{config_root}}" && pixi install
+fi
+
+echo "macOS setup complete."
+"""
+
+[tasks."setup:container"]
+description = "Container/DevPod-specific setup"
+depends = ["setup:common"]
+run = """
+echo "=== Container Setup ==="
+# Check if running in container
+if [ ! -f "/.dockerenv" ] && [ -z "$DEVCONTAINER" ]; then
+  echo "Skipping - not in container"
+  exit 0
+fi
+
+# Trust workspace config
+mise trust
+
+# Copy starship config
+mkdir -p ~/.config
+cp "{{config_root}}/config/starship.toml" ~/.config/starship.toml 2>/dev/null || true
+
+echo "Container setup complete."
+"""
+
+[tasks."setup:linux"]
+description = "Linux (non-container) setup"
+depends = ["setup:common"]
+run = """
+echo "=== Linux Setup ==="
+# Check we're on Linux but not container
+if [ "$(uname)" != "Linux" ] || [ -f "/.dockerenv" ] || [ -n "$DEVCONTAINER" ]; then
+  echo "Skipping - not on bare Linux"
+  exit 0
+fi
+
+# Copy starship config
+mkdir -p ~/.config
+cp "{{config_root}}/config/starship.toml" ~/.config/starship.toml 2>/dev/null || true
+
+echo "Linux setup complete."
+"""
+
+[tasks."setup:auto"]
+description = "Auto-detect platform and run appropriate setup"
+run = """
+echo "=== Auto-Detecting Platform ==="
+if [ -f "/.dockerenv" ] || [ -n "$DEVCONTAINER" ]; then
+  echo "Detected: Container"
+  mise run setup:container
+elif [ "$(uname)" = "Darwin" ]; then
+  echo "Detected: macOS"
+  mise run setup:macos
+elif [ "$(uname)" = "Linux" ]; then
+  echo "Detected: Linux"
+  mise run setup:linux
+else
+  echo "Unknown platform, running common setup only"
+  mise run setup:common
+fi
+"""
+
+[env]
+EDITOR = "zed --wait"
+
+# =============================================================================
+# Environment Lifecycle Tasks
+# =============================================================================
+
+[tasks."env:status"]
+description = "Show environment status"
+run = """
+echo "=== Environment Status ==="
+echo ""
+echo "Platform: $(uname -s) $(uname -m)"
+if [ -f "/.dockerenv" ] || [ -n "$DEVCONTAINER" ]; then
+  echo "Environment: Container"
+else
+  echo "Environment: Host"
+fi
+echo ""
+echo "=== Mise Status ==="
+mise --version
+echo "Config: $(mise config 2>/dev/null | head -1 || echo 'not loaded')"
+echo ""
+echo "=== Installed Tools ==="
+mise ls --current 2>/dev/null || echo "No tools installed"
+echo ""
+echo "=== Daemons (Pitchfork) ==="
+if command -v pitchfork &> /dev/null; then
+  pitchfork status 2>/dev/null || echo "No daemons running"
+else
+  echo "Pitchfork not installed"
+fi
+echo ""
+echo "=== Health Check ==="
+echo "PATH has shims: $(echo $PATH | grep -q 'mise/shims' && echo 'YES' || echo 'NO')"
+echo "Bun: $(bun --version 2>/dev/null || echo 'not found')"
+echo "Uv: $(uv --version 2>/dev/null | head -1 || echo 'not found')"
+echo "Node: $(node --version 2>/dev/null || echo 'not found')"
+echo ""
+echo "=== Cloud (SkyPilot + AWS) ==="
+if command -v sky &> /dev/null; then
+  sky status -v 2>/dev/null | head -12 || echo "No SkyPilot clusters"
+  echo ""
+  COST=$(sky cost-report 2>/dev/null | grep "Total Cost" || true)
+  if [ -n "$COST" ]; then
+    echo "$COST"
+  fi
+  echo ""
+  echo "SkyPilot details: mise run agent:status"
+  echo "All AWS services: mise run aws:status"
+else
+  echo "SkyPilot not installed"
+  echo "AWS services: mise run aws:status"
+fi
+"""
+
+[tasks."env:start"]
+description = "Start full environment (SKIP_CLOUD=1 to skip cloud agents)"
+run = """
+echo "=== Starting Environment ==="
+mise trust 2>/dev/null || true
+mise install
+mise reshim
+echo ""
+if command -v pitchfork &> /dev/null; then
+  echo "Starting daemons..."
+  pitchfork start 2>/dev/null || echo "No daemons configured"
+fi
+echo ""
+if command -v sky &> /dev/null && [ "${SKIP_CLOUD:-0}" != "1" ]; then
+  if ! sky check aws 2>&1 | grep -q "enabled"; then
+    echo "=== Cloud Agents ==="
+    echo "WARNING: AWS credentials not configured"
+    echo "Run 'mise run agent:check' to see setup instructions"
+    echo "Or use SKIP_CLOUD=1 to skip cloud operations"
+  else
+    STOPPED_CLUSTERS=$(sky status 2>/dev/null | grep "STOPPED" | awk '{print $1}')
+    if [ -n "$STOPPED_CLUSTERS" ]; then
+      echo "=== Starting Cloud Agents ==="
+      for cluster in $STOPPED_CLUSTERS; do
+        echo "Starting: $cluster"
+        sky start -y "$cluster" &
+      done
+      wait
+      echo "Cloud agents started."
+    else
+      echo "No stopped cloud agents to start."
+    fi
+  fi
+else
+  if [ "${SKIP_CLOUD:-0}" = "1" ]; then
+    echo "Skipping cloud agents (SKIP_CLOUD=1)"
+  fi
+fi
+echo ""
+echo "Environment started. Run 'mise run env:status' to verify."
+"""
+
+[tasks."env:stop"]
+description = "Stop full environment (SKIP_CLOUD=1 to skip cloud agents)"
+run = """
+echo "=== Stopping Environment ==="
+if command -v pitchfork &> /dev/null; then
+  echo "Stopping daemons..."
+  pitchfork stop 2>/dev/null || echo "No daemons running"
+else
+  echo "Pitchfork not installed - no daemons to stop"
+fi
+echo ""
+if command -v sky &> /dev/null && [ "${SKIP_CLOUD:-0}" != "1" ]; then
+  RUNNING_CLUSTERS=$(sky status 2>/dev/null | grep "UP" | awk '{print $1}')
+  if [ -n "$RUNNING_CLUSTERS" ]; then
+    echo "=== Stopping Cloud Agents ==="
+    for cluster in $RUNNING_CLUSTERS; do
+      echo "Stopping: $cluster"
+      sky stop -y "$cluster" &
+    done
+    wait
+    echo "Cloud agents stopped."
+  else
+    echo "No running cloud agents to stop."
+  fi
+else
+  if [ "${SKIP_CLOUD:-0}" = "1" ]; then
+    echo "Skipping cloud agents (SKIP_CLOUD=1)"
+  fi
+fi
+echo ""
+echo "Environment stopped. Tools remain installed."
+"""
+
+[tasks."env:restart"]
+description = "Restart environment"
+depends = ["env:stop", "env:start"]
+run = """
+echo "Environment restarted."
+"""
