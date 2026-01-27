@@ -78,6 +78,9 @@ cat ~/.config/opencode/opencode.json  # Should contain "oh-my-opencode"
 | `/init-deep` | **Generate AGENTS.md** - creates hierarchical context files throughout project |
 | `/refactor` | **LSP + AST refactoring** - intelligent rename/restructure with TDD verification |
 | `/cancel-ralph` | **Cancel active loop** - stops ralph-loop or ulw-loop |
+| `/analyze` | **Non-interactive code analysis** - deep structure, dependency, pattern analysis |
+| `/investigate` | **Non-interactive investigation** - root cause analysis for issues |
+| `/tdd` | **Non-interactive TDD** - automated red-green-refactor cycle |
 
 ### Usage Examples
 
@@ -94,6 +97,24 @@ cat ~/.config/opencode/opencode.json  # Should contain "oh-my-opencode"
 
 # Intelligent refactoring
 /refactor validate.sh --scope=file --strategy=safe
+```
+
+### Non-Interactive Commands
+
+These commands run as continuous streams without prompting:
+
+```bash
+# Analyze code structure and dependencies
+/analyze src/auth.ts --depth=deep
+
+# Investigate root cause of an issue
+/investigate "TypeError in login" --scope=module
+
+# Refactor code with safe strategy
+/refactor AuthService --strategy=safe
+
+# Run TDD workflow with automated red-green-refactor
+/tdd validateConfig --max-iterations=5
 ```
 
 ---
