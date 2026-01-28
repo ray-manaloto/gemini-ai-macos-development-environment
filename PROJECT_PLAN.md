@@ -1,7 +1,7 @@
 # Project Plan: God-Tier macOS Development Environment
 
 **Last Updated**: 2026-01-26
-**Status**: P1 Complete - Ready for Setup
+**Status**: P1-P3 Complete - Production Ready
 **Context Recovery Document**: This file maintains project state for AI context resets
 
 ---
@@ -62,14 +62,16 @@ bats tests/test_starship.bats
 bats tests/test_integration.bats
 ```
 
-### Test Coverage
-| Test File | Coverage |
-|-----------|----------|
-| `test_mise.bats` | Mise installation, backends, tasks |
-| `test_tools.bats` | All CLI tool availability |
-| `test_chezmoi.bats` | Template validation |
-| `test_starship.bats` | Prompt configuration |
-| `test_integration.bats` | End-to-end project structure |
+### Test Coverage (108 tests total)
+| Test File | Coverage | Tests |
+|-----------|----------|-------|
+| `test_mise.bats` | Mise installation, backends, tasks | 7 |
+| `test_tools.bats` | All CLI tool availability | 15 |
+| `test_chezmoi.bats` | Template validation | 8 |
+| `test_starship.bats` | Prompt configuration | 9 |
+| `test_integration.bats` | End-to-end project structure | 25 |
+| `test_ide_configs.bats` | VS Code, Zed, DevContainer, uninstall | 31 |
+| `test_skypilot.bats` | SkyPilot, AWS, agent tasks | 14 |
 
 ### Health Check
 ```bash
@@ -84,13 +86,13 @@ mise config
 
 ### Expected Test Output
 ```
-1..61
+1..108
 ok 1 mise is installed
 ok 2 mise doctor reports no critical issues
 ...
-ok 61 starship can render prompt
+ok 108 starship can render prompt
 
-61 tests, 0 failures
+108 tests, 0 failures
 ```
 
 ---
@@ -163,25 +165,33 @@ Complete the foundational setup so `./setup.sh` produces a fully working environ
 | US-3 | Validation enhancement | ✅ Complete | Claude |
 | US-X | OpenCode + oh-my-opencode docs | ✅ Complete | Claude |
 
-### P2 - Enterprise Ready
-| ID | Story | Status |
-|----|-------|--------|
-| US-4 | DevContainer support | ⏳ Backlog |
-| US-5 | Secrets integration docs | ⏳ Backlog |
-| US-6 | Uninstall script | ⏳ Backlog |
+### P2 - Enterprise Ready - COMPLETE
+| ID | Story | Status | Deliverable |
+|----|-------|--------|-------------|
+| US-4 | DevContainer support | ✅ Complete | `.devcontainer/devcontainer.json` |
+| US-5 | Secrets integration docs | ✅ Complete | `SECRETS.md`, `.env.example` |
+| US-6 | Uninstall script | ✅ Complete | `uninstall.sh` (--dry-run, --force) |
 
-### P3 - Polish
-| ID | Story | Status |
-|----|-------|--------|
-| US-7 | IDE configurations (Zed/VS Code) | ⏳ Backlog |
-| US-8 | macOS defaults script | ⏳ Backlog |
-| US-9 | Migration guide from nvm/pyenv | ⏳ Backlog |
+### P3 - Polish - COMPLETE
+| ID | Story | Status | Deliverable |
+|----|-------|--------|-------------|
+| US-7 | IDE configurations (Zed/VS Code) | ✅ Complete | `.vscode/`, `.zed/` |
+| US-8 | macOS defaults script | ✅ Complete | `config/scripts/macos-defaults.sh` |
+| US-9 | Migration guide from nvm/pyenv | ✅ Complete | `MIGRATION.md` |
 
 ### P4 - Nice to Have
 | ID | Story | Status |
 |----|-------|--------|
 | US-10 | Proxy configuration | ⏳ Backlog |
 | US-11 | Team onboarding docs | ⏳ Backlog |
+
+### Additional Deliverables (P2-P3)
+| Item | Description |
+|------|-------------|
+| `SKYPILOT.md` | Cloud agent documentation |
+| `tests/test_ide_configs.bats` | 31 tests for IDE/DevContainer/uninstall |
+| `tests/test_skypilot.bats` | 14 tests for SkyPilot/AWS |
+| Updated `AGENTS.md` | 510 lines, comprehensive knowledge base |
 
 ---
 

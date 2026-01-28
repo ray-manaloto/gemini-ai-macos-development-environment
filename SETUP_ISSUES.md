@@ -1,88 +1,96 @@
-# Setup Issues - Fix Required
+# Setup Issues - Tracking Document
 
-## Error Summary
+This document tracks issues identified during environment setup and their resolution status.
 
-When running `./setup.sh`, the following error occurs:
+---
 
+## ✅ RESOLVED Issues
+
+### Issue #1: Incorrect Tool Names in setup.sh (RESOLVED)
+
+**Resolved**: 2026-01-26
+
+**Problem**: Line 74 used asdf-style names (`prefix-dev/pixi`, `charmbracelet/gum`) instead of mise backend names.
+
+**Error Message**:
 ```
-▶ Installing core generator tools (Pkl, Pixi, Gum)...
 mise ERROR Failed to install tools: prefix-dev/pixi@latest, charmbracelet/gum@latest
-prefix-dev/pixi@latest: Failed to run ~/.local/share/mise/plugins/prefix-dev-pixi/bin/list-all: No such file or directory (os error 2)
-charmbracelet/gum@latest: Failed to run ~/.local/share/mise/plugins/charmbracelet-gum/bin/list-all: No such file or directory (os error 2)
 ```
 
-## Root Cause
-
-The `setup.sh` script uses incorrect tool names for mise. The tools `prefix-dev/pixi` and `charmbracelet/gum` are **asdf plugin names**, not mise backend names.
-
-**Problematic line in setup.sh (line 74):**
+**Solution Applied**: Changed to mise backend names:
 ```bash
-mise use -g pkl prefix-dev/pixi charmbracelet/gum
-```
-
-## Solution
-
-Mise has different backends and tool naming conventions:
-
-| Wrong (asdf plugin style) | Correct (mise backend) |
-|---------------------------|------------------------|
-| `prefix-dev/pixi` | `pixi` (native mise support) |
-| `charmbracelet/gum` | `go:github.com/charmbracelet/gum` or `ubi:charmbracelet/gum` |
-
-### Fix Required
-
-Update `setup.sh` to use correct mise tool names:
-
-```bash
-# OLD (broken):
+# Before (broken):
 mise use -g pkl prefix-dev/pixi charmbracelet/gum
 
-# NEW (correct):
+# After (fixed):
 mise use -g pkl pixi ubi:charmbracelet/gum
 ```
 
-Or use aqua/ubi backends for tools not natively supported:
+---
+
+### Issue #2: Missing macos-defaults.sh Script (RESOLVED)
+
+**Resolved**: 2026-01-26
+
+**Problem**: `main.pkl` referenced `config/scripts/macos-defaults.sh` for the `setup-mac` task, but the file didn't exist.
+
+**Solution Applied**: Created `config/scripts/macos-defaults.sh` with developer-friendly macOS defaults:
+- Finder: Show hidden files, path bar, status bar
+- Dock: Autohide, speed optimizations
+- Keyboard: Fast key repeat, disable smart quotes
+- Screenshots: Save to ~/Screenshots as PNG
+- Safari: Enable Developer menu
+
+---
+
+### Issue #3: Missing gum and bats Tools (RESOLVED)
+
+**Resolved**: 2026-01-26
+
+**Problem**: 
+- `gum` required for `mise run help` task
+- `bats` required for test suite (`bats tests/`)
+
+**Solution Applied**: Added to mise global config:
 ```bash
-mise use -g pkl pixi
-mise use -g ubi:charmbracelet/gum
+mise use -g ubi:charmbracelet/gum npm:bats
 ```
+
+---
 
 ## Mise Tool Naming Reference
 
 | Tool | Correct Mise Name |
 |------|-------------------|
 | Pixi | `pixi` (built-in) |
-| Gum | `ubi:charmbracelet/gum` or `aqua:charmbracelet/gum` |
+| Gum | `ubi:charmbracelet/gum` |
 | Pkl | `pkl` (built-in) |
 | Bun | `bun` (built-in) |
+| Bats | `npm:bats` |
 | Starship | `starship` (built-in) |
 | Node | `node` (built-in) |
 
-## Steps to Fix
+---
 
-1. Edit `setup.sh`
-2. Change line 74 from:
-   ```bash
-   mise use -g pkl prefix-dev/pixi charmbracelet/gum
-   ```
-   To:
-   ```bash
-   mise use -g pkl pixi ubi:charmbracelet/gum
-   ```
-3. Re-run `./setup.sh`
+## Verification Commands
 
-## Verification
-
-After fix, run:
 ```bash
+# Check mise health
 mise doctor
-mise ls
-```
 
-Should show pkl, pixi, and gum installed without errors.
+# List installed tools
+mise ls
+
+# Run validation script
+./config/scripts/validate.sh
+
+# Run test suite
+bats tests/
+
+# Test help command
+mise run help
+```
 
 ---
 
-**Priority**: HIGH - Blocks entire setup
-**Assignee**: Claude Code
-**Status**: ✅ RESOLVED - Fix applied to setup.sh line 74 on 2026-01-26
+*Last updated: 2026-01-26*

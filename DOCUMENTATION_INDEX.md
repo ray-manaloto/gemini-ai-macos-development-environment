@@ -4,12 +4,48 @@ Complete index of all documentation and research for the God-Tier macOS Developm
 
 ---
 
+## AI Agent Resources
+
+**Start here if you're an AI agent working with this project.**
+
+| Document | Purpose |
+|----------|---------|
+| [AGENTS.md](AGENTS.md) | Comprehensive project knowledge base (~450 lines) |
+| [AI_ONBOARDING.md](AI_ONBOARDING.md) | Copy-paste prompts for any LLM |
+| [llms.txt](llms.txt) | AI discovery file (llmstxt.org standard) |
+| [llms-ctx.txt](llms-ctx.txt) | Pre-expanded context without optional sections |
+| [llms-ctx-full.txt](llms-ctx-full.txt) | Fully expanded context with all details |
+
+### Agent Platform Configurations
+
+| Platform | Location | Commands |
+|----------|----------|----------|
+| Claude Code | [.claude/](.claude/) | 10 OpenSpec workflow commands |
+| Gemini CLI | [.gemini/](.gemini/) | 10 OpenSpec workflow commands |
+| OpenCode | [.opencode/](.opencode/) | 10 OpenSpec workflow commands |
+| Cursor | [.cursor/](.cursor/) | 10 OpenSpec workflow commands |
+
+### Quick Context Injection
+
+For any AI agent, use this universal prompt:
+```
+I'm working on the God-Tier macOS Development Environment project.
+Rules: Mise-first, no sudo, no global npm/pip, use mise tasks.
+Config at: config/mise.toml
+Tests with: bats tests/
+For full context, read: AGENTS.md
+```
+
+---
+
 ## Quick Reference
 
 | Document | Purpose | Status |
 |----------|---------|--------|
 | [README.md](README.md) | User-facing setup guide | ✅ Complete |
 | [CLAUDE.md](CLAUDE.md) | AI assistant context | ✅ Complete |
+| [AGENTS.md](AGENTS.md) | AI agent knowledge base | ✅ Complete |
+| [AI_ONBOARDING.md](AI_ONBOARDING.md) | LLM onboarding prompts | ✅ Complete |
 | [PROJECT_PLAN.md](PROJECT_PLAN.md) | Agile project plan & sprints | ✅ Complete |
 | [SETUP_ISSUES.md](SETUP_ISSUES.md) | Known issues & fixes | ✅ Complete |
 
