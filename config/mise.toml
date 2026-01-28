@@ -661,6 +661,12 @@ mise --version 2>/dev/null | head -1
 echo "Config: $(mise config 2>/dev/null | head -1 || echo 'not loaded')"
 
 echo ""
+echo "=== Backend Settings ==="
+echo "npm.bun: $(mise settings get npm.bun 2>/dev/null || echo 'not set')"
+echo "npm.package_manager: $(mise settings get npm.package_manager 2>/dev/null || echo 'not set')"
+echo "python.uv_venv_auto: $(mise settings get python.uv_venv_auto 2>/dev/null || echo 'not set')"
+
+echo ""
 echo "=== Installed Tools ==="
 mise ls --current 2>/dev/null || echo "No tools installed"
 
