@@ -762,13 +762,20 @@ EDITOR = "zed --wait"
 # =============================================================================
 
 [tasks."env:status"]
-description = "Show environment status (non-interactive, continuous stream)"
+description = "Show environment status (use --refresh for live cloud queries)"
 run = """
 #!/bin/bash
 # Non-interactive continuous stream output
-# Uses timeouts for slow API calls to prevent blocking
 set -o pipefail
 export MISE_QUIET=1
+
+# Parse arguments
+REFRESH_FLAG=""
+for arg in "$@"; do
+  if [ "$arg" = "--refresh" ]; then
+    REFRESH_FLAG="--refresh"
+  fi
+done
 
 # === LOCAL CHECKS (Fast, no network) ===
 echo "=== Environment Status ==="
@@ -813,9 +820,9 @@ echo "Node: $(node --version 2>/dev/null || echo 'not found')"
 echo ""
 echo "=== Cloud (SkyPilot) ==="
 if command -v sky &> /dev/null; then
-  timeout 5 sky status -v 2>/dev/null | head -12 || echo "No SkyPilot clusters"
+  sky status $REFRESH_FLAG -v 2>/dev/null | head -12 || echo "No SkyPilot clusters"
   echo ""
-  COST=$(timeout 3 sky cost-report 2>/dev/null | grep "Total Cost" || true)
+  COST=$(sky cost-report 2>/dev/null | grep "Total Cost" || true)
   if [ -n "$COST" ]; then
     echo "$COST"
   fi
@@ -837,28 +844,28 @@ fi
 
 if [ -z "$AWS_CMD" ]; then
   echo "AWS CLI not installed. Install with: mise use -g awscli@latest"
-elif ! timeout 3 $AWS_CMD sts get-caller-identity &> /dev/null; then
+elif ! $AWS_CMD sts get-caller-identity &> /dev/null; then
   echo "AWS credentials not configured. Run: aws configure"
 else
-  ACCOUNT=$(timeout 3 $AWS_CMD sts get-caller-identity --query 'Account' --output text 2>/dev/null || echo "unknown")
+  ACCOUNT=$($AWS_CMD sts get-caller-identity --query 'Account' --output text 2>/dev/null || echo "unknown")
   REGION=$($AWS_CMD configure get region 2>/dev/null || echo "us-east-1")
   echo "Account: $ACCOUNT | Region: $REGION"
   echo ""
   
-  echo "EC2 Instances (Running):"
-  timeout 5 $AWS_CMD ec2 describe-instances --filters Name=instance-state-name,Values=running --query 'Reservations[*].Instances[*].[InstanceId,InstanceType,PublicIpAddress,State.Name]' --output table 2>/dev/null || echo "  No running instances or timeout"
-  echo ""
-  
-  echo "RDS Databases:"
-  timeout 5 $AWS_CMD rds describe-db-instances --query 'DBInstances[*].[DBInstanceIdentifier,Engine,DBInstanceStatus]' --output table 2>/dev/null || echo "  No RDS instances or timeout"
-  echo ""
-  
-  echo "Load Balancers:"
-  timeout 5 $AWS_CMD elbv2 describe-load-balancers --query 'LoadBalancers[*].[LoadBalancerName,State.Code,DNSName]' --output table 2>/dev/null || echo "  No load balancers or timeout"
-  echo ""
-  
-  echo "S3 Buckets:"
-  timeout 5 $AWS_CMD s3api list-buckets --query 'Buckets[*].Name' --output table 2>/dev/null || echo "  No S3 buckets or timeout"
+   echo "EC2 Instances (Running):"
+   $AWS_CMD ec2 describe-instances --filters Name=instance-state-name,Values=running --query 'Reservations[*].Instances[*].[InstanceId,InstanceType,PublicIpAddress,State.Name]' --output table 2>/dev/null || echo "  No running instances"
+   echo ""
+   
+   echo "RDS Databases:"
+   $AWS_CMD rds describe-db-instances --query 'DBInstances[*].[DBInstanceIdentifier,Engine,DBInstanceStatus]' --output table 2>/dev/null || echo "  No RDS instances"
+   echo ""
+   
+   echo "Load Balancers:"
+   $AWS_CMD elbv2 describe-load-balancers --query 'LoadBalancers[*].[LoadBalancerName,State.Code,DNSName]' --output table 2>/dev/null || echo "  No load balancers"
+   echo ""
+   
+   echo "S3 Buckets:"
+   $AWS_CMD s3api list-buckets --query 'Buckets[*].Name' --output table 2>/dev/null || echo "  No S3 buckets"
 fi
 
 echo ""
