@@ -1,0 +1,135 @@
+# God-Tier macOS Development Environment - Concise Context
+
+> A reproducible, user-space macOS development environment using Mise as the central orchestrator. Strict hierarchy: Mise > Bun > Pixi > Uv. Zero system modifications - everything installs to ~/.local.
+
+## Quick Reference
+
+| Field | Value |
+|-------|-------|
+| Project | God-Tier macOS Development Environment |
+| Core Principle | Mise-first orchestration |
+| Hierarchy | Mise > Bun > Pixi > Uv |
+| Location | User-space only (~/.local, ~/.config) |
+| System Mods | Zero sudo, zero Homebrew (except GUI apps) |
+
+## Tool Hierarchy
+
+| Level | Tool | Purpose |
+|-------|------|---------|
+| 1 | Mise | Global orchestrator, manages ALL tools |
+| 2 | Bun | JavaScript/TypeScript (replaces Node/npm) |
+| 3 | Pixi | Binary packages (conda-forge) |
+| 4 | Uv | Python packages (10x faster than pip) |
+
+## Critical Rules
+
+1. NEVER use sudo - Everything is user-space
+2. NEVER install globally with npm/pip - Use mise (`mise use -g`)
+3. NEVER modify system Python/Node - Mise manages versions
+4. NEVER commit secrets - Use op://, infisical, or mise secrets
+5. ALWAYS use mise tasks - Not raw commands
+6. ALWAYS run tests before committing - `bats tests/`
+
+## Key Files
+
+| File | Purpose |
+|------|---------|
+| config/mise.toml | Tool versions, tasks, settings (SOURCE OF TRUTH) |
+| tests/*.bats | 63 BATS tests |
+| setup.sh | Bootstrap script |
+| AGENTS.md | Full project knowledge base |
+| AI_ONBOARDING.md | Copy-paste prompts for any LLM |
+
+## Common Commands
+
+| Command | Description |
+|---------|-------------|
+| mise run validate | Check environment health |
+| mise run tools:status | Show all tools and settings |
+| mise run tools:update | Update all tools to latest |
+| bats tests/ | Run all 63 tests |
+| mise doctor | Diagnose issues |
+
+## Tool Installation Pattern
+
+```bash
+# Correct
+mise use -g <tool>
+mise use -g "npm:<package>"
+mise use -g "pipx:<package>"
+
+# WRONG (never do this)
+npm install -g <package>
+pip install <package>
+brew install <cli-tool>
+```
+
+## Project Structure
+
+```
+gemini-ai-macos-development-environment/
+├── config/
+│   ├── mise.toml              # Tool versions, tasks, settings
+│   ├── starship.toml          # Shell prompt configuration
+│   ├── chezmoi/               # Dotfile templates
+│   └── scripts/               # Utility scripts
+├── tests/                     # BATS test suite (63 tests)
+├── research/                  # Research documents
+├── openspec/                  # Specifications
+├── .claude/                   # Claude Code config (10 commands)
+├── .gemini/                   # Gemini CLI config (10 commands)
+├── .opencode/                 # OpenCode config (10 commands)
+├── .cursor/                   # Cursor config (10 commands)
+├── setup.sh                   # Bootstrap script
+├── AGENTS.md                  # Project knowledge base
+├── AI_ONBOARDING.md           # LLM onboarding prompts
+└── llms.txt                   # AI discovery file
+```
+
+## OpenSpec Workflow Commands
+
+| Command | Purpose |
+|---------|---------|
+| explore | Think through ideas without implementing |
+| new | Create a new OpenSpec change |
+| ff | Fast-forward to tasks (skip proposal/design) |
+| apply | Apply change to codebase |
+| continue | Continue existing change |
+| verify | Verify change completeness |
+| archive | Archive completed change |
+| bulk-archive | Archive multiple changes |
+| sync | Sync specs with changes |
+| onboard | Onboard new OpenSpec project |
+
+## Mise Settings (from config/mise.toml)
+
+```toml
+[settings]
+experimental = true
+not_found_auto_install = true
+
+[settings.npm]
+bun = true                    # npm -> bun
+package_manager = "bun"
+
+[settings.python]
+uv_venv_auto = true           # pip -> uv
+```
+
+## Secrets Management
+
+1. **1Password** (Recommended): `op://Private/Anthropic/credential`
+2. **Infisical**: `infisical run -- ./script.sh`
+3. **Mise Native**: `mise secrets set KEY=value`
+
+## Troubleshooting
+
+| Issue | Solution |
+|-------|----------|
+| Command not found | `eval "$(mise activate zsh)"` then `mise reshim` |
+| Wrong version | `mise ls` then `mise trust` |
+| Config not loading | `cp config/mise.toml ~/.config/mise/config.toml` |
+
+---
+
+For full documentation: https://github.com/ray-manaloto/gemini-ai-macos-development-environment

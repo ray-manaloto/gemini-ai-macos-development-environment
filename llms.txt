@@ -1,0 +1,31 @@
+# God-Tier macOS Development Environment
+
+> A reproducible, user-space macOS development environment using Mise as the central orchestrator. Strict hierarchy: Mise > Bun > Pixi > Uv. Zero system modifications - everything installs to ~/.local.
+
+This project provides a complete development environment setup for macOS with AI-first tooling, modern CLI utilities, and reproducible configuration via Pkl/TOML.
+
+## Quick Start
+
+- [README](https://raw.githubusercontent.com/ray-manaloto/gemini-ai-macos-development-environment/main/README.md): Setup guide with architecture overview
+- [CLAUDE.md](https://raw.githubusercontent.com/ray-manaloto/gemini-ai-macos-development-environment/main/CLAUDE.md): AI assistant context and development patterns
+- [AGENTS.md](https://raw.githubusercontent.com/ray-manaloto/gemini-ai-macos-development-environment/main/AGENTS.md): Project knowledge base for AI agents
+
+## Configuration
+
+- [mise.toml](https://raw.githubusercontent.com/ray-manaloto/gemini-ai-macos-development-environment/main/config/mise.toml): Mise tool configuration (tools, tasks, settings)
+- [starship.toml](https://raw.githubusercontent.com/ray-manaloto/gemini-ai-macos-development-environment/main/config/starship.toml): Shell prompt configuration
+- [pixi.toml](https://raw.githubusercontent.com/ray-manaloto/gemini-ai-macos-development-environment/main/pixi.toml): Conda-forge dependencies
+
+## Specifications
+
+- [Tool Management Spec](https://raw.githubusercontent.com/ray-manaloto/gemini-ai-macos-development-environment/main/openspec/specs/tool-management/spec.md): Requirements for Mise, Bun, Pixi, Uv with Gherkin scenarios
+
+## Project Planning
+
+- [PROJECT_PLAN.md](https://raw.githubusercontent.com/ray-manaloto/gemini-ai-macos-development-environment/main/PROJECT_PLAN.md): Agile project plan with sprint status and user stories
+
+## Optional
+
+- [ChatGPT Deep Research](https://raw.githubusercontent.com/ray-manaloto/gemini-ai-macos-development-environment/main/research/CHATGPT_DEEP_RESEARCH.md): Comprehensive mise ecosystem research
+- [Gaps Analysis](https://raw.githubusercontent.com/ray-manaloto/gemini-ai-macos-development-environment/main/research/GAPS_ANALYSIS.md): Gap analysis with priorities
+- [MCP Setup](https://raw.githubusercontent.com/ray-manaloto/gemini-ai-macos-development-environment/main/research/MISE_MCP_SETUP.md): Model Context Protocol integration guide

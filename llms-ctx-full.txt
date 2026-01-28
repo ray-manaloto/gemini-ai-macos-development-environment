@@ -1,0 +1,352 @@
+# God-Tier macOS Development Environment - Full Context
+
+> A reproducible, user-space macOS development environment using Mise as the central orchestrator. Strict hierarchy: Mise > Bun > Pixi > Uv. Zero system modifications - everything installs to ~/.local.
+
+This document provides comprehensive context for AI agents working with this project.
+
+---
+
+## PROJECT IDENTITY
+
+| Field | Value |
+|-------|-------|
+| **Project** | God-Tier macOS Development Environment |
+| **Core Principle** | Mise-first orchestration |
+| **Hierarchy** | Mise > Bun > Pixi > Uv |
+| **Location** | User-space only (~/.local, ~/.config) |
+| **System Mods** | Zero sudo, zero Homebrew (except GUI apps) |
+| **Tests** | 63 BATS tests |
+| **Config** | config/mise.toml (SOURCE OF TRUTH) |
+
+---
+
+## CRITICAL RULES (NEVER BREAK)
+
+1. **NEVER use sudo** - Everything is user-space
+2. **NEVER install globally with npm/pip** - Use mise (`mise use -g`)
+3. **NEVER modify system Python/Node** - Mise manages versions
+4. **NEVER commit secrets** - Use op://, infisical, or mise secrets
+5. **NEVER suppress type errors** - No `as any`, `@ts-ignore`
+6. **ALWAYS use mise tasks** - Not raw commands (`mise run validate`)
+7. **ALWAYS run tests before committing** - `bats tests/`
+8. **ALWAYS check mise doctor after issues** - `mise doctor`
+9. **PREFER existing patterns** - Check existing code first
+10. **ASK if uncertain about scope** - Don't assume
+
+---
+
+## TOOL HIERARCHY
+
+### Level 1: Mise (Orchestrator)
+
+Mise manages ALL tools through a unified interface:
+
+```toml
+[settings]
+experimental = true
+not_found_auto_install = true
+
+[settings.npm]
+bun = true
+package_manager = "bun"
+
+[settings.python]
+uv_venv_auto = true
+```
+
+### Level 2: Bun (JavaScript/TypeScript)
+
+Replaces Node.js and npm. Mise redirects automatically:
+- `npm install` -> `bun install`
+- `node script.js` -> `bun script.js`
+- 3x faster package installation
+
+### Level 3: Pixi (Binary Packages)
+
+For conda-forge packages that need binary dependencies:
+- FFmpeg, CUDA, scientific Python
+- Isolated from system libraries
+- Lockfile-based (`pixi.lock`)
+
+### Level 4: Uv (Python Packages)
+
+Fast pip replacement:
+- 10x faster package resolution
+- Deterministic lockfiles
+- Mise redirects: `pip install` -> `uv pip install`
+
+---
+
+## KEY FILES
+
+| File | Purpose |
+|------|---------|
+| `config/mise.toml` | Tool versions, tasks, settings (SOURCE OF TRUTH) |
+| `config/starship.toml` | Shell prompt configuration |
+| `config/chezmoi/` | Dotfile templates |
+| `config/scripts/validate.sh` | Environment health check |
+| `tests/*.bats` | 63 BATS tests |
+| `setup.sh` | Bootstrap script |
+| `AGENTS.md` | Full project knowledge base |
+| `AI_ONBOARDING.md` | Copy-paste prompts for any LLM |
+| `llms.txt` | AI discovery file (llmstxt.org standard) |
+
+---
+
+## MISE CONFIGURATION (config/mise.toml)
+
+### Tools Installed
+
+```toml
+[tools]
+# Core Runtimes
+bun = "latest"
+pixi = "latest"
+uv = "latest"
+chezmoi = "latest"
+usage = "latest"
+pkl = "latest"
+node = "latest"
+
+# Modern Rust-Based Utilities
+starship = "latest"
+ripgrep = "latest"
+fd = "latest"
+zoxide = "latest"
+"github:ast-grep/ast-grep" = "latest"
+
+# AI-Assisted Code Search
+"pipx:mgrep" = "latest"
+
+# Infrastructure
+"1password-cli" = "latest"
+pitchfork = "latest"
+github-cli = "latest"
+
+# Test Tools
+"npm:bats" = "latest"
+"ubi:charmbracelet/gum" = "latest"
+```
+
+### Available Tasks
+
+| Command | Description |
+|---------|-------------|
+| `mise run dashboard` | Launch TUI manager |
+| `mise run validate` | Check environment health |
+| `mise run help` | Show system manual |
+| `mise run agent:up` | Launch AWS cloud agent |
+| `mise run agent:down` | Terminate cloud agents |
+| `mise run setup-mac` | Configure macOS defaults |
+| `mise run setup-mcp` | Configure mise MCP for Claude |
+| `mise run setup-extensions` | Install GitHub Copilot extension |
+| `mise run tools:status` | Show all tools and settings |
+| `mise run tools:install` | Install all configured tools |
+| `mise run tools:update` | Update all tools to latest |
+| `mise run tools:uninstall -- <tool>` | Uninstall specific tool |
+| `mise run tools:reinstall -- <tool>` | Reinstall specific tool |
+| `mise run tools:doctor` | Full environment health check |
+
+---
+
+## PROJECT STRUCTURE
+
+```
+gemini-ai-macos-development-environment/
+├── config/
+│   ├── mise.toml              # Tool versions, tasks, settings (SOURCE OF TRUTH)
+│   ├── main.pkl               # Pkl config (generates TOML)
+│   ├── starship.toml          # Shell prompt configuration
+│   ├── chezmoi/               # Dotfile templates
+│   │   ├── dot_zshrc.tmpl     # Zsh config template
+│   │   ├── dot_gitconfig.tmpl # Git config template
+│   │   └── .chezmoi.toml.tmpl # Chezmoi config
+│   └── scripts/               # Utility scripts
+│       ├── validate.sh        # Environment health check
+│       ├── dashboard.py       # TUI dashboard (requires pixi)
+│       ├── macos-defaults.sh  # macOS system defaults
+│       └── setup-mcp.sh       # MCP configuration
+├── tests/                     # BATS test suite (63 tests)
+│   ├── test_mise.bats         # Mise installation, backends
+│   ├── test_tools.bats        # CLI tool availability
+│   ├── test_chezmoi.bats      # Dotfile template validation
+│   ├── test_starship.bats     # Prompt configuration
+│   └── test_integration.bats  # End-to-end tests
+├── research/                  # 12 research documents
+├── openspec/                  # Specifications
+│   ├── specs/                 # Active specs
+│   │   └── tool-management/   # Tool requirements
+│   └── changes/archive/       # Archived changes
+├── templates/
+│   └── agent.yaml             # SkyPilot AWS agent
+├── .claude/                   # Claude Code config (10 commands, 10 skills)
+├── .gemini/                   # Gemini CLI config (10 commands, 10 skills)
+├── .opencode/                 # OpenCode config (10 commands, 10 skills)
+├── .cursor/                   # Cursor config (10 commands)
+├── setup.sh                   # Bootstrap script (run once)
+├── pixi.toml                  # Pixi project dependencies
+├── AGENTS.md                  # Project knowledge base
+├── AI_ONBOARDING.md           # LLM onboarding prompts
+├── CLAUDE.md                  # AI assistant context
+├── llms.txt                   # AI discovery file
+├── llms-ctx.txt               # Pre-expanded context
+└── llms-ctx-full.txt          # This file
+```
+
+---
+
+## TOOL INSTALLATION PATTERNS
+
+### Correct Patterns
+
+```bash
+mise use -g <tool>             # Install globally via mise
+mise use -g "npm:<package>"    # npm package (via Bun)
+mise use -g "pipx:<package>"   # pip package (via uv)
+mise use -g "ubi:<owner/repo>" # GitHub release binary
+mise use -g "cargo:<package>"  # Rust package
+```
+
+### WRONG Patterns (Never Do)
+
+```bash
+npm install -g <package>       # WRONG - use mise
+pip install <package>          # WRONG - use mise
+brew install <cli-tool>        # WRONG - use mise for CLI tools
+sudo anything                  # WRONG - everything is user-space
+```
+
+---
+
+## OPENSPEC WORKFLOW COMMANDS
+
+Each AI platform has 10 commands for the OpenSpec workflow:
+
+| Command | Purpose |
+|---------|---------|
+| explore | Think and investigate without making changes |
+| new | Create a new OpenSpec change |
+| ff | Fast-forward to tasks (skip proposal/design) |
+| apply | Apply change to codebase |
+| continue | Continue working on existing change |
+| verify | Verify change completeness |
+| archive | Archive completed change |
+| bulk-archive | Archive multiple changes |
+| sync | Sync specs with changes |
+| onboard | Onboard new OpenSpec project |
+
+### Platform Command Prefixes
+
+| Platform | Config Location | Prefix |
+|----------|-----------------|--------|
+| Claude | .claude/commands/opsx/ | `/opsx:` |
+| Gemini | .gemini/commands/opsx/ | `@opsx:` |
+| OpenCode | .opencode/command/ | `/opsx-` |
+| Cursor | .cursor/commands/opsx/ | `/opsx:` |
+
+---
+
+## TESTING
+
+### Test Files (63 tests total)
+
+| File | Coverage |
+|------|----------|
+| test_mise.bats | Mise installation, backends, tasks |
+| test_tools.bats | All CLI tool availability |
+| test_chezmoi.bats | Dotfile template validation |
+| test_starship.bats | Prompt configuration |
+| test_integration.bats | End-to-end project structure |
+
+### Running Tests
+
+```bash
+# Ensure mise is activated
+eval "$(mise activate bash --shims)"
+
+# Run all tests
+bats tests/
+
+# Run specific file
+bats tests/test_mise.bats
+```
+
+---
+
+## SECRETS MANAGEMENT
+
+### Option 1: 1Password (Recommended)
+
+```toml
+[env]
+ANTHROPIC_API_KEY = "op://Private/Anthropic/credential"
+```
+
+### Option 2: Infisical
+
+```bash
+infisical run -- ./script.sh
+```
+
+### Option 3: Mise Native
+
+```bash
+mise secrets set ANTHROPIC_API_KEY=sk-ant-...
+```
+
+---
+
+## TROUBLESHOOTING
+
+| Issue | Solution |
+|-------|----------|
+| Command not found | `eval "$(mise activate zsh)"` then `mise reshim` |
+| Wrong version | `mise ls` then `mise trust` |
+| Config not loading | `cp config/mise.toml ~/.config/mise/config.toml` |
+| Backend not working | Check with `mise settings get npm.bun` |
+| Tests failing | Run `mise run tools:doctor` first |
+
+---
+
+## ANTI-PATTERNS (FORBIDDEN)
+
+| Category | Forbidden | Why |
+|----------|-----------|-----|
+| Package Management | `npm install -g`, `pip install` | Use mise, not direct installs |
+| System Modification | `sudo`, `/usr/local/` | User-space only |
+| Type Safety | `as any`, `@ts-ignore` | Fix the types properly |
+| Error Handling | Empty catch blocks | Always handle errors |
+| Testing | Deleting failing tests | Fix the code, not the tests |
+| Secrets | Committing .env, API keys | Use op://, infisical, or mise secrets |
+| Homebrew | `brew install` for CLI tools | mise manages CLI tools |
+
+---
+
+## QUICK START
+
+```bash
+# Clone and setup
+cd ~/dev/github/ray-manaloto/gemini-ai-macos-development-environment
+./setup.sh
+
+# Restart terminal, then verify
+mise doctor
+bats tests/
+mise run validate
+```
+
+---
+
+## RAW URLS FOR PROGRAMMATIC ACCESS
+
+| Resource | URL |
+|----------|-----|
+| AGENTS.md | https://raw.githubusercontent.com/ray-manaloto/gemini-ai-macos-development-environment/main/AGENTS.md |
+| CLAUDE.md | https://raw.githubusercontent.com/ray-manaloto/gemini-ai-macos-development-environment/main/CLAUDE.md |
+| AI_ONBOARDING.md | https://raw.githubusercontent.com/ray-manaloto/gemini-ai-macos-development-environment/main/AI_ONBOARDING.md |
+| llms.txt | https://raw.githubusercontent.com/ray-manaloto/gemini-ai-macos-development-environment/main/llms.txt |
+| mise.toml | https://raw.githubusercontent.com/ray-manaloto/gemini-ai-macos-development-environment/main/config/mise.toml |
+
+---
+
+*Generated: 2026-01-26*
