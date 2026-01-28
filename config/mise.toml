@@ -470,6 +470,130 @@ echo "Bun available: $(which bun 2>/dev/null && echo 'YES' || echo 'NO')"
 echo "Uv available: $(which uv 2>/dev/null && echo 'YES' || echo 'NO')"
 """
 
+[tasks."validate:tools"]
+description = "Check for tool version shadows in ~/.local/bin"
+run = """
+#!/bin/bash
+set -euo pipefail
+
+# Bootstrap tools to skip (intentionally in ~/.local/bin)
+BOOTSTRAP_TOOLS="mise uv uvx"
+
+# Tools to check (from mise.toml [tools] section, excluding prefixed)
+CHECK_TOOLS="bun pixi chezmoi usage pkl node starship ripgrep fd zoxide pitchfork opencode"
+
+echo "=== Tool Shadow Detection ==="
+echo ""
+
+SHADOWS_FOUND=0
+
+for tool in $CHECK_TOOLS; do
+  # Skip if not in mise
+  mise_path=$(mise which "$tool" 2>/dev/null || echo "")
+  if [[ -z "$mise_path" ]]; then
+    continue
+  fi
+  
+  # Check for standalone binary in ~/.local/bin
+  local_bin="$HOME/.local/bin/$tool"
+  if [[ -f "$local_bin" && ! -L "$local_bin" ]]; then
+    # Check if it's a binary (not a script)
+    file_type=$(file -b "$local_bin" | head -c 10)
+    if [[ "$file_type" == "Mach-O"* ]]; then
+      local_ver=$("$local_bin" --version 2>/dev/null | head -1 || echo "unknown")
+      mise_ver=$("$mise_path" --version 2>/dev/null | head -1 || echo "unknown")
+      
+      if [[ "$local_ver" != "$mise_ver" ]]; then
+        echo "⚠️  SHADOW: $tool"
+        echo "    ~/.local/bin: $local_ver"
+        echo "    mise:         $mise_ver"
+        echo ""
+        SHADOWS_FOUND=$((SHADOWS_FOUND + 1))
+      fi
+    fi
+  fi
+done
+
+echo "=== Bootstrap Tools (Preserved) ==="
+for tool in $BOOTSTRAP_TOOLS; do
+  if [[ -f "$HOME/.local/bin/$tool" ]]; then
+    ver=$("$HOME/.local/bin/$tool" --version 2>/dev/null | head -1 || echo "unknown")
+    echo "✓ $tool: $ver (bootstrap, preserved)"
+  fi
+done
+echo ""
+
+if [[ $SHADOWS_FOUND -gt 0 ]]; then
+  echo "Found $SHADOWS_FOUND shadow(s). Run 'mise run tools:fix-shadows' to see fixes."
+  exit 1
+else
+  echo "✅ No tool shadows detected."
+fi
+"""
+
+[tasks."tools:fix-shadows"]
+description = "Fix tool shadows in ~/.local/bin (dry-run by default, use --force to apply)"
+run = """
+#!/bin/bash
+set -euo pipefail
+
+FORCE=false
+for arg in "$@"; do
+  if [[ "$arg" == "--force" ]]; then
+    FORCE=true
+  fi
+done
+
+BOOTSTRAP_TOOLS="mise uv uvx"
+CHECK_TOOLS="bun pixi chezmoi usage pkl node starship ripgrep fd zoxide pitchfork opencode"
+
+BACKUP_DIR="$HOME/.local/bin/.shadow-backup/$(date +%Y%m%d-%H%M%S)"
+
+echo "=== Fix Tool Shadows ==="
+if [[ "$FORCE" != "true" ]]; then
+  echo "DRY RUN MODE - use --force to apply changes"
+fi
+echo ""
+
+FIXED=0
+for tool in $CHECK_TOOLS; do
+  mise_path=$(mise which "$tool" 2>/dev/null || echo "")
+  if [[ -z "$mise_path" ]]; then
+    continue
+  fi
+  
+  local_bin="$HOME/.local/bin/$tool"
+  if [[ -f "$local_bin" && ! -L "$local_bin" ]]; then
+    file_type=$(file -b "$local_bin" | head -c 10)
+    if [[ "$file_type" == "Mach-O"* ]]; then
+      local_ver=$("$local_bin" --version 2>/dev/null | head -1 || echo "unknown")
+      mise_ver=$("$mise_path" --version 2>/dev/null | head -1 || echo "unknown")
+      
+      if [[ "$local_ver" != "$mise_ver" ]]; then
+        if [[ "$FORCE" == "true" ]]; then
+          mkdir -p "$BACKUP_DIR"
+          mv "$local_bin" "$BACKUP_DIR/"
+          echo "✅ FIXED: $tool (backed up to $BACKUP_DIR)"
+          FIXED=$((FIXED + 1))
+        else
+          echo "Would fix: $tool"
+          echo "  Action: mv $local_bin → $BACKUP_DIR/"
+        fi
+      fi
+    fi
+  fi
+done
+
+if [[ "$FORCE" == "true" ]]; then
+  mise reshim
+  echo ""
+  echo "Fixed $FIXED shadow(s). Run 'mise run validate:tools' to verify."
+else
+  echo ""
+  echo "Add --force to apply these changes."
+fi
+"""
+
 [tasks."validate:rules"]
 description = "Check for anti-patterns and rule violations"
 run = """
