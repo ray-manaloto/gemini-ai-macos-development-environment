@@ -646,11 +646,6 @@ run = """
 set -o pipefail
 export MISE_QUIET=1
 
-# Helper: run command with timeout (3s default)
-run_with_timeout() {
-  timeout 3 "$@" 2>/dev/null || echo "  (timeout/unavailable)"
-}
-
 # === LOCAL CHECKS (Fast, no network) ===
 echo "=== Environment Status ==="
 echo "Platform: $(uname -s) $(uname -m)"
@@ -670,13 +665,6 @@ echo "=== Installed Tools ==="
 mise ls --current 2>/dev/null || echo "No tools installed"
 
 echo ""
-echo "=== Health Check ==="
-echo "PATH has shims: $(echo $PATH | grep -q 'mise/shims' && echo 'YES' || echo 'NO')"
-echo "Bun: $(bun --version 2>/dev/null || echo 'not found')"
-echo "Uv: $(uv --version 2>/dev/null | head -1 || echo 'not found')"
-echo "Node: $(node --version 2>/dev/null || echo 'not found')"
-
-echo ""
 echo "=== Daemons (Pitchfork) ==="
 if command -v pitchfork &> /dev/null; then
   pitchfork status 2>/dev/null || echo "No daemons running"
@@ -684,11 +672,23 @@ else
   echo "Pitchfork not installed"
 fi
 
+echo ""
+echo "=== Health Check ==="
+echo "PATH has shims: $(echo $PATH | grep -q 'mise/shims' && echo 'YES' || echo 'NO')"
+echo "Bun: $(bun --version 2>/dev/null || echo 'not found')"
+echo "Uv: $(uv --version 2>/dev/null | head -1 || echo 'not found')"
+echo "Node: $(node --version 2>/dev/null || echo 'not found')"
+
 # === NETWORK CHECKS (Slower, use timeouts) ===
 echo ""
 echo "=== Cloud (SkyPilot) ==="
 if command -v sky &> /dev/null; then
-  run_with_timeout sky status 2>/dev/null | head -10 || echo "No SkyPilot clusters"
+  timeout 5 sky status -v 2>/dev/null | head -12 || echo "No SkyPilot clusters"
+  echo ""
+  COST=$(timeout 3 sky cost-report 2>/dev/null | grep "Total Cost" || true)
+  if [ -n "$COST" ]; then
+    echo "$COST"
+  fi
 else
   echo "SkyPilot not installed"
 fi
@@ -700,30 +700,40 @@ if command -v aws &> /dev/null; then
   AWS_CMD="aws"
 elif [ -f "$HOME/.local/share/mise/shims/aws" ]; then
   AWS_PATH=$(find "$HOME/.local/share/mise/installs/awscli" -name "aws" -type f 2>/dev/null | head -1)
-  [ -n "$AWS_PATH" ] && AWS_CMD="$AWS_PATH"
+  if [ -n "$AWS_PATH" ]; then
+    AWS_CMD="$AWS_PATH"
+  fi
 fi
 
 if [ -z "$AWS_CMD" ]; then
-  echo "AWS CLI not installed"
+  echo "AWS CLI not installed. Install with: mise use -g awscli@latest"
 elif ! timeout 3 $AWS_CMD sts get-caller-identity &> /dev/null; then
-  echo "AWS credentials not configured"
+  echo "AWS credentials not configured. Run: aws configure"
 else
   ACCOUNT=$(timeout 3 $AWS_CMD sts get-caller-identity --query 'Account' --output text 2>/dev/null || echo "unknown")
   REGION=$($AWS_CMD configure get region 2>/dev/null || echo "us-east-1")
   echo "Account: $ACCOUNT | Region: $REGION"
   echo ""
-  echo "EC2 (Running):"
-  run_with_timeout $AWS_CMD ec2 describe-instances --filters Name=instance-state-name,Values=running --query 'Reservations[*].Instances[*].[InstanceId,InstanceType,State.Name]' --output table || echo "  None"
+  
+  echo "EC2 Instances (Running):"
+  timeout 5 $AWS_CMD ec2 describe-instances --filters Name=instance-state-name,Values=running --query 'Reservations[*].Instances[*].[InstanceId,InstanceType,PublicIpAddress,State.Name]' --output table 2>/dev/null || echo "  No running instances or timeout"
   echo ""
-  echo "RDS:"
-  run_with_timeout $AWS_CMD rds describe-db-instances --query 'DBInstances[*].[DBInstanceIdentifier,Engine,DBInstanceStatus]' --output table || echo "  None"
+  
+  echo "RDS Databases:"
+  timeout 5 $AWS_CMD rds describe-db-instances --query 'DBInstances[*].[DBInstanceIdentifier,Engine,DBInstanceStatus]' --output table 2>/dev/null || echo "  No RDS instances or timeout"
   echo ""
+  
+  echo "Load Balancers:"
+  timeout 5 $AWS_CMD elbv2 describe-load-balancers --query 'LoadBalancers[*].[LoadBalancerName,State.Code,DNSName]' --output table 2>/dev/null || echo "  No load balancers or timeout"
+  echo ""
+  
   echo "S3 Buckets:"
-  run_with_timeout $AWS_CMD s3api list-buckets --query 'Buckets[*].Name' --output table || echo "  None"
+  timeout 5 $AWS_CMD s3api list-buckets --query 'Buckets[*].Name' --output table 2>/dev/null || echo "  No S3 buckets or timeout"
 fi
 
 echo ""
-echo "Done. (mise run agent:status for details)"
+echo "For detailed SkyPilot info: mise run agent:status"
+echo "For standalone AWS view: mise run aws:status"
 """
 
 [tasks."env:start"]
