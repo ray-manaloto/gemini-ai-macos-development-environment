@@ -49,8 +49,10 @@ github-cli = "latest"
 "npm:bats" = "latest"
 "ubi:charmbracelet/gum" = "latest"
 
-# NOTE: AI Agents (claude-code, opencode-ai, gemini-cli) are installed
-# separately via npm/bun due to mise npm backend issues
+# --- AI Agents ---
+# Installed via bun global (bun add -g) with wrapper scripts in ~/.local/bin
+# Using bunx --bun for runtime to avoid Node.js deprecation warnings
+# See: claude, opencode, gemini wrappers
 
 [tasks.dashboard]
 description = "Launch Unified TUI"
