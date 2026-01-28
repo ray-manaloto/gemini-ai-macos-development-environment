@@ -249,11 +249,11 @@ setup() {
 }
 
 @test "env:status uses verbose SkyPilot output" {
-  grep -A15 '=== Cloud' config/mise.toml | grep -q 'sky status -v'
+  grep -A15 '=== Cloud (SkyPilot)' config/mise.toml | grep -q 'sky status.*-v'
 }
 
 @test "env:status shows cost summary" {
-  grep -A15 '=== Cloud' config/mise.toml | grep -q 'cost-report'
+  grep -A15 '=== Cloud (SkyPilot)' config/mise.toml | grep -q 'cost-report'
 }
 
 # =============================================================================
