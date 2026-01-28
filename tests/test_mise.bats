@@ -42,11 +42,12 @@ setup() {
   [[ "$output" =~ "uv" ]]
 }
 
-@test "mise has bun configured as npm backend" {
-  # Verify bun is configured as the npm/node backend (core architecture principle)
-  run mise settings get npm.bun
+@test "mise has npm configured as package manager" {
+  # Verify npm is configured as package manager (wrapper scripts use bun runtime)
+  # Architecture: mise installs via npm, wrapper scripts in ~/.local/bin run with bun
+  run mise settings get npm.package_manager
   [ "$status" -eq 0 ]
-  [ "$output" = "true" ]
+  [ "$output" = "npm" ]
 }
 
 @test "mise has uv configured for python venvs" {
