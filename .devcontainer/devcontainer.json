@@ -1,0 +1,110 @@
+{
+  // ==========================================================================
+  // God-Tier macOS Development Environment - DevContainer Configuration
+  // For use with DevPod, VS Code Remote Containers, or GitHub Codespaces
+  // Uses mise DevContainer feature for automatic tool installation
+  // ==========================================================================
+  
+  "name": "God-Tier Dev Environment",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-22.04",
+  
+  // Features to install
+  "features": {
+    // Mise - reads config/mise.toml automatically
+    "ghcr.io/devcontainers-extra/features/mise:1": {
+      "version": "latest",
+      "installTools": true
+    },
+    
+    // Git with latest version
+    "ghcr.io/devcontainers/features/git:1": {
+      "version": "latest",
+      "ppa": true
+    },
+    
+    // GitHub CLI
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    
+    // Common utilities
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": true,
+      "configureZshAsDefaultShell": true,
+      "installOhMyZsh": false,
+      "upgradePackages": true
+    }
+  },
+  
+  // Container settings - trust workspace config
+  "containerEnv": {
+    "MISE_TRUSTED_CONFIG_PATHS": "/workspaces",
+    "MISE_INSTALL_PATH": "/home/vscode/.local/bin/mise",
+    "PATH": "/home/vscode/.local/share/mise/shims:/home/vscode/.local/bin:${containerEnv:PATH}"
+  },
+  
+  // Run after container is created - uses unified setup task
+  "postCreateCommand": {
+    "copy-mise-config": "mkdir -p ~/.config/mise && cp config/mise.toml ~/.config/mise/config.toml",
+    "setup": "mise run setup:container"
+  },
+  
+  // Run when attaching to container
+  "postAttachCommand": "mise doctor",
+  
+  // Forward ports (for development servers)
+  "forwardPorts": [
+    3000,  // React/Next.js
+    5000,  // Flask
+    8000,  // Django/FastAPI
+    8080,  // General HTTP
+    8888   // Jupyter
+  ],
+  
+  // VS Code specific settings
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "zsh",
+        "terminal.integrated.profiles.linux": {
+          "zsh": {
+            "path": "/bin/zsh"
+          }
+        },
+        "python.defaultInterpreterPath": "/home/vscode/.local/share/mise/installs/python/latest/bin/python",
+        "editor.formatOnSave": true
+      },
+      "extensions": [
+        "esbenp.prettier-vscode",
+        "dbaeumer.vscode-eslint",
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "charliermarsh.ruff",
+        "tamasfe.even-better-toml",
+        "redhat.vscode-yaml",
+        "eamodio.gitlens",
+        "github.copilot",
+        "github.copilot-chat"
+      ]
+    }
+  },
+  
+  // Mount settings
+  "mounts": [
+    // Persist mise data between rebuilds
+    "source=${localWorkspaceFolderBasename}-mise-data,target=/home/vscode/.local/share/mise,type=volume",
+    // Persist mise config
+    "source=${localWorkspaceFolderBasename}-mise-config,target=/home/vscode/.config/mise,type=volume"
+  ],
+  
+  // Run as non-root user
+  "remoteUser": "vscode",
+  
+  // Privileged mode (needed for some tools)
+  "privileged": false,
+  
+  // Host requirements
+  "hostRequirements": {
+    "cpus": 2,
+    "memory": "4gb",
+    "storage": "32gb"
+  }
+}
