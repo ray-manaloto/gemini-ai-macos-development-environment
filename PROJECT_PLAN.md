@@ -184,6 +184,7 @@ Complete the foundational setup so `./setup.sh` produces a fully working environ
 |----|-------|--------|
 | US-10 | Proxy configuration | ⏳ Backlog |
 | US-11 | Team onboarding docs | ⏳ Backlog |
+| US-12 | Ralph Orchestrator integration | ✅ Complete |
 
 ### Additional Deliverables (P2-P3)
 | Item | Description |

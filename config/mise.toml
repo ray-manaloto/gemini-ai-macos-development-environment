@@ -50,6 +50,7 @@ github-cli = "latest"
 
 # --- AI Agents (npm packages, run with bun via exec_override) ---
 "npm:@google/gemini-cli" = "latest"
+"npm:@ralph-orchestrator/ralph-cli" = "latest"
 
 [tasks.dashboard]
 description = "Launch Unified TUI"
