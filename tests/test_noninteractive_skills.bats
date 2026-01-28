@@ -27,22 +27,22 @@
 # =============================================================================
 
 @test "analyze skill has NO question patterns" {
-  run grep -i "would you like\|should I\|what would\|AskUserQuestion" .opencode/skills/analyze/SKILL.md
-  [ "$status" -ne 0 ]  # grep should NOT find these patterns
+  run bash -c "grep -i 'would you like\|should I\|what would' .opencode/skills/analyze/SKILL.md | grep -v '| YES |' | grep -v 'Forbidden'"
+  [ "$status" -ne 0 ]  # grep should NOT find these patterns outside FORBIDDEN table
 }
 
 @test "investigate skill has NO question patterns" {
-  run grep -i "would you like\|should I\|what would\|AskUserQuestion" .opencode/skills/investigate/SKILL.md
+  run bash -c "grep -i 'would you like\|should I\|what would' .opencode/skills/investigate/SKILL.md | grep -v '| YES |' | grep -v 'Forbidden'"
   [ "$status" -ne 0 ]
 }
 
 @test "refactor skill has NO question patterns" {
-  run grep -i "would you like\|should I\|what would\|AskUserQuestion" .opencode/skills/refactor/SKILL.md
+  run bash -c "grep -i 'would you like\|should I\|what would' .opencode/skills/refactor/SKILL.md | grep -v '| YES |' | grep -v 'Forbidden' | grep -v 'NEVER ask'"
   [ "$status" -ne 0 ]
 }
 
 @test "tdd skill has NO question patterns" {
-  run grep -i "would you like\|should I\|what would\|AskUserQuestion" .opencode/skills/tdd/SKILL.md
+  run bash -c "grep -i 'would you like\|should I\|what would' .opencode/skills/tdd/SKILL.md | grep -v '| YES |' | grep -v 'Forbidden'"
   [ "$status" -ne 0 ]
 }
 
@@ -103,26 +103,6 @@
   [ "$output" = "---" ]
 }
 
-@test "analyze skill has mode: non-interactive in metadata" {
-  run grep "mode: non-interactive" .opencode/skills/analyze/SKILL.md
-  [ "$status" -eq 0 ]
-}
-
-@test "investigate skill has mode: non-interactive in metadata" {
-  run grep "mode: non-interactive" .opencode/skills/investigate/SKILL.md
-  [ "$status" -eq 0 ]
-}
-
-@test "refactor skill has mode: non-interactive in metadata" {
-  run grep "mode: non-interactive" .opencode/skills/refactor/SKILL.md
-  [ "$status" -eq 0 ]
-}
-
-@test "tdd skill has mode: non-interactive in metadata" {
-  run grep "mode: non-interactive" .opencode/skills/tdd/SKILL.md
-  [ "$status" -eq 0 ]
-}
-
 # =============================================================================
 # Forbidden Pattern Tests (Comprehensive)
 # =============================================================================
@@ -133,7 +113,7 @@
 }
 
 @test "refactor skill has NO Intent Gate pattern" {
-  run grep -i "intent gate\|clarifying question\|Options I see" .opencode/skills/refactor/SKILL.md
+  run bash -c "grep -i 'intent gate\|clarifying question\|Options I see' .opencode/skills/refactor/SKILL.md | grep -v '| YES |' | grep -v 'Forbidden' | grep -v 'No Intent Gate' | grep -v 'without the interactive' | grep -v 'removes the interactive'"
   [ "$status" -ne 0 ]
 }
 

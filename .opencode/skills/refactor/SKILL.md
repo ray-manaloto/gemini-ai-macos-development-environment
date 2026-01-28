@@ -1,12 +1,6 @@
 ---
 name: refactor
-description: Non-interactive intelligent refactoring. No Intent Gate, no questions, continuous execution.
-license: MIT
-compatibility: Works with any codebase
-metadata:
-  author: gemini-ai-macos-dev
-  version: "1.0"
-  mode: non-interactive
+description: "Non-interactive intelligent refactoring command. No Intent Gate, no questions, continuous execution. Capabilities: symbol renaming, pattern transformation, LSP-based refactoring, AST-grep transformations, safe code restructuring. Actions: refactor, rename, transform, restructure, modernize code. Keywords: refactor, rename, transform, restructure, LSP, AST-grep, code transformation, non-interactive, continuous stream, no Intent Gate. Use when: renaming symbols, transforming patterns, restructuring code, modernizing syntax. CRITICAL: This is a NON-INTERACTIVE command - never ask questions, always use defaults and log assumptions. OVERRIDES builtin /refactor Intent Gate."
 ---
 
 # /refactor - Non-Interactive Refactoring
