@@ -1,0 +1,71 @@
+# Cursor Rules for God-Tier macOS Development Environment
+
+## Project Identity
+
+This is a **mise-first macOS development environment** with strict tool hierarchy:
+
+```
+Mise > Bun > Pixi > Uv
+```
+
+All tools install to `~/.local` with **zero system modifications**.
+
+## Critical Rules (NEVER BREAK)
+
+1. **NEVER use sudo** - Everything is user-space
+2. **NEVER install globally with npm/pip** - Use mise (`mise use -g`)
+3. **NEVER modify system Python/Node** - Mise manages versions
+4. **NEVER commit secrets** - Use op://, infisical, or mise secrets
+5. **ALWAYS use mise tasks** - Not raw commands (`mise run validate`)
+6. **ALWAYS run tests before committing** - `bats tests/`
+
+## Key Files
+
+| File | Purpose |
+|------|---------|
+| `config/mise.toml` | Tool versions, tasks, settings (SOURCE OF TRUTH) |
+| `tests/*.bats` | 63 BATS tests |
+| `AGENTS.md` | Full project knowledge base |
+| `CLAUDE.md` | AI assistant context |
+
+## Tool Installation Pattern
+
+```bash
+# Correct
+mise use -g <tool>
+mise use -g "npm:<package>"
+mise use -g "pipx:<package>"
+
+# WRONG (never do this)
+npm install -g <package>
+pip install <package>
+brew install <cli-tool>
+```
+
+## Common Commands
+
+| Command | Purpose |
+|---------|---------|
+| `mise run validate` | Check environment health |
+| `mise run tools:status` | Show all tools |
+| `mise run tools:update` | Update all tools |
+| `bats tests/` | Run all 63 tests |
+| `mise doctor` | Diagnose issues |
+
+## OpenSpec Workflow
+
+This project uses OpenSpec for specification-driven development.
+
+| Command | Purpose |
+|---------|---------|
+| `/opsx:explore` | Think through ideas without implementing |
+| `/opsx:new` | Start a new OpenSpec change |
+| `/opsx:ff` | Fast-forward to tasks (skip proposal/design) |
+| `/opsx:apply` | Apply change to codebase |
+| `/opsx:continue` | Continue existing change |
+| `/opsx:verify` | Verify change completeness |
+| `/opsx:archive` | Archive completed change |
+
+## For Full Context
+
+Read `AGENTS.md` for comprehensive project documentation.

@@ -6,12 +6,14 @@
 .Spotlight-V100
 .Trashes
 
-# IDE
+# IDE (keep .vscode/ and .zed/ for project-specific configs)
 .idea/
-.vscode/
 *.swp
 *.swo
 *~
+
+# Agent internal state (session-specific, not project code)
+.sisyphus/
 
 # Node.js
 node_modules/
