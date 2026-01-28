@@ -122,16 +122,16 @@ else
 fi
 
 # ============================================================================
-# STEP 8: Generate Mise Configuration
+# STEP 8: Install Mise Configuration
 # ============================================================================
-log_step "Generating Mise configuration from Pkl..."
+log_step "Installing Mise configuration..."
 
 mkdir -p ~/.config/mise
-if command -v pkl &> /dev/null && [ -f "$STABLE_DIR/config/main.pkl" ]; then
-    pkl eval -f toml "$STABLE_DIR/config/main.pkl" > ~/.config/mise/config.toml
-    log_success "Configuration generated: ~/.config/mise/config.toml"
+if [ -f "$STABLE_DIR/config/mise.toml" ]; then
+    cp "$STABLE_DIR/config/mise.toml" ~/.config/mise/config.toml
+    log_success "Configuration installed: ~/.config/mise/config.toml"
 else
-    log_warn "Pkl not available or main.pkl not found - using default config"
+    log_warn "mise.toml not found - using default config"
 fi
 
 # ============================================================================

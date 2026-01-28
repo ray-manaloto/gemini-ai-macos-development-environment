@@ -8,24 +8,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # 1. Install Pkl (Mandatory for config generation)
-      - name: Install Pkl
+      - name: Setup dev-env symlink
         run: |
-          curl -sL https://github.com/apple/pkl/releases/latest/download/pkl-macos-aarch64 -o /usr/local/bin/pkl
-          chmod +x /usr/local/bin/pkl
+          mkdir -p ~/.config
+          ln -sfn $GITHUB_WORKSPACE ~/.config/dev-env
 
-      # 2. Validate Pkl Config Compiles
-      - name: Compile Pkl -> TOML
+      - name: Validate TOML syntax
         run: |
-          mkdir -p ~/.config/dev-env
-          cp -r . ~/.config/dev-env
-          pkl eval -f toml config/main.pkl > mise.toml
+          python3 -c "import tomllib; tomllib.load(open('config/mise.toml', 'rb'))"
+          echo "TOML syntax valid"
 
-      # 3. Install Mise and Validate
       - uses: jdx/mise-action@v2
         with:
-          config_file: mise.toml
+          config_file: config/mise.toml
 
-      # 4. Run Validation Script
-      - name: Run Validation
+      - name: Run Validation Script
         run: bash config/scripts/validate.sh

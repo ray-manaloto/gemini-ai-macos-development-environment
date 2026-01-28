@@ -81,28 +81,28 @@ setup() {
 # Key Content Checks
 # =============================================================================
 
-@test "main.pkl has bun configured" {
-  grep -q 'bun' config/main.pkl
+@test "mise.toml has bun configured" {
+  grep -q 'bun' config/mise.toml
 }
 
-@test "main.pkl has uv configured" {
-  grep -q 'uv' config/main.pkl
+@test "mise.toml has uv configured" {
+  grep -q 'uv' config/mise.toml
 }
 
-@test "main.pkl has pixi configured" {
-  grep -q 'pixi' config/main.pkl
+@test "mise.toml has pixi configured" {
+  grep -q 'pixi' config/mise.toml
 }
 
-@test "main.pkl has starship configured" {
-  grep -q 'starship' config/main.pkl
+@test "mise.toml has starship configured" {
+  grep -q 'starship' config/mise.toml
 }
 
-@test "main.pkl has chezmoi configured" {
-  grep -q 'chezmoi' config/main.pkl
+@test "mise.toml has chezmoi configured" {
+  grep -q 'chezmoi' config/mise.toml
 }
 
-@test "main.pkl has pitchfork configured" {
-  grep -q 'pitchfork' config/main.pkl
+@test "mise.toml has pitchfork configured" {
+  grep -q 'pitchfork' config/mise.toml
 }
 
 @test "setup.sh references mise" {
@@ -118,22 +118,22 @@ setup() {
 }
 
 # =============================================================================
-# Pkl Compilation (if pkl available)
+# Configuration Validation
 # =============================================================================
 
-@test "main.pkl is valid Pkl syntax" {
-  if ! command -v pkl &> /dev/null; then
-    skip "pkl not installed"
-  fi
-  run pkl eval config/main.pkl
+@test "mise.toml configuration exists" {
+  [ -f "config/mise.toml" ]
+}
+
+@test "mise.toml is valid TOML syntax" {
+  run python3 -c "import tomllib; tomllib.load(open('config/mise.toml', 'rb'))"
   [ "$status" -eq 0 ]
 }
 
-@test "main.pkl can generate TOML" {
-  if ! command -v pkl &> /dev/null; then
-    skip "pkl not installed"
-  fi
-  run pkl eval -f toml config/main.pkl
-  [ "$status" -eq 0 ]
-  [[ "$output" =~ "[tools]" ]]
+@test "mise.toml has tools section" {
+  grep -q '\[tools\]' config/mise.toml
+}
+
+@test "mise.toml has tasks section" {
+  grep -q '\[tasks' config/mise.toml
 }
