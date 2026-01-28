@@ -49,6 +49,10 @@
 8. **ALWAYS check mise doctor after issues** - `mise doctor`
 9. **PREFER existing patterns** - Check existing code first
 10. **ASK if uncertain about scope** - Don't assume
+11. **ALWAYS install CLI tools via mise** - Never `curl | sh`, `npm -g`, or direct downloads
+    - Install: `mise use -g <tool>@latest`
+    - Check: `mise which <tool>` should point to mise installs
+    - Fix: `mise run validate:tools` to detect shadows
 
 ---
 
@@ -277,6 +281,35 @@ mise use -g "cargo:<package>"  # Rust package
 | Testing | Deleting failing tests | Fix the code, not the tests |
 | Secrets | Committing .env, API keys | Use op://, infisical, or mise secrets |
 | Homebrew | `brew install` for CLI tools | mise manages CLI tools |
+
+---
+
+## TOOL INSTALLATION
+
+### How to Install CLI Tools
+
+| Method | Use For | Example |
+|--------|---------|---------|
+| `mise use -g <tool>` | CLI binaries | `mise use -g opencode@latest` |
+| `mise use -g "npm:<pkg>"` | npm packages | `mise use -g "npm:typescript"` |
+| `mise use -g "pipx:<pkg>"` | Python CLIs | `mise use -g "pipx:poetry"` |
+| `mise use -g "ubi:<repo>"` | GitHub releases | `mise use -g "ubi:charmbracelet/gum"` |
+
+### Common Mistakes (AI Agents: AVOID These)
+
+| Wrong Way | Why It's Bad | Right Way |
+|-----------|--------------|-----------|
+| `curl -fsSL ... \| sh` | Installs to ~/.local/bin, shadows mise | `mise use -g <tool>` |
+| `npm install -g <pkg>` | Bypasses mise, version conflicts | `mise use -g "npm:<pkg>"` |
+| `pip install <pkg>` | System Python pollution | `mise use -g "pipx:<pkg>"` |
+
+### Detecting Shadow Issues
+
+```bash
+mise run validate:tools    # Check for shadowing
+mise which <tool>          # Should show mise path
+which -a <tool>            # Shows all locations
+```
 
 ---
 

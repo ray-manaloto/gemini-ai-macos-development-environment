@@ -4,6 +4,30 @@ This file provides context and guidelines for AI assistants working with this re
 
 ---
 
+## FOR LLM AGENTS
+
+**Read first:** `@AGENTS.md` for comprehensive project knowledge base.
+
+| Quick Reference | |
+|-----------------|---|
+| **Project** | God-Tier macOS Development Environment |
+| **Hierarchy** | Mise > Bun > Pixi > Uv |
+| **Key Config** | `config/mise.toml` |
+| **Tests** | `bats tests/` (108 tests) |
+| **Validate** | `mise run validate` |
+
+**Critical Rules:**
+1. NEVER use sudo
+2. NEVER install globally with npm/pip - use mise
+3. ALWAYS use mise tasks
+4. ALWAYS run tests before committing
+
+**For full context, onboarding prompts, and agent-specific instructions, see:**
+- `AGENTS.md` - Complete knowledge base
+- `AI_ONBOARDING.md` - Copy-paste prompts for any LLM
+
+---
+
 ## Project Overview
 
 This is a **"God-Tier" macOS Development Environment** setup using a strict tool hierarchy:
@@ -298,6 +322,24 @@ mise trust
 pkl eval -f toml config/main.pkl > ~/.config/mise/config.toml
 mise install
 ```
+
+### "Tool shows wrong version"
+```bash
+# Check for shadowing issues
+mise run validate:tools
+
+# Fix shadows (dry-run first)
+mise run tools:fix-shadows
+
+# Apply fixes
+mise run tools:fix-shadows --force
+```
+
+| Issue | Cause | Solution |
+|-------|-------|----------|
+| Tool shows wrong version | Old binary in ~/.local/bin shadows mise | `mise run validate:tools` then `mise run tools:fix-shadows --force` |
+| `mise which <tool>` says "not active" | Tool not in mise.toml or not in current dir | `mise use -g <tool>@latest` |
+| Command not found after install | Shell needs refresh | `source ~/.zshrc` or restart terminal |
 
 ---
 
