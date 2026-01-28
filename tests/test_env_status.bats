@@ -97,3 +97,72 @@ setup() {
   [ "$status" -eq 0 ]
   [ "$duration" -lt 10 ]
 }
+
+# =============================================================================
+# Section Presence Tests (All 8 sections required per spec)
+# =============================================================================
+
+@test "env:status shows backend settings section" {
+  run mise run env:status
+  [ "$status" -eq 0 ]
+  [[ "$output" =~ "Backend Settings" ]]
+}
+
+@test "env:status shows backend settings content" {
+  run mise run env:status
+  [ "$status" -eq 0 ]
+  [[ "$output" =~ "npm.bun:" ]]
+  [[ "$output" =~ "npm.package_manager:" ]]
+  [[ "$output" =~ "python.uv_venv_auto:" ]]
+}
+
+@test "env:status shows daemons section" {
+  run mise run env:status
+  [ "$status" -eq 0 ]
+  [[ "$output" =~ "Daemons" ]] || [[ "$output" =~ "Pitchfork" ]]
+}
+
+@test "env:status shows cloud section" {
+  run mise run env:status
+  [ "$status" -eq 0 ]
+  [[ "$output" =~ "Cloud" ]] || [[ "$output" =~ "SkyPilot" ]]
+}
+
+@test "env:status shows AWS services section" {
+  run mise run env:status
+  [ "$status" -eq 0 ]
+  [[ "$output" =~ "AWS Services" ]]
+}
+
+# =============================================================================
+# Footer Tests
+# =============================================================================
+
+@test "env:status footer references agent:status" {
+  run mise run env:status
+  [ "$status" -eq 0 ]
+  [[ "$output" =~ "agent:status" ]]
+}
+
+@test "env:status footer references aws:status" {
+  run mise run env:status
+  [ "$status" -eq 0 ]
+  [[ "$output" =~ "aws:status" ]]
+}
+
+# =============================================================================
+# Comprehensive Section Check
+# =============================================================================
+
+@test "env:status has all 8 required sections" {
+  run mise run env:status
+  [ "$status" -eq 0 ]
+  [[ "$output" =~ "Environment Status" ]]
+  [[ "$output" =~ "Mise Status" ]]
+  [[ "$output" =~ "Backend Settings" ]]
+  [[ "$output" =~ "Installed Tools" ]]
+  [[ "$output" =~ "Daemons" ]]
+  [[ "$output" =~ "Health Check" ]]
+  [[ "$output" =~ "Cloud" ]]
+  [[ "$output" =~ "AWS Services" ]]
+}
