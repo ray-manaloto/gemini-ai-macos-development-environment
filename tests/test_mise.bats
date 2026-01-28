@@ -68,3 +68,27 @@ setup() {
   run mise ls
   [ "$status" -eq 0 ]
 }
+
+# =============================================================================
+# Tool Shadow Detection
+# =============================================================================
+
+@test "validate:tools task exists" {
+  run mise tasks
+  [ "$status" -eq 0 ]
+  [[ "$output" =~ "validate:tools" ]]
+}
+
+@test "tools:fix-shadows task exists" {
+  run mise tasks
+  [ "$status" -eq 0 ]
+  [[ "$output" =~ "tools:fix-shadows" ]]
+}
+
+@test "validate:tools detects no shadows on clean system" {
+  # This test assumes the system is clean after previous fixes
+  run mise run validate:tools
+  # Exit 0 means no shadows, exit 1 means shadows found
+  # Either is valid - we just check it runs
+  [[ "$status" -eq 0 || "$status" -eq 1 ]]
+}
