@@ -1,98 +1,96 @@
-amends "package://pkg.pkl-lang.org/pkl-pantry/pkl.toml@1.0.0#/output.pkl"
+@ModuleInfo { minPklVersion = "0.28.0" }
+module main
 
-// --- Tool Definitions ---
-local tools = new Mapping {
+import "pkl:toml"
+
+local tools: Mapping<String, String> = new {
   // Strict Hierarchy: Mise > Bun > Pixi > Uv
   // --- Core Runtimes ---
   ["bun"] = "latest"
   ["pixi"] = "latest"
   ["uv"] = "latest"
-  ["chezmoi"] = "latest"     // Self-managing dotfile manager
-  ["usage"] = "latest"       // AI-powered CLI completions
+  ["chezmoi"] = "latest"
+  ["usage"] = "latest"
 
   // --- Cloud & DevContainers ---
-  ["pipx:skypilot"] = "latest"   // Cloud Orchestrator (AWS Agents)
-  ["devpod"] = "latest"          // DevContainer Runner
+  ["pipx:skypilot"] = "latest"
+  ["devpod"] = "latest"
 
   // --- Modern Rust-Based Utilities ---
-  ["cargo:starship"] = "latest"  // Shell Prompt
-  ["cargo:ripgrep"] = "latest"   // grep replacement (fast search)
-  ["cargo:fd-find"] = "latest"   // find replacement (fast file search)
-  ["cargo:zoxide"] = "latest"    // cd replacement (smarter navigation)
-  ["cargo:ast-grep"] = "latest"  // Structural code search (AST-based)
+  ["cargo:starship"] = "latest"
+  ["cargo:ripgrep"] = "latest"
+  ["cargo:fd-find"] = "latest"
+  ["cargo:zoxide"] = "latest"
+  ["cargo:ast-grep"] = "latest"
 
   // --- AI-Assisted Code Search ---
-  ["uv:mgrep"] = "latest"        // Semantic code search for AI agents (2x fewer tokens)
+  ["uv:mgrep"] = "latest"
 
   // --- Infrastructure ---
-  ["brew:orbstack"] = "latest"   // Native Docker (<1% CPU)
-  ["brew:infisical"] = "latest"  // Secrets (Option B)
-  ["1password-cli"] = "latest"   // Secrets (Option A - Recommended)
+  ["brew:orbstack"] = "latest"
+  ["brew:infisical"] = "latest"
+  ["1password-cli"] = "latest"
 
   // --- GUI & Utilities ---
-  ["brew:swiftbar"] = "latest"   // Menu Bar Status
-  ["brew:zed"] = "latest"        // Editor (Rust-based, GPU-accelerated)
-  ["pitchfork"] = "latest"       // Development Daemon Manager (auto-start/stop services per project)
+  ["brew:swiftbar"] = "latest"
+  ["brew:zed"] = "latest"
+  ["pitchfork"] = "latest"
 
   // --- AI Agents & Tools ---
-  ["npm:@anthropic-ai/claude-code"] = "latest"  // Claude Code CLI
-  ["npm:opencode-ai"] = "latest"                // OpenCode Terminal Agent
-  ["npm:@google/gemini-cli"] = "latest"         // Gemini CLI (Official Google)
-  ["github-cli"] = "latest"                     // GitHub CLI + Copilot extension
+  ["npm:@anthropic-ai/claude-code"] = "latest"
+  ["npm:opencode-ai"] = "latest"
+  ["npm:@google/gemini-cli"] = "latest"
+  ["github-cli"] = "latest"
+}
+
+local tasks: Mapping<String, Dynamic> = new {
+  ["dashboard"] = new {
+    description = "Launch Unified TUI"
+    run = "cd ~/.config/dev-env && pixi run python config/scripts/dashboard.py"
+  }
+  ["validate"] = new {
+    description = "Validate environment health"
+    run = "sh ~/.config/dev-env/config/scripts/validate.sh"
+  }
+  ["help"] = new {
+    description = "Show System Manual"
+    run = "gum format --theme=pink < ~/.config/dev-env/MANUAL.md"
+  }
+  ["agent:up"] = new {
+    description = "Launch Cloud Agent"
+    run = "sky launch -c ai-agent ~/.config/dev-env/templates/agent.yaml --detach"
+  }
+  ["agent:down"] = new {
+    description = "Kill Cloud Agent"
+    run = "sky down ai-agent -y"
+  }
+  ["setup-extensions"] = new {
+    description = "Install AI extensions"
+    run = "gh extension install github/gh-copilot --force"
+  }
+  ["setup-mac"] = new {
+    description = "Configure macOS defaults"
+    run = "sh ~/.config/dev-env/config/scripts/macos-defaults.sh"
+  }
+  ["setup-mcp"] = new {
+    description = "Configure mise MCP"
+    run = "sh ~/.config/dev-env/config/scripts/setup-mcp.sh"
+  }
+}
+
+local config: Dynamic = new {
+  settings = new {
+    experimental = true
+    node_backend = "bun"
+    pip_backend = "uv"
+  }
+  tools = tools
+  tasks = tasks
+  env = new {
+    ["EDITOR"] = "zed --wait"
+  }
 }
 
 output {
-  renderer = new TomlRenderer {}
-  value = new {
-    settings = new {
-      experimental = true
-      node_backend = "bun"  // FORCE Mise to use Bun for npm packages
-      pip_backend = "uv"    // FORCE Mise to use uv for python tools
-    }
-    tools = tools
-
-    // --- Automation Tasks (The CLI) ---
-    tasks = new {
-      ["dashboard"] = new {
-        description = "🖥️ Launch Unified TUI"
-        run = "pixi run python ~/.config/dev-env/config/scripts/dashboard.py"
-      }
-      ["validate"] = new {
-        description = "🔍 Validate environment health"
-        run = "sh ~/.config/dev-env/config/scripts/validate.sh"
-      }
-      ["help"] = new {
-        description = "📖 Show System Manual"
-        run = "gum format --theme=pink < ~/.config/dev-env/MANUAL.md"
-      }
-      ["agent:up"] = new {
-        description = "☁️ Launch Cloud Agent"
-        run = "sky launch -c ai-agent ~/.config/dev-env/templates/agent.yaml --detach"
-      }
-      ["agent:down"] = new {
-        description = "🔴 Kill Cloud Agent"
-        run = "sky down ai-agent -y"
-      }
-      ["setup-extensions"] = new {
-        description = "🔌 Install AI extensions that aren't binary packages"
-        run = "gh extension install github/gh-copilot --force"
-      }
-      ["setup-mac"] = new {
-        description = "🍎 Configure macOS defaults (optional)"
-        run = "sh ~/.config/dev-env/config/scripts/macos-defaults.sh"
-      }
-      ["setup-mcp"] = new {
-        description = "🔌 Configure mise MCP for Claude Desktop/Code"
-        run = "sh ~/.config/dev-env/config/scripts/setup-mcp.sh"
-      }
-    }
-
-    // Global Env Vars
-    // Note: For 1Password integration, use op:// URIs like:
-    // ANTHROPIC_API_KEY = "op://Private/Anthropic/credential"
-    env = new {
-      ["EDITOR"] = "zed --wait"
-      ["AWS_PROFILE"] = "dev-account"
-    }
-  }
+  text = toml.Renderer.renderDocument(config)
 }
