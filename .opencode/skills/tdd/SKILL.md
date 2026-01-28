@@ -1,6 +1,12 @@
 ---
 name: tdd
 description: "Non-interactive TDD workflow command. Red-green-refactor cycle without prompts or questions. Capabilities: test framework auto-detection, failing test creation, minimal implementation, iterative refinement. Actions: tdd, test-driven, red-green-refactor, write tests first. Keywords: tdd, test-driven development, red-green-refactor, failing test, test first, bats, jest, vitest, pytest, non-interactive, continuous stream. Use when: implementing features test-first, writing failing tests, doing TDD workflow. CRITICAL: This is a NON-INTERACTIVE command - never ask questions, always use defaults and log assumptions."
+license: MIT
+compatibility: Works with any codebase
+metadata:
+  author: gemini-ai-macos-dev
+  version: "1.0"
+  mode: non-interactive
 ---
 
 # /tdd - Non-Interactive Test-Driven Development

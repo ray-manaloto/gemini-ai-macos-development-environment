@@ -1,6 +1,12 @@
 ---
 name: analyze
 description: "Non-interactive code analysis command. Outputs as continuous stream without prompts or questions. Capabilities: structure analysis, dependency mapping, pattern detection, code smell identification, issue detection. Actions: analyze, inspect, examine, scan, review code structure. Keywords: analyze, code analysis, structure, dependencies, patterns, issues, static analysis, code review, inspect, examine, continuous stream, non-interactive. Use when: analyzing code structure, finding dependencies, detecting patterns, identifying issues, reviewing code quality. CRITICAL: This is a NON-INTERACTIVE command - never ask questions, always use defaults and log assumptions."
+license: MIT
+compatibility: Works with any codebase
+metadata:
+  author: gemini-ai-macos-dev
+  version: "1.0"
+  mode: non-interactive
 ---
 
 # /analyze - Non-Interactive Code Analysis

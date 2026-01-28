@@ -1,6 +1,12 @@
 ---
 name: investigate
 description: "Non-interactive issue investigation command. Outputs as continuous stream without prompts or questions. Capabilities: root cause analysis, error tracing, bug hunting, evidence gathering, git history analysis. Actions: investigate, trace, debug, hunt, find root cause. Keywords: investigate, root cause, error, bug, trace, debug, issue, problem, evidence, git history, non-interactive, continuous stream. Use when: investigating bugs, tracing errors, finding root causes, debugging issues, analyzing problems. CRITICAL: This is a NON-INTERACTIVE command - never ask questions, always use defaults and log assumptions."
+license: MIT
+compatibility: Works with any codebase
+metadata:
+  author: gemini-ai-macos-dev
+  version: "1.0"
+  mode: non-interactive
 ---
 
 # /investigate - Non-Interactive Issue Investigation
