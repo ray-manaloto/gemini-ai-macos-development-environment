@@ -1,0 +1,30 @@
+name: Gemini AI Review
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+concurrency:
+  group: gemini-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  gemini:
+    name: Gemini Review
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Gemini Code Review
+        uses: petarzarkov/gemini-code-review-action@main
+        with:
+          gemini-api-key: ${{ secrets.GEMINI_API_KEY }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
