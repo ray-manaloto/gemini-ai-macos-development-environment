@@ -13,7 +13,7 @@ This file provides context and guidelines for AI assistants working with this re
 | **Project** | God-Tier macOS Development Environment |
 | **Hierarchy** | Mise > Bun > Pixi > Uv |
 | **Key Config** | `config/mise.toml` |
-| **Tests** | `bats tests/` (108 tests) |
+| **Tests** | `bats tests/` (254 tests) |
 | **Validate** | `mise run validate` |
 
 **Critical Rules:**

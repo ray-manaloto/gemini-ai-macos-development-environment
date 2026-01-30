@@ -24,7 +24,7 @@
 | Understand project philosophy | CLAUDE.md | Tool hierarchy, patterns, troubleshooting |
 | Install everything | setup.sh | Run once, handles all tools |
 | Add/modify tools | config/mise.toml | Tools, tasks, settings |
-| Run tests | tests/*.bats | 159 BATS tests, `bats tests/` |
+| Run tests | tests/*.bats | 254 BATS tests, `bats tests/` |
 | Validate environment | `mise run validate` | Health check script |
 | Configure dotfiles | config/chezmoi/ | Templates for .zshrc, .gitconfig |
 | Configure shell prompt | config/starship.toml | Starship prompt modules |
@@ -88,7 +88,7 @@ gemini-ai-macos-development-environment/
 │       ├── dashboard.py       # TUI dashboard (requires pixi)
 │       ├── macos-defaults.sh  # macOS system defaults
 │       └── setup-mcp.sh       # MCP configuration
-├── tests/                     # BATS test suite (159 tests)
+├── tests/                     # BATS test suite (254 tests)
 │   ├── test_mise.bats         # Mise installation, backends
 │   ├── test_tools.bats        # CLI tool availability
 │   ├── test_chezmoi.bats      # Dotfile template validation
@@ -231,7 +231,7 @@ Fast pip replacement:
 ### Testing
 
 ```bash
-bats tests/                    # Run all 159 tests
+bats tests/                    # Run all 254 tests
 bats tests/test_mise.bats      # Run specific test file
 mise run validate              # Quick health check
 mise doctor                    # Mise diagnostics
@@ -315,7 +315,7 @@ which -a <tool>            # Shows all locations
 
 ## TESTING
 
-### Test Files (159 tests total)
+### Test Files (254 tests total)
 
 | File | Coverage |
 |------|----------|
@@ -327,6 +327,9 @@ which -a <tool>            # Shows all locations
 | test_ide_configs.bats | VS Code, Zed, DevContainer, uninstall.sh |
 | test_skypilot.bats | SkyPilot, AWS configuration, agent tasks |
 | test_unified_setup.bats | Platform tasks, config_root, DevContainer |
+| test_env_status.bats | env:status task output validation |
+| test_noninteractive_skills.bats | OpenCode skill validation |
+| test_setup.bats | Bootstrap script validation, spec compliance |
 
 ### Running Tests
 

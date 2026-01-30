@@ -29,6 +29,50 @@ echo "╚═══════════════════════�
 echo ""
 
 # ============================================================================
+# STEP 0: Prerequisites Validation
+# ============================================================================
+log_step "Validating prerequisites..."
+
+# Check macOS version (require 13.0+ / Ventura)
+MACOS_VERSION=$(sw_vers -productVersion 2>/dev/null || echo "0.0")
+MACOS_MAJOR=$(echo "$MACOS_VERSION" | cut -d. -f1)
+
+if [ "$MACOS_MAJOR" -lt 13 ] 2>/dev/null; then
+    log_error "macOS 13.0 (Ventura) or later is required. Found: $MACOS_VERSION"
+    log_info "Please upgrade your macOS before running this setup."
+    exit 1
+fi
+log_success "macOS version: $MACOS_VERSION"
+
+# Check Xcode Command Line Tools
+if ! xcode-select -p &> /dev/null; then
+    log_error "Xcode Command Line Tools are required but not installed."
+    log_info "Please run: xcode-select --install"
+    log_info "Then re-run this setup script."
+    exit 1
+fi
+log_success "Xcode CLI Tools: $(xcode-select -p)"
+
+# Check disk space (warn if less than 10GB free)
+FREE_SPACE_KB=$(df -k "$HOME" | tail -1 | awk '{print $4}')
+FREE_SPACE_GB=$((FREE_SPACE_KB / 1024 / 1024))
+
+if [ "$FREE_SPACE_GB" -lt 10 ]; then
+    log_warn "Low disk space: ${FREE_SPACE_GB}GB free (10GB+ recommended)"
+else
+    log_success "Disk space: ${FREE_SPACE_GB}GB free"
+fi
+
+# Check for curl (should always be present, but verify)
+if ! command -v curl &> /dev/null; then
+    log_error "curl is required but not found."
+    log_info "This should be included with macOS. Please check your system."
+    exit 1
+fi
+
+log_success "All prerequisites validated"
+
+# ============================================================================
 # STEP 1: Install Mise (The Orchestrator)
 # ============================================================================
 log_step "Installing Mise (Tool Version Manager)..."

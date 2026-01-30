@@ -62,16 +62,20 @@ bats tests/test_starship.bats
 bats tests/test_integration.bats
 ```
 
-### Test Coverage (108 tests total)
+### Test Coverage (254 tests total)
 | Test File | Coverage | Tests |
 |-----------|----------|-------|
-| `test_mise.bats` | Mise installation, backends, tasks | 7 |
-| `test_tools.bats` | All CLI tool availability | 15 |
+| `test_mise.bats` | Mise installation, backends, tasks | 12 |
+| `test_tools.bats` | All CLI tool availability | 13 |
 | `test_chezmoi.bats` | Template validation | 8 |
-| `test_starship.bats` | Prompt configuration | 9 |
+| `test_starship.bats` | Prompt configuration | 10 |
 | `test_integration.bats` | End-to-end project structure | 25 |
 | `test_ide_configs.bats` | VS Code, Zed, DevContainer, uninstall | 31 |
-| `test_skypilot.bats` | SkyPilot, AWS, agent tasks | 14 |
+| `test_skypilot.bats` | SkyPilot, AWS, agent tasks | 43 |
+| `test_unified_setup.bats` | Platform tasks, config_root, DevContainer | 22 |
+| `test_env_status.bats` | env:status task output validation | 18 |
+| `test_noninteractive_skills.bats` | OpenCode skill validation | 25 |
+| `test_setup.bats` | Bootstrap script validation | 47 |
 
 ### Health Check
 ```bash
@@ -92,7 +96,7 @@ ok 2 mise doctor reports no critical issues
 ...
 ok 108 starship can render prompt
 
-108 tests, 0 failures
+254 tests, 0 failures
 ```
 
 ---
