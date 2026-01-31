@@ -4,28 +4,371 @@
 
 This project provides a complete development environment setup for macOS with AI-first tooling, modern CLI utilities, and reproducible configuration via Pkl/TOML.
 
+---
+
 ## Quick Start
 
+### Essential Documentation
 - [README](https://raw.githubusercontent.com/ray-manaloto/gemini-ai-macos-development-environment/main/README.md): Setup guide with architecture overview
+- [ARCHITECTURE](https://raw.githubusercontent.com/ray-manaloto/gemini-ai-macos-development-environment/main/ARCHITECTURE.md): System architecture, C4 diagrams, design decisions
 - [CLAUDE.md](https://raw.githubusercontent.com/ray-manaloto/gemini-ai-macos-development-environment/main/CLAUDE.md): AI assistant context and development patterns
 - [AGENTS.md](https://raw.githubusercontent.com/ray-manaloto/gemini-ai-macos-development-environment/main/AGENTS.md): Project knowledge base for AI agents
 
+### Installation
+```bash
+cd ~/dev/github/ray-manaloto/gemini-ai-macos-development-environment
+./setup.sh
+```
+
+---
+
+## API Reference - Mise Tasks
+
+All commands use `mise run <task>` format. Run `mise tasks` to list all available tasks.
+
+### Environment Management
+- **mise run validate**: Validate environment health (runs config/scripts/validate.sh)
+- **mise run dashboard**: Launch unified TUI manager (requires pixi)
+- **mise run help**: Show system manual (MANUAL.md in pager)
+- **mise run lint**: Lint shell scripts with shellcheck
+
+### Tool Management
+- **mise run tools:status**: Show all tools and settings
+- **mise run tools:install**: Install all configured tools
+- **mise run tools:update**: Update all tools to latest versions
+- **mise run tools:uninstall -- <tool>**: Uninstall specific tool
+- **mise run tools:reinstall -- <tool>**: Reinstall specific tool
+- **mise run tools:doctor**: Full environment health check
+
+### Cloud Agents (SkyPilot)
+- **mise run agent:check**: Verify AWS/cloud credentials are configured
+- **mise run agent:up**: Launch cloud agent on AWS (CLUSTER=name to customize)
+- **mise run agent:down**: Terminate cloud agent (CLUSTER=name or -- name)
+- **mise run agent:status**: Show cloud agent status (CLUSTER=name for specific agent)
+- **mise run agent:stop**: Stop cloud agent (Note: Spot instances cannot be stopped)
+- **mise run agent:start**: Start stopped cloud agent (Note: Spot instances cannot be stopped/restarted)
+- **mise run agent:restart**: Restart cloud agent (Note: Spot instances cannot be stopped)
+- **mise run agent:ssh**: SSH into cloud agent
+- **mise run agent:logs**: View cloud agent logs
+- **mise run agent:exec**: Execute command on agent
+
+### macOS Setup
+- **mise run setup-mac**: Configure macOS system defaults
+- **mise run setup-mcp**: Configure mise MCP for Claude Desktop
+- **mise run setup-extensions**: Install GitHub Copilot extension
+- **mise run setup:auto**: Auto-detect platform, run appropriate setup
+- **mise run setup:macos**: macOS-specific setup
+- **mise run setup:container**: Container/DevPod setup
+- **mise run setup:linux**: Linux (non-container) setup
+
+### Validation
+- **mise run validate:rules**: Check for anti-patterns and rule violations
+- **mise run validate:tools**: Check for tool shadowing issues
+
+### Environment Status
+- **mise run env:status**: Show comprehensive environment status
+
+---
+
 ## Configuration
 
-- [mise.toml](https://raw.githubusercontent.com/ray-manaloto/gemini-ai-macos-development-environment/main/config/mise.toml): Mise tool configuration (tools, tasks, settings)
+### Core Configuration Files
+- [mise.toml](https://raw.githubusercontent.com/ray-manaloto/gemini-ai-macos-development-environment/main/config/mise.toml): Mise tool configuration (tools, tasks, settings) - **SOURCE OF TRUTH**
+- [main.pkl](https://raw.githubusercontent.com/ray-manaloto/gemini-ai-macos-development-environment/main/config/main.pkl): Pkl configuration source (generates mise.toml)
 - [starship.toml](https://raw.githubusercontent.com/ray-manaloto/gemini-ai-macos-development-environment/main/config/starship.toml): Shell prompt configuration
 - [pixi.toml](https://raw.githubusercontent.com/ray-manaloto/gemini-ai-macos-development-environment/main/pixi.toml): Conda-forge dependencies
+- [.mcp.json](https://raw.githubusercontent.com/ray-manaloto/gemini-ai-macos-development-environment/main/.mcp.json): MCP server configuration
+
+### Dotfile Templates
+- config/chezmoi/dot_zshrc.tmpl: Zsh configuration template
+- config/chezmoi/dot_gitconfig.tmpl: Git configuration template
+- config/chezmoi/.chezmoi.toml.tmpl: Chezmoi configuration
+
+---
+
+## Tool Hierarchy
+
+### Level 1: Mise (Orchestrator)
+**Purpose**: Global tool version manager & orchestrator  
+**Install**: `curl https://mise.run | sh`  
+**Config**: `~/.config/mise/config.toml`
+
+### Level 2: Bun (JavaScript/TypeScript)
+**Purpose**: JavaScript runtime (replaces Node.js/npm)  
+**Install**: `mise use -g bun`  
+**Speed**: 3x faster package installation than npm
+
+### Level 3: Pixi (Binary Packages)
+**Purpose**: Conda-forge packages & binary isolation  
+**Install**: `mise use -g pixi`  
+**Ecosystem**: 20,000+ packages from conda-forge
+
+### Level 4: Uv (Python Packages)
+**Purpose**: Fast Python package manager (10x faster than pip)  
+**Install**: `mise use -g uv`  
+**Speed**: 10x faster package resolution
+
+---
+
+## Tool Catalog
+
+### Core Runtimes
+- **bun**: JavaScript/TypeScript runtime (replaces Node.js)
+- **pixi**: Conda-forge package manager
+- **uv**: Fast Python package manager
+- **node**: Node.js runtime (managed by mise)
+- **usage**: CLI usage documentation generator
+- **pkl**: Type-safe configuration language
+- **pitchfork**: Development daemon manager
+
+### Modern CLI Utilities
+- **starship**: Cross-shell prompt
+- **ripgrep**: Fast grep alternative (rg)
+- **fd**: Fast find alternative
+- **zoxide**: Smart cd command (z)
+- **ast-grep**: AST-based code search (sg)
+- **mgrep**: AI-assisted code search
+- **bat**: Cat with syntax highlighting
+- **eza**: Modern ls replacement
+- **fzf**: Fuzzy finder
+- **jq**: JSON processor
+- **yq**: YAML processor
+- **delta**: Git diff viewer
+
+### Infrastructure & Cloud
+- **1password-cli**: 1Password CLI (op)
+- **github-cli**: GitHub CLI (gh)
+- **skypilot**: Cloud orchestration (sky)
+- **orbstack**: Docker/Linux on macOS
+
+### AI Agents
+- **@google/gemini-cli**: Gemini CLI
+- **@ralph-orchestrator/ralph-cli**: Ralph orchestrator
+- **claude-code**: Claude Code CLI
+- **opencode-ai**: OpenCode AI CLI
+
+### Development Tools
+- **chezmoi**: Dotfile manager
+- **gum**: Shell script UI components
+- **bats**: Bash testing framework
+- **shellcheck**: Shell script linter
+
+---
 
 ## Specifications
 
+### Tool Management
 - [Tool Management Spec](https://raw.githubusercontent.com/ray-manaloto/gemini-ai-macos-development-environment/main/openspec/specs/tool-management/spec.md): Requirements for Mise, Bun, Pixi, Uv with Gherkin scenarios
+
+---
 
 ## Project Planning
 
 - [PROJECT_PLAN.md](https://raw.githubusercontent.com/ray-manaloto/gemini-ai-macos-development-environment/main/PROJECT_PLAN.md): Agile project plan with sprint status and user stories
 
-## Optional
+---
 
+## Research & Deep Dives
+
+### Mise Ecosystem
 - [ChatGPT Deep Research](https://raw.githubusercontent.com/ray-manaloto/gemini-ai-macos-development-environment/main/research/CHATGPT_DEEP_RESEARCH.md): Comprehensive mise ecosystem research
+- [Deep Research Findings](https://raw.githubusercontent.com/ray-manaloto/gemini-ai-macos-development-environment/main/research/DEEP_RESEARCH_FINDINGS.md): YouTube/NotebookLM findings
 - [Gaps Analysis](https://raw.githubusercontent.com/ray-manaloto/gemini-ai-macos-development-environment/main/research/GAPS_ANALYSIS.md): Gap analysis with priorities
+
+### MCP Integration
 - [MCP Setup](https://raw.githubusercontent.com/ray-manaloto/gemini-ai-macos-development-environment/main/research/MISE_MCP_SETUP.md): Model Context Protocol integration guide
+
+### Additional Research
+- research/BATS_TESTING_GUIDE.md: BATS testing framework guide
+- research/BUN_INTEGRATION.md: Bun integration patterns
+- research/CHEZMOI_SETUP.md: Chezmoi dotfile management
+- research/PIXI_INTEGRATION.md: Pixi package management
+- research/PKL_CONFIG.md: Pkl configuration language
+- research/STARSHIP_CUSTOMIZATION.md: Starship prompt customization
+- research/UV_PYTHON.md: Uv Python package management
+
+---
+
+## Secrets Management
+
+- [SECRETS.md](https://raw.githubusercontent.com/ray-manaloto/gemini-ai-macos-development-environment/main/SECRETS.md): Secrets management guide (1Password, Infisical, mise secrets)
+- [.env.example](https://raw.githubusercontent.com/ray-manaloto/gemini-ai-macos-development-environment/main/.env.example): Environment variables template
+
+---
+
+## Migration Guides
+
+- [MIGRATION.md](https://raw.githubusercontent.com/ray-manaloto/gemini-ai-macos-development-environment/main/MIGRATION.md): Migration from nvm, pyenv, asdf to mise
+
+---
+
+## Cloud Agents
+
+- [SKYPILOT.md](https://raw.githubusercontent.com/ray-manaloto/gemini-ai-macos-development-environment/main/SKYPILOT.md): SkyPilot cloud agent documentation
+- [templates/agent.yaml](https://raw.githubusercontent.com/ray-manaloto/gemini-ai-macos-development-environment/main/templates/agent.yaml): SkyPilot AWS agent template
+
+---
+
+## Testing
+
+### Test Suite (254 tests)
+- tests/test_mise.bats: Mise installation, backends, tasks
+- tests/test_tools.bats: CLI tool availability
+- tests/test_chezmoi.bats: Dotfile template validation
+- tests/test_starship.bats: Prompt configuration
+- tests/test_integration.bats: End-to-end project structure
+- tests/test_ide_configs.bats: IDE/editor configuration tests
+- tests/test_skypilot.bats: SkyPilot cloud agent tests
+- tests/test_unified_setup.bats: Platform tasks, config_root, DevContainer
+- tests/test_env_status.bats: env:status task output validation
+- tests/test_noninteractive_skills.bats: Claude Code skill validation
+- tests/test_setup.bats: Bootstrap script validation, spec compliance
+
+### Running Tests
+```bash
+# Run all tests
+bats tests/
+
+# Run specific test file
+bats tests/test_mise.bats
+
+# Quick validation
+mise run validate
+```
+
+---
+
+## AI Agent Integration
+
+### Available Agents (27 total)
+
+#### External Agents (.claude/agents-external/)
+- **system-architect**: Scalable system architecture design
+- **integration-tester**: BDD integration testing specialist
+- **database-architect**: Database schema design and optimization
+- **accessibility-auditor**: WCAG 2.1 accessibility compliance
+- **code-reviewer**: Code review and quality assurance
+- **refactoring-expert**: Code refactoring and modernization
+- **quality-engineer**: Quality assurance and testing strategy
+- **security-engineer**: Security auditing and hardening
+- **python-expert**: Python development specialist
+- **database-admin**: Database administration and optimization
+- **researcher**: Research and analysis
+- **planner**: Project planning and task breakdown
+- **requirements-analyst**: Requirements gathering and analysis
+- **brainstormer**: Creative ideation and problem-solving
+- **scout**: Technology scouting and evaluation
+- **docs-manager**: Documentation management
+- **copywriter**: Technical writing and content creation
+- **journal-writer**: Development journal and notes
+- **tester**: Testing strategy and implementation
+- **debugger**: Debugging and troubleshooting
+- **ui-ux-designer**: UI/UX design and prototyping
+- **project-manager**: Project management and coordination
+- **learning-guide**: Learning path and tutorial creation
+- **mcp-manager**: MCP server management
+
+### OpenSpec Workflow Commands
+
+Each platform has 10 commands for the OpenSpec workflow:
+
+| Command | Purpose |
+|---------|---------|
+| explore | Think and investigate without making changes |
+| new | Create a new OpenSpec change |
+| ff | Fast-forward to tasks (skip proposal/design) |
+| apply | Apply change to codebase |
+| continue | Continue working on existing change |
+| verify | Verify change completeness |
+| archive | Archive completed change |
+| bulk-archive | Archive multiple changes |
+| sync | Sync specs with changes |
+| onboard | Onboard new OpenSpec project |
+
+---
+
+## IDE/Editor Configuration
+
+### VS Code
+- .vscode/settings.json: Workspace settings
+- .vscode/extensions.json: Recommended extensions
+
+### Zed
+- .zed/settings.json: Zed editor settings
+
+### Cursor
+- .cursor/: Cursor AI configuration
+
+### DevContainer
+- .devcontainer/: DevContainer for DevPod/Codespaces
+
+---
+
+## Uninstallation
+
+- [uninstall.sh](https://raw.githubusercontent.com/ray-manaloto/gemini-ai-macos-development-environment/main/uninstall.sh): Interactive uninstall script with --dry-run and --force options
+
+---
+
+## Critical Rules (NEVER BREAK)
+
+1. **NEVER use sudo** - Everything is user-space
+2. **NEVER install globally with npm/pip** - Use mise (`mise use -g`)
+3. **NEVER modify system Python/Node** - Mise manages versions
+4. **NEVER commit secrets** - Use op://, infisical, or mise secrets
+5. **NEVER suppress type errors** - No `as any`, `@ts-ignore`
+6. **ALWAYS use mise tasks** - Not raw commands (`mise run validate`)
+7. **ALWAYS run tests before committing** - `bats tests/`
+8. **ALWAYS check mise doctor after issues** - `mise doctor`
+9. **PREFER existing patterns** - Check existing code first
+10. **ASK if uncertain about scope** - Don't assume
+11. **ALWAYS install CLI tools via mise** - Never `curl | sh`, `npm -g`, or direct downloads
+
+---
+
+## Common Commands
+
+```bash
+# Environment health
+mise doctor
+mise run validate
+mise run tools:status
+
+# Tool management
+mise use -g <tool>              # Install tool globally
+mise use -g "npm:<package>"     # Install npm package via Bun
+mise use -g "pipx:<package>"    # Install Python CLI via Uv
+mise which <tool>               # Show tool path
+
+# Testing
+bats tests/                     # Run all tests
+mise run lint                   # Lint shell scripts
+
+# Cloud agents
+mise run agent:up               # Launch AWS agent
+mise run agent:status           # Check agent status
+mise run agent:down             # Terminate agent
+
+# Updates
+mise run tools:update           # Update all tools
+mise upgrade                    # Update mise itself
+```
+
+---
+
+## External Resources
+
+- [Mise Documentation](https://mise.jdx.dev/)
+- [Bun Documentation](https://bun.sh/)
+- [Uv Documentation](https://docs.astral.sh/uv/)
+- [Pixi Documentation](https://pixi.sh/)
+- [Pkl Documentation](https://pkl-lang.org/)
+- [SkyPilot Documentation](https://skypilot.readthedocs.io/)
+- [Chezmoi Documentation](https://www.chezmoi.io/)
+- [Starship Documentation](https://starship.rs/)
+
+---
+
+**Last Updated**: 2026-01-31  
+**Version**: 2.0  
+**Maintainer**: Ray Manaloto
