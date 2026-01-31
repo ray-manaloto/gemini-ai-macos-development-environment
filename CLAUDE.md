@@ -62,6 +62,120 @@ The entire stack lives in user-space (`~/.local`) with **zero system modificatio
 
 ---
 
+## Mise: The Orchestrator
+
+**Mise is the foundation of this environment.** All tools, versions, and tasks are managed through Mise.
+
+### What Mise Does
+
+1. **Tool Version Management** - Manages 20+ tools (bun, node, python, go, rust, etc.)
+2. **Auto-Activation** - Automatically activates tools when you `cd` into directories
+3. **Task Runner** - Provides 35+ custom tasks (`mise run <task>`)
+4. **Environment Management** - Sets environment variables per directory
+5. **MCP Integration** - Exposes tool state to AI assistants via Model Context Protocol
+
+### Auto-Activation Behavior
+
+**When you `cd` into this project:**
+```bash
+cd ~/dev/github/ray-manaloto/gemini-ai-macos-development-environment
+```
+
+Mise automatically:
+1. Detects `config/mise.toml`
+2. Activates tool versions (bun@1.3.8, node@25.5.0, python@3.14.2)
+3. Prepends tool paths to PATH
+4. Sets environment variables from `[env]` section
+5. Runs hooks (if defined)
+
+**When you `cd` out:**
+```bash
+cd ~
+```
+
+Mise automatically:
+1. Removes tool paths from PATH
+2. Restores original environment
+3. Deactivates project-specific tools
+
+### Querying Mise State
+
+| Command | Purpose | Example Output |
+|---------|---------|----------------|
+| `mise ls` | List installed tools | `bun 1.3.8`, `node 25.5.0` |
+| `mise current` | Show active versions | Shows versions in current directory |
+| `mise which <tool>` | Show tool path | `~/.local/share/mise/installs/bun/1.3.8/bin/bun` |
+| `mise env` | Show environment | All env vars set by Mise |
+| `mise doctor` | Check health | Comprehensive diagnostics |
+| `mise tasks ls` | List tasks | 35+ available tasks |
+
+### Configuration
+
+**Source of Truth**: `config/mise.toml` (957 lines)
+
+**Key Settings**:
+```toml
+[settings]
+experimental = true              # Required for MCP
+not_found_auto_install = true   # Auto-install missing tools
+
+[settings.npm]
+package_manager = "npm"          # npm backend uses npm (NOT Bun)
+
+[settings.python]
+uv_venv_auto = true             # Auto-create uv venvs
+
+[tools]
+bun = "latest"                  # JavaScript runtime
+node = "latest"                 # Node.js runtime
+python = "latest"               # Python runtime
+# ... 20+ more tools
+
+[tasks."task-name"]
+description = "Description"
+run = "#!/bin/bash\n# Task script"
+```
+
+### Important: npm vs Bun
+
+**Configuration is CORRECT**:
+- `npm.package_manager = "npm"` - npm backend uses npm to install npm packages as tools
+- `bun = "latest"` - Bun is installed as a JavaScript runtime
+- When you run `bun install` in projects, you're using Bun directly
+- When Mise installs npm packages as tools (e.g., `npm:gemini-cli`), it uses npm
+
+This is the recommended configuration for maximum compatibility.
+
+### For AI Agents
+
+**Before suggesting tool installations, check Mise state:**
+```bash
+mise ls | grep <tool>
+```
+
+**Use Mise tasks instead of raw commands:**
+```bash
+# Good
+mise run validate
+
+# Bad
+python config/scripts/validate.sh
+```
+
+**Respect tool hierarchy:**
+```bash
+# Good
+mise use -g npm:typescript
+
+# Bad
+npm install -g typescript
+```
+
+**For comprehensive AI/LLM integration guide, see:**
+`.sisyphus/drafts/mise-ai-integration.md` (complete guide with examples)
+
+---
+
 ## Key Files
 
 | File | Purpose |

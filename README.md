@@ -17,6 +17,23 @@ Mise > Bun > Pixi > Uv
 | 3 | **Pixi** | Conda-forge packages & binary isolation |
 | 4 | **Uv** | Fast Python package manager (10x faster than pip) |
 
+## For AI Agents
+
+This project is optimized for AI/LLM agents. See:
+- **[AGENTS.md](AGENTS.md)** - Complete project knowledge base (start here)
+- **[llms.txt](llms.txt)** - Documentation index (llmstxt.org standard)
+- **[CLAUDE.md](CLAUDE.md)** - AI assistant context and patterns
+
+### Quick Start for AI
+1. Read [AGENTS.md](AGENTS.md) for project structure and critical rules
+2. Check [llms.txt](llms.txt) for documentation links
+3. Use `mise run validate` to verify environment health
+
+### Key Facts
+- **Tool Hierarchy**: Mise > Bun > Pixi > Uv
+- **Critical Rule**: NEVER use sudo, NEVER install globally with npm/pip
+- **All tools managed via**: `mise use -g <tool>`
+
 ## Quick Start
 
 ### 1. Clone and Run Setup
