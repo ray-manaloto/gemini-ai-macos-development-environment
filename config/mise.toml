@@ -61,6 +61,10 @@ run = "pixi run python config/scripts/dashboard.py"
 description = "Validate environment health"
 run = "sh {{config_root}}/config/scripts/validate.sh"
 
+[tasks.lint]
+description = "Lint shell scripts with shellcheck"
+run = "find . -name '*.sh' -not -path '*/node_modules/*' -not -path '*/.git/*' -not -path '*/.pixi/*' -exec shellcheck {} +"
+
 [tasks.help]
 description = "Show System Manual"
 run = "gum format --theme=pink < {{config_root}}/MANUAL.md"
