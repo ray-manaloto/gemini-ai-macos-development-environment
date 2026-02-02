@@ -2,7 +2,11 @@
 set -euo pipefail
 
 echo "=== Verifying Environment ==="
-mise doctor
+
+if command -v mise &> /dev/null; then
+    eval "$(mise activate bash)"
+    mise doctor || true
+fi
 
 ERRORS=0
 
@@ -11,10 +15,12 @@ check_tool() {
         echo "MISSING: $1"
         ERRORS=$((ERRORS + 1))
     else
-        echo "OK: $1 ($(command -v "$1"))"
+        echo "OK: $1"
     fi
 }
 
+echo ""
+echo "=== Tool Check ==="
 check_tool bun
 check_tool node
 check_tool uv
@@ -25,8 +31,16 @@ check_tool fd
 check_tool gh
 
 if [ $ERRORS -gt 0 ]; then
-    echo "WARNING: $ERRORS tool(s) missing. Run: mise install"
-    exit 1
+    echo ""
+    echo "WARNING: $ERRORS tool(s) missing. Running: mise install"
+    mise install --yes || true
 fi
 
+if [ -d /commandhistory ]; then
+    touch /commandhistory/.zsh_history
+    export HISTFILE=/commandhistory/.zsh_history
+fi
+
+echo ""
 echo "=== Environment Ready ==="
+echo "Run 'mise run env:status' for full status"

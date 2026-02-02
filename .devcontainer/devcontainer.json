@@ -1,31 +1,17 @@
 {
-  // ==========================================================================
-  // God-Tier macOS Development Environment - DevContainer Configuration
-  // For use with DevPod, VS Code Remote Containers, or GitHub Codespaces
-  // Uses mise DevContainer feature for automatic tool installation
-  // ==========================================================================
-  
   "name": "God-Tier Dev Environment",
   "image": "mcr.microsoft.com/devcontainers/base:ubuntu-22.04",
   
-  // Features to install
   "features": {
-    // Mise - reads config/mise.toml automatically
     "ghcr.io/devcontainers-extra/features/mise:1": {
       "version": "latest",
       "installTools": true
     },
-    
-    // Git with latest version
     "ghcr.io/devcontainers/features/git:1": {
       "version": "latest",
       "ppa": true
     },
-    
-    // GitHub CLI
     "ghcr.io/devcontainers/features/github-cli:1": {},
-    
-    // Common utilities
     "ghcr.io/devcontainers/features/common-utils:2": {
       "installZsh": true,
       "configureZshAsDefaultShell": true,
@@ -34,37 +20,50 @@
     }
   },
   
-  // Container settings - trust workspace config
   "containerEnv": {
     "MISE_TRUSTED_CONFIG_PATHS": "/workspaces",
+    "MISE_YES": "1",
     "MISE_INSTALL_PATH": "/home/vscode/.local/bin/mise",
     "PATH": "/home/vscode/.local/share/mise/shims:/home/vscode/.local/bin:${containerEnv:PATH}"
   },
   
-  "postCreateCommand": ".devcontainer/scripts/post-create.sh",
+  "remoteEnv": {
+    "ANTHROPIC_API_KEY": "${localEnv:ANTHROPIC_API_KEY}",
+    "OPENAI_API_KEY": "${localEnv:OPENAI_API_KEY}",
+    "GOOGLE_API_KEY": "${localEnv:GOOGLE_API_KEY}",
+    "GITHUB_TOKEN": "${localEnv:GITHUB_TOKEN}"
+  },
+  
+  "onCreateCommand": "cp config/mise.toml ~/.config/mise/config.toml && mise trust ~/.config/mise/config.toml && mise trust .mise.toml 2>/dev/null || true",
+  "postCreateCommand": "mise run setup:container",
   "postAttachCommand": ".devcontainer/scripts/post-attach.sh",
   
-  // Forward ports (for development servers)
   "forwardPorts": [
-    3000,  // React/Next.js
-    5000,  // Flask
-    8000,  // Django/FastAPI
-    8080,  // General HTTP
-    8888   // Jupyter
+    3000,
+    5000,
+    8000,
+    8080,
+    8888
   ],
   
-  // VS Code specific settings
+  "portsAttributes": {
+    "3000": { "label": "React/Next.js", "onAutoForward": "notify" },
+    "5000": { "label": "Flask", "onAutoForward": "notify" },
+    "8000": { "label": "Django/FastAPI", "onAutoForward": "notify" },
+    "8080": { "label": "General HTTP", "onAutoForward": "silent" },
+    "8888": { "label": "Jupyter", "onAutoForward": "notify" }
+  },
+  
   "customizations": {
     "vscode": {
       "settings": {
         "terminal.integrated.defaultProfile.linux": "zsh",
         "terminal.integrated.profiles.linux": {
-          "zsh": {
-            "path": "/bin/zsh"
-          }
+          "zsh": { "path": "/bin/zsh" }
         },
         "python.defaultInterpreterPath": "/home/vscode/.local/share/mise/installs/python/latest/bin/python",
-        "editor.formatOnSave": true
+        "editor.formatOnSave": true,
+        "files.autoSave": "afterDelay"
       },
       "extensions": [
         "esbenp.prettier-vscode",
@@ -81,21 +80,17 @@
     }
   },
   
-  // Mount settings
   "mounts": [
-    // Persist mise data between rebuilds
     "source=${localWorkspaceFolderBasename}-mise-data,target=/home/vscode/.local/share/mise,type=volume",
-    // Persist mise config
-    "source=${localWorkspaceFolderBasename}-mise-config,target=/home/vscode/.config/mise,type=volume"
+    "source=${localWorkspaceFolderBasename}-mise-config,target=/home/vscode/.config/mise,type=volume",
+    "source=${localWorkspaceFolderBasename}-shell-history,target=/commandhistory,type=volume"
   ],
   
-  // Run as non-root user
   "remoteUser": "vscode",
-  
-  // Privileged mode (needed for some tools)
+  "containerUser": "vscode",
+  "updateRemoteUserUID": true,
   "privileged": false,
   
-  // Host requirements
   "hostRequirements": {
     "cpus": 2,
     "memory": "4gb",
