@@ -35,7 +35,7 @@
 | File | Purpose |
 |------|---------|
 | config/mise.toml | Tool versions, tasks, settings (SOURCE OF TRUTH) |
-| tests/*.bats | 63 BATS tests |
+| tests/*.bats | 254 BATS tests |
 | setup.sh | Bootstrap script |
 | AGENTS.md | Full project knowledge base |
 | AI_ONBOARDING.md | Copy-paste prompts for any LLM |
@@ -47,7 +47,7 @@
 | mise run validate | Check environment health |
 | mise run tools:status | Show all tools and settings |
 | mise run tools:update | Update all tools to latest |
-| bats tests/ | Run all 63 tests |
+| bats tests/ | Run all 254 tests |
 | mise doctor | Diagnose issues |
 
 ## Tool Installation Pattern
@@ -73,7 +73,7 @@ gemini-ai-macos-development-environment/
 │   ├── starship.toml          # Shell prompt configuration
 │   ├── chezmoi/               # Dotfile templates
 │   └── scripts/               # Utility scripts
-├── tests/                     # BATS test suite (63 tests)
+├── tests/                     # BATS test suite (254 tests)
 ├── research/                  # Research documents
 ├── openspec/                  # Specifications
 ├── .claude/                   # Claude Code config (10 commands)
