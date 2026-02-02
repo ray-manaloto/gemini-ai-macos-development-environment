@@ -31,7 +31,7 @@ This is a reproducible macOS development environment using Mise as the central o
 | File | Purpose |
 |------|---------|
 | config/mise.toml | Tool versions, tasks, settings (SOURCE OF TRUTH) |
-| tests/*.bats | 108 BATS tests |
+| tests/*.bats | 254 BATS tests |
 | setup.sh | Bootstrap script |
 | AGENTS.md | Full project knowledge base |
 
