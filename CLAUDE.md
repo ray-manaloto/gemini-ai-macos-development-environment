@@ -111,7 +111,7 @@ Mise automatically:
 
 ### Configuration
 
-**Source of Truth**: `config/mise.toml` (957 lines)
+**Source of Truth**: `config/mise.toml` (~960 lines)
 
 **Key Settings**:
 ```toml
