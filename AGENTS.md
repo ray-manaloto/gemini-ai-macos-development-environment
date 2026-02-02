@@ -228,6 +228,21 @@ Fast pip replacement:
 | `mise run tools:reinstall -- <tool>` | Reinstall specific tool |
 | `mise run tools:doctor` | Full environment health check |
 
+### DevContainer Tasks
+
+| Command | Description |
+|---------|-------------|
+| `mise run devcontainer:status` | Show DevContainer status |
+| `mise run devcontainer:up` | Start DevContainer (DevPod or Docker) |
+| `mise run devcontainer:down` | Stop DevContainer |
+| `mise run devcontainer:restart` | Restart DevContainer |
+| `mise run devcontainer:ssh` | SSH into container |
+| `mise run devcontainer:logs` | View container logs |
+| `mise run devcontainer:exec -- <cmd>` | Execute command in container |
+| `mise run devcontainer:build` | Build DevContainer image |
+| `mise run devcontainer:rebuild` | Rebuild without cache |
+| `mise run devcontainer:delete` | Delete container and volumes |
+
 ### Testing
 
 ```bash

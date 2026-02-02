@@ -6,6 +6,15 @@ Complete guide for using DevContainers with the God-Tier macOS Development Envir
 
 ## Quick Start
 
+### Mise Tasks (Recommended)
+
+```bash
+mise run devcontainer:up        # Start DevContainer
+mise run devcontainer:ssh       # SSH into container
+mise run devcontainer:status    # Check status
+mise run devcontainer:down      # Stop container
+```
+
 ### VS Code / Cursor
 
 ```bash
@@ -137,6 +146,27 @@ export GITHUB_TOKEN=ghp_...
 ---
 
 ## Start / Stop / Restart
+
+### Mise Tasks (Recommended)
+
+| Command | Description |
+|---------|-------------|
+| `mise run devcontainer:status` | Show all DevContainers |
+| `mise run devcontainer:up` | Start DevContainer |
+| `mise run devcontainer:down` | Stop DevContainer |
+| `mise run devcontainer:restart` | Restart DevContainer |
+| `mise run devcontainer:ssh` | SSH into container |
+| `mise run devcontainer:logs` | View container logs |
+| `mise run devcontainer:exec -- <cmd>` | Execute command |
+| `mise run devcontainer:build` | Build image |
+| `mise run devcontainer:rebuild` | Rebuild without cache |
+| `mise run devcontainer:delete` | Delete container and volumes |
+
+Provider selection (default: devpod):
+```bash
+PROVIDER=docker mise run devcontainer:up
+PROVIDER=devpod mise run devcontainer:up
+```
 
 ### VS Code
 
