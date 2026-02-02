@@ -8,7 +8,9 @@ not_found_auto_install = true
 status = { missing_tools = "if_other_versions_installed" }
 
 [settings.npm]
-package_manager = "npm"
+# Bun backend: 3x faster installs. Requires node for version resolution.
+# https://mise.jdx.dev/dev-tools/backends/npm.html
+package_manager = "bun"
 
 [settings.python]
 uv_venv_auto = true
@@ -18,19 +20,38 @@ uv_venv_auto = true
 
 # --- Core Runtimes ---
 bun = "latest"
+node = "latest"
+python = "latest"
+go = "latest"
+rust = "latest"
 pixi = "latest"
 uv = "latest"
 chezmoi = "latest"
 usage = "latest"
 pkl = "latest"
-node = "latest"
 
 # --- Modern Rust-Based Utilities ---
 starship = "latest"
 ripgrep = "latest"
 fd = "latest"
 zoxide = "latest"
+bat = "latest"
+eza = "latest"
+fzf = "latest"
+delta = "latest"
+lsd = "latest"
+hyperfine = "latest"
+glow = "latest"
 "github:ast-grep/ast-grep" = "latest"
+
+# --- Data Processing ---
+jq = "latest"
+yq = "latest"
+
+# --- Code Quality ---
+shellcheck = "latest"
+hadolint = "latest"
+"pipx:pre-commit" = "latest"
 
 # --- AI-Assisted Code Search ---
 "pipx:mgrep" = "latest"
@@ -48,9 +69,12 @@ github-cli = "latest"
 "npm:bats" = "latest"
 "ubi:charmbracelet/gum" = "latest"
 
-# --- AI Agents (npm packages, run with bun via exec_override) ---
+# --- AI Agents ---
 "npm:@google/gemini-cli" = "latest"
 "npm:@ralph-orchestrator/ralph-cli" = "latest"
+"npm:@anthropic-ai/claude-code" = "latest"
+"npm:@mermaid-js/mermaid-cli" = "latest"
+"npm:jscpd" = "latest"
 
 [tasks.dashboard]
 description = "Launch Unified TUI"

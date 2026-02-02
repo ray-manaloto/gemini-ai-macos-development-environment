@@ -41,14 +41,8 @@
     "PATH": "/home/vscode/.local/share/mise/shims:/home/vscode/.local/bin:${containerEnv:PATH}"
   },
   
-  // Run after container is created - uses unified setup task
-  "postCreateCommand": {
-    "copy-mise-config": "mkdir -p ~/.config/mise && cp config/mise.toml ~/.config/mise/config.toml",
-    "setup": "mise run setup:container"
-  },
-  
-  // Run when attaching to container
-  "postAttachCommand": "mise doctor",
+  "postCreateCommand": ".devcontainer/scripts/post-create.sh",
+  "postAttachCommand": ".devcontainer/scripts/post-attach.sh",
   
   // Forward ports (for development servers)
   "forwardPorts": [
