@@ -228,6 +228,20 @@ Fast pip replacement:
 | `mise run tools:reinstall -- <tool>` | Reinstall specific tool |
 | `mise run tools:doctor` | Full environment health check |
 
+### Authentication Tasks
+
+| Command | Description |
+|---------|-------------|
+| `mise run auth:status` | Show authentication status for all CLI tools |
+| `mise run auth:gh` | Authenticate GitHub CLI |
+| `mise run auth:claude` | Authenticate Claude Code CLI |
+| `mise run auth:codex` | Authenticate OpenAI Codex CLI |
+| `mise run auth:gemini` | Authenticate Gemini CLI |
+| `mise run auth:opencode` | Authenticate OpenCode CLI |
+| `mise run auth:aws` | Configure AWS CLI credentials |
+| `mise run auth:1password` | Configure 1Password CLI |
+| `mise run auth:all` | Run all authentication setup (interactive) |
+
 ### DevContainer Tasks
 
 | Command | Description |

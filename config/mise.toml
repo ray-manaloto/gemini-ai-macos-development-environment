@@ -504,6 +504,387 @@ echo "Bun available: $(which bun 2>/dev/null && echo 'YES' || echo 'NO')"
 echo "Uv available: $(which uv 2>/dev/null && echo 'YES' || echo 'NO')"
 """
 
+# =============================================================================
+# Authentication Tasks
+# =============================================================================
+
+[tasks."auth:status"]
+description = "Show authentication status for all CLI tools"
+run = """
+echo "=== CLI Tool Authentication Status ==="
+echo ""
+
+# GitHub CLI
+echo "GitHub CLI (gh):"
+if command -v gh &> /dev/null; then
+  if gh auth status 2>&1 | grep -q "Logged in"; then
+    USER=$(gh api user --jq '.login' 2>/dev/null || echo "unknown")
+    echo "  ✓ Authenticated as: $USER"
+  else
+    echo "  ✗ Not authenticated"
+    echo "    Run: mise run auth:gh"
+  fi
+else
+  echo "  - Not installed"
+fi
+echo ""
+
+# Claude Code
+echo "Claude Code (claude):"
+if command -v claude &> /dev/null; then
+  if [ -n "$ANTHROPIC_API_KEY" ]; then
+    echo "  ✓ ANTHROPIC_API_KEY set (env)"
+  elif claude config get api_key 2>/dev/null | grep -q "sk-ant-"; then
+    echo "  ✓ Authenticated (stored token)"
+  else
+    echo "  ✗ Not authenticated"
+    echo "    Run: mise run auth:claude"
+  fi
+else
+  echo "  - Not installed"
+fi
+echo ""
+
+# OpenAI Codex
+echo "OpenAI Codex (codex):"
+if command -v codex &> /dev/null; then
+  if [ -n "$OPENAI_API_KEY" ]; then
+    echo "  ✓ OPENAI_API_KEY set (env)"
+  elif [ -f "$HOME/.codex/config.json" ] && grep -q "api_key" "$HOME/.codex/config.json" 2>/dev/null; then
+    echo "  ✓ Authenticated (stored token)"
+  else
+    echo "  ✗ Not authenticated"
+    echo "    Run: mise run auth:codex"
+  fi
+else
+  echo "  - Not installed"
+fi
+echo ""
+
+# Gemini CLI
+echo "Gemini CLI (gemini):"
+if command -v gemini &> /dev/null; then
+  if [ -n "$GEMINI_API_KEY" ] || [ -n "$GOOGLE_API_KEY" ]; then
+    echo "  ✓ API key set (env)"
+  else
+    echo "  ✗ Not authenticated"
+    echo "    Run: mise run auth:gemini"
+  fi
+else
+  echo "  - Not installed"
+fi
+echo ""
+
+# OpenCode
+echo "OpenCode (opencode):"
+if command -v opencode &> /dev/null; then
+  if [ -n "$ANTHROPIC_API_KEY" ] || [ -n "$OPENAI_API_KEY" ] || [ -n "$GOOGLE_API_KEY" ]; then
+    echo "  ✓ Provider API key set (env)"
+  elif [ -f "$HOME/.config/opencode/config.json" ]; then
+    echo "  ✓ Authenticated (stored config)"
+  else
+    echo "  ✗ Not authenticated"
+    echo "    Run: mise run auth:opencode"
+  fi
+else
+  echo "  - Not installed"
+fi
+echo ""
+
+# AWS CLI
+echo "AWS CLI (aws):"
+AWS_CMD=""
+if command -v aws &> /dev/null; then
+  AWS_CMD="aws"
+elif [ -f "$HOME/.local/share/mise/shims/aws" ]; then
+  AWS_PATH=$(find "$HOME/.local/share/mise/installs/awscli" -name "aws" -type f 2>/dev/null | head -1)
+  if [ -n "$AWS_PATH" ]; then
+    AWS_CMD="$AWS_PATH"
+  fi
+fi
+
+if [ -n "$AWS_CMD" ]; then
+  if $AWS_CMD sts get-caller-identity &> /dev/null; then
+    ACCOUNT=$($AWS_CMD sts get-caller-identity --query 'Account' --output text 2>/dev/null)
+    echo "  ✓ Authenticated (Account: $ACCOUNT)"
+  else
+    echo "  ✗ Not authenticated"
+    echo "    Run: mise run auth:aws"
+  fi
+else
+  echo "  - Not installed"
+fi
+echo ""
+
+# 1Password CLI
+echo "1Password CLI (op):"
+if command -v op &> /dev/null; then
+  if op account list 2>/dev/null | grep -q "."; then
+    echo "  ✓ Account configured"
+  else
+    echo "  ✗ Not configured"
+    echo "    Run: mise run auth:1password"
+  fi
+else
+  echo "  - Not installed"
+fi
+echo ""
+
+echo "---"
+echo "Run 'mise run auth:all' to configure all tools interactively."
+echo "See SECRETS.md for detailed setup instructions."
+"""
+
+[tasks."auth:gh"]
+description = "Authenticate GitHub CLI"
+run = """
+echo "=== GitHub CLI Authentication ==="
+echo ""
+
+if ! command -v gh &> /dev/null; then
+  echo "GitHub CLI not installed. Installing..."
+  mise install github-cli
+  mise reshim
+fi
+
+if [ -n "$GITHUB_TOKEN" ]; then
+  echo "GITHUB_TOKEN environment variable is set."
+  echo "GitHub CLI will use this token automatically."
+  echo ""
+  echo "To use interactive login instead, unset GITHUB_TOKEN first."
+  exit 0
+fi
+
+echo "Starting interactive authentication..."
+echo "This will open a browser to complete OAuth flow."
+echo ""
+gh auth login
+"""
+
+[tasks."auth:claude"]
+description = "Authenticate Claude Code CLI"
+run = """
+echo "=== Claude Code Authentication ==="
+echo ""
+
+if ! command -v claude &> /dev/null; then
+  echo "Claude Code not installed. Installing..."
+  mise install "npm:@anthropic-ai/claude-code"
+  mise reshim
+fi
+
+if [ -n "$ANTHROPIC_API_KEY" ]; then
+  echo "ANTHROPIC_API_KEY environment variable is set."
+  echo "Claude Code will use this key automatically."
+  echo ""
+  echo "To configure a different key, run: claude setup-token"
+  exit 0
+fi
+
+echo "Option 1: Set environment variable (recommended for automation)"
+echo "  export ANTHROPIC_API_KEY='sk-ant-...'"
+echo "  # Or add to mise.toml [env] section"
+echo ""
+echo "Option 2: Interactive setup"
+claude setup-token
+"""
+
+[tasks."auth:codex"]
+description = "Authenticate OpenAI Codex CLI"
+run = """
+echo "=== OpenAI Codex Authentication ==="
+echo ""
+
+if ! command -v codex &> /dev/null; then
+  echo "Codex not installed. Installing..."
+  mise install "npm:@openai/codex"
+  mise reshim
+fi
+
+if [ -n "$OPENAI_API_KEY" ]; then
+  echo "OPENAI_API_KEY environment variable is set."
+  echo "Codex will use this key automatically."
+  echo ""
+  echo "To use interactive login instead, unset OPENAI_API_KEY first."
+  exit 0
+fi
+
+echo "Starting interactive authentication..."
+codex login
+"""
+
+[tasks."auth:gemini"]
+description = "Authenticate Gemini CLI"
+run = """
+echo "=== Gemini CLI Authentication ==="
+echo ""
+
+if ! command -v gemini &> /dev/null; then
+  echo "Gemini CLI not installed. Installing..."
+  mise install "npm:@google/gemini-cli"
+  mise reshim
+fi
+
+if [ -n "$GEMINI_API_KEY" ]; then
+  echo "GEMINI_API_KEY environment variable is set."
+  echo "Gemini CLI will use this key automatically."
+  exit 0
+fi
+
+if [ -n "$GOOGLE_API_KEY" ]; then
+  echo "GOOGLE_API_KEY environment variable is set."
+  echo "Gemini CLI will use this key automatically."
+  exit 0
+fi
+
+echo "Gemini CLI requires an API key from Google AI Studio."
+echo ""
+echo "1. Get your API key from: https://aistudio.google.com/apikey"
+echo "2. Set it using one of these methods:"
+echo ""
+echo "   Option A: Environment variable"
+echo "   export GEMINI_API_KEY='your-api-key'"
+echo ""
+echo "   Option B: Mise secrets (recommended)"
+echo "   mise secrets set GEMINI_API_KEY='your-api-key'"
+echo ""
+echo "   Option C: 1Password integration"
+echo "   Add to mise.toml [env]: GEMINI_API_KEY = \"op://Private/Google AI/api_key\""
+echo ""
+"""
+
+[tasks."auth:opencode"]
+description = "Authenticate OpenCode CLI"
+run = """
+echo "=== OpenCode Authentication ==="
+echo ""
+
+if ! command -v opencode &> /dev/null; then
+  echo "OpenCode not installed. Installing..."
+  mise install "npm:opencode-ai"
+  mise reshim
+fi
+
+# Check for any provider key
+HAS_KEY=0
+[ -n "$ANTHROPIC_API_KEY" ] && HAS_KEY=1 && echo "✓ ANTHROPIC_API_KEY is set"
+[ -n "$OPENAI_API_KEY" ] && HAS_KEY=1 && echo "✓ OPENAI_API_KEY is set"
+[ -n "$GOOGLE_API_KEY" ] && HAS_KEY=1 && echo "✓ GOOGLE_API_KEY is set"
+[ -n "$GEMINI_API_KEY" ] && HAS_KEY=1 && echo "✓ GEMINI_API_KEY is set"
+
+if [ "$HAS_KEY" = "1" ]; then
+  echo ""
+  echo "OpenCode will use the available provider API key(s)."
+  exit 0
+fi
+
+echo "OpenCode supports multiple providers. Set one or more API keys:"
+echo ""
+echo "  Anthropic:  export ANTHROPIC_API_KEY='sk-ant-...'"
+echo "  OpenAI:     export OPENAI_API_KEY='sk-proj-...'"
+echo "  Google:     export GOOGLE_API_KEY='...'"
+echo ""
+echo "Or run interactive setup:"
+opencode auth
+"""
+
+[tasks."auth:aws"]
+description = "Configure AWS CLI credentials"
+run = """
+echo "=== AWS CLI Authentication ==="
+echo ""
+
+AWS_CMD=""
+if command -v aws &> /dev/null; then
+  AWS_CMD="aws"
+elif [ -f "$HOME/.local/share/mise/shims/aws" ]; then
+  AWS_PATH=$(find "$HOME/.local/share/mise/installs/awscli" -name "aws" -type f 2>/dev/null | head -1)
+  if [ -n "$AWS_PATH" ]; then
+    AWS_CMD="$AWS_PATH"
+  fi
+fi
+
+if [ -z "$AWS_CMD" ]; then
+  echo "AWS CLI not installed. Installing..."
+  mise install awscli
+  mise reshim
+  AWS_CMD="aws"
+fi
+
+if [ -n "$AWS_ACCESS_KEY_ID" ] && [ -n "$AWS_SECRET_ACCESS_KEY" ]; then
+  echo "AWS credentials are set via environment variables."
+  $AWS_CMD sts get-caller-identity
+  exit 0
+fi
+
+echo "Starting interactive AWS configuration..."
+echo ""
+$AWS_CMD configure
+"""
+
+[tasks."auth:1password"]
+description = "Configure 1Password CLI"
+run = """
+echo "=== 1Password CLI Authentication ==="
+echo ""
+
+if ! command -v op &> /dev/null; then
+  echo "1Password CLI not installed. Installing..."
+  mise install 1password-cli
+  mise reshim
+fi
+
+echo "1Password CLI Setup"
+echo ""
+echo "If you have 1Password desktop app:"
+echo "  1. Enable 'Integrate with 1Password CLI' in Settings > Developer"
+echo "  2. The CLI will use the app for authentication"
+echo ""
+echo "For standalone setup:"
+op account add
+"""
+
+[tasks."auth:all"]
+description = "Run all authentication setup (interactive)"
+run = """
+echo "=== Full Authentication Setup ==="
+echo "This will guide you through authenticating all CLI tools."
+echo ""
+
+# Check what's installed
+TOOLS=""
+command -v gh &> /dev/null && TOOLS="$TOOLS gh"
+command -v claude &> /dev/null && TOOLS="$TOOLS claude"
+command -v codex &> /dev/null && TOOLS="$TOOLS codex"
+command -v gemini &> /dev/null && TOOLS="$TOOLS gemini"
+command -v opencode &> /dev/null && TOOLS="$TOOLS opencode"
+command -v aws &> /dev/null && TOOLS="$TOOLS aws"
+command -v op &> /dev/null && TOOLS="$TOOLS op"
+
+if [ -z "$TOOLS" ]; then
+  echo "No CLI tools installed yet. Run 'mise install' first."
+  exit 1
+fi
+
+echo "Installed tools to configure:$TOOLS"
+echo ""
+echo "Running auth:status first to show current state..."
+echo ""
+mise run auth:status
+echo ""
+echo "---"
+echo "To configure individual tools, run:"
+echo "  mise run auth:gh       # GitHub CLI"
+echo "  mise run auth:claude   # Claude Code"
+echo "  mise run auth:codex    # OpenAI Codex"
+echo "  mise run auth:gemini   # Gemini CLI"
+echo "  mise run auth:opencode # OpenCode"
+echo "  mise run auth:aws      # AWS CLI"
+echo "  mise run auth:1password # 1Password CLI"
+echo ""
+echo "For detailed instructions, see SECRETS.md"
+"""
+
 [tasks."validate:tools"]
 description = "Check for tool version shadows in ~/.local/bin"
 run = """
