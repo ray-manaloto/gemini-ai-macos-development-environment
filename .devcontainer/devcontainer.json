@@ -2,6 +2,13 @@
   "name": "God-Tier Dev Environment",
   "image": "mcr.microsoft.com/devcontainers/base:ubuntu-22.04",
   
+  "runArgs": [
+    "--security-opt=no-new-privileges:true",
+    "--cap-drop=ALL",
+    "--cap-add=NET_BIND_SERVICE",
+    "--pids-limit=500"
+  ],
+  
   "features": {
     "ghcr.io/devcontainers-extra/features/mise:1": {
       "version": "latest",
@@ -31,7 +38,10 @@
     "ANTHROPIC_API_KEY": "${localEnv:ANTHROPIC_API_KEY}",
     "OPENAI_API_KEY": "${localEnv:OPENAI_API_KEY}",
     "GOOGLE_API_KEY": "${localEnv:GOOGLE_API_KEY}",
-    "GITHUB_TOKEN": "${localEnv:GITHUB_TOKEN}"
+    "GITHUB_TOKEN": "${localEnv:GITHUB_TOKEN}",
+    "GEMINI_API_KEY": "${localEnv:GEMINI_API_KEY}",
+    "GROQ_API_KEY": "${localEnv:GROQ_API_KEY}",
+    "LEASH_DISABLE_TELEMETRY": "1"
   },
   
   "onCreateCommand": "cp config/mise.toml ~/.config/mise/config.toml && mise trust ~/.config/mise/config.toml && mise trust .mise.toml 2>/dev/null || true",
@@ -43,7 +53,8 @@
     5000,
     8000,
     8080,
-    8888
+    8888,
+    18080
   ],
   
   "portsAttributes": {
@@ -51,7 +62,8 @@
     "5000": { "label": "Flask", "onAutoForward": "notify" },
     "8000": { "label": "Django/FastAPI", "onAutoForward": "notify" },
     "8080": { "label": "General HTTP", "onAutoForward": "silent" },
-    "8888": { "label": "Jupyter", "onAutoForward": "notify" }
+    "8888": { "label": "Jupyter", "onAutoForward": "notify" },
+    "18080": { "label": "Leash Control UI", "onAutoForward": "silent" }
   },
   
   "customizations": {
@@ -83,7 +95,8 @@
   "mounts": [
     "source=${localWorkspaceFolderBasename}-mise-data,target=/home/vscode/.local/share/mise,type=volume",
     "source=${localWorkspaceFolderBasename}-mise-config,target=/home/vscode/.config/mise,type=volume",
-    "source=${localWorkspaceFolderBasename}-shell-history,target=/commandhistory,type=volume"
+    "source=${localWorkspaceFolderBasename}-shell-history,target=/commandhistory,type=volume",
+    "type=tmpfs,destination=/tmp,tmpfs-size=512M,tmpfs-mode=1777"
   ],
   
   "remoteUser": "vscode",

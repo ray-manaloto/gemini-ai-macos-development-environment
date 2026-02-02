@@ -493,6 +493,139 @@ Edit `config/mise.toml`:
 
 ---
 
+## AI Agent Sandboxing
+
+For enhanced security when running AI coding agents, this project supports two sandboxing approaches.
+
+### Option 1: Docker Sandboxes (Built-in)
+
+Docker Desktop 4.40+ includes native AI sandbox support with microVM isolation.
+
+```bash
+# Launch Claude Code in sandbox (macOS/Windows)
+docker sandbox run claude ~/dev/github/ray-manaloto/gemini-ai-macos-development-environment
+
+# With network restrictions
+docker sandbox run --net-deny-all --net-allow github.com,api.anthropic.com claude .
+```
+
+**Features:**
+- MicroVM isolation (not just containers)
+- Network allow/deny lists
+- Docker-in-Docker isolated from host
+- Automatic environment detection
+
+**Limitations:**
+- Requires Docker Desktop 4.40+
+- macOS/Windows only (Linux uses containers)
+- Environment variables require sandbox restart
+
+### Option 2: Leash (Policy-Based Governance)
+
+[Leash](https://github.com/strongdm/leash) provides policy-based AI agent governance using Cedar policies.
+
+#### Installation
+
+```bash
+# Install via mise (recommended)
+mise use -g "npm:@strongdm/leash"
+
+# Verify
+leash --version
+```
+
+#### Quick Start
+
+```bash
+# Launch Claude Code with Control UI
+leash --open claude
+
+# Control UI available at http://localhost:18080
+```
+
+#### Configuration
+
+1. Copy the template to your config directory:
+
+```bash
+cp .devcontainer/leash-config.toml ~/.config/leash/config.toml
+```
+
+2. Edit with your project path and preferences
+
+3. Copy Cedar policies:
+
+```bash
+mkdir -p ~/.config/leash/policies
+cp .devcontainer/sandbox-policies/*.cedar ~/.config/leash/policies/
+```
+
+#### Operation Modes
+
+| Mode | Behavior | Use Case |
+|------|----------|----------|
+| **Record** | All operations allowed, events logged | Learning agent behavior |
+| **Shadow** | Policies evaluated, not enforced | Testing policies safely |
+| **Enforce** | Policies enforced, violations blocked | Production governance |
+
+Start in Record mode, review in Control UI, then progress to Enforce.
+
+#### Cedar Policies
+
+Three policy templates are included in `.devcontainer/sandbox-policies/`:
+
+| Policy | Description |
+|--------|-------------|
+| `default.cedar` | Balanced security for development |
+| `permissive.cedar` | Trusted environments, convenience prioritized |
+| `restrictive.cedar` | Untrusted code review, minimal permissions |
+
+Example policy rules:
+
+```cedar
+// Allow workspace file access
+permit (principal, action == Action::"FileOpenReadWrite", resource)
+when { resource in [ Dir::"/workspace/" ] };
+
+// Block sensitive files
+forbid (principal, action == Action::"read", resource)
+when { resource.path.contains("/.ssh/") };
+
+// Allow specific network hosts
+permit (principal, action == Action::"NetworkConnect", resource)
+when { resource.host in [ "api.anthropic.com", "github.com" ] };
+```
+
+#### MCP Governance
+
+Leash can govern MCP (Model Context Protocol) tool calls:
+
+```cedar
+// Block dangerous MCP tools
+forbid (principal, action == Action::"McpCall", resource == MCP::Tool::"execute-shell")
+when { resource in [ MCP::Server::"*" ] };
+```
+
+### Comparison
+
+| Feature | Docker Sandbox | Leash |
+|---------|---------------|-------|
+| Isolation | MicroVM | Container + eBPF |
+| Policy Language | CLI flags | Cedar (expressive) |
+| Network Control | Allow/deny lists | Hostname policies |
+| Secret Injection | Environment vars | Proxy injection |
+| MCP Governance | No | Yes |
+| Telemetry | Minimal | Configurable |
+| Control UI | No | Yes (localhost:18080) |
+
+### Recommendation
+
+- **Quick isolation**: Use Docker Sandboxes
+- **Fine-grained control**: Use Leash with Cedar policies
+- **MCP governance**: Leash required
+
+---
+
 ## Related Documentation
 
 | Document | Purpose |
