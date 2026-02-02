@@ -77,6 +77,8 @@ github-cli = "latest"
 "npm:@google/gemini-cli" = "latest"
 "npm:@ralph-orchestrator/ralph-cli" = "latest"
 "npm:@anthropic-ai/claude-code" = "latest"
+"npm:@openai/codex" = "latest"
+"npm:opencode-ai" = "latest"
 "npm:@mermaid-js/mermaid-cli" = "latest"
 "npm:jscpd" = "latest"
 

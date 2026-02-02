@@ -190,8 +190,8 @@ ANTHROPIC_API_KEY = "mise:ANTHROPIC_API_KEY"
 | Secret | Used By | How to Get |
 |--------|---------|------------|
 | `ANTHROPIC_API_KEY` | Claude Code, Claude API | [console.anthropic.com](https://console.anthropic.com) |
-| `OPENAI_API_KEY` | OpenAI API | [platform.openai.com](https://platform.openai.com) |
-| `GOOGLE_API_KEY` | Gemini CLI | [ai.google.dev](https://ai.google.dev) |
+| `OPENAI_API_KEY` | Codex CLI, OpenAI API | [platform.openai.com](https://platform.openai.com) |
+| `GOOGLE_API_KEY` or `GEMINI_API_KEY` | Gemini CLI | [ai.google.dev](https://ai.google.dev) |
 | `GITHUB_TOKEN` | GitHub Copilot, gh CLI | [github.com/settings/tokens](https://github.com/settings/tokens) |
 
 ### Cloud Providers
@@ -208,6 +208,177 @@ ANTHROPIC_API_KEY = "mise:ANTHROPIC_API_KEY"
 |--------|---------|------------|
 | `HF_TOKEN` | Hugging Face models | [huggingface.co/settings/tokens](https://huggingface.co/settings/tokens) |
 | `WANDB_API_KEY` | Weights & Biases | [wandb.ai/authorize](https://wandb.ai/authorize) |
+
+---
+
+## CLI Tool Authentication Setup
+
+### GitHub CLI (gh)
+
+```bash
+# Interactive login (recommended)
+gh auth login
+
+# Or use environment variable
+export GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxx
+
+# Or use 1Password
+# In mise.toml:
+# [env]
+# GITHUB_TOKEN = "op://Private/GitHub/token"
+
+# Verify authentication
+gh auth status
+```
+
+**Required scopes:** `repo`, `read:org`, `workflow` (for Actions)
+
+### Claude Code CLI
+
+```bash
+# Option 1: Interactive setup (requires Claude subscription)
+claude setup-token
+
+# Option 2: Environment variable (API key users)
+export ANTHROPIC_API_KEY=sk-ant-api03-xxxxxxxxxxxx
+
+# Option 3: Mise secrets
+mise secrets set ANTHROPIC_API_KEY=sk-ant-api03-xxxxxxxxxxxx
+
+# Option 4: 1Password
+# In mise.toml:
+# [env]
+# ANTHROPIC_API_KEY = "op://Private/Anthropic/credential"
+
+# Verify
+claude --version
+```
+
+### Codex CLI (OpenAI)
+
+```bash
+# Option 1: Interactive login
+codex login
+
+# Option 2: Environment variable
+export OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxxxxx
+
+# Option 3: Mise secrets
+mise secrets set OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxxxxx
+
+# Option 4: 1Password
+# In mise.toml:
+# [env]
+# OPENAI_API_KEY = "op://Private/OpenAI/api_key"
+
+# Verify
+codex --version
+
+# Logout (remove stored credentials)
+codex logout
+```
+
+### Gemini CLI
+
+```bash
+# Option 1: Environment variable (GEMINI_API_KEY preferred)
+export GEMINI_API_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# Option 2: Alternative env var name
+export GOOGLE_API_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# Option 3: Mise secrets
+mise secrets set GEMINI_API_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# Option 4: 1Password
+# In mise.toml:
+# [env]
+# GEMINI_API_KEY = "op://Private/Google AI/api_key"
+
+# Verify
+gemini --version
+```
+
+### OpenCode CLI
+
+```bash
+# Option 1: Interactive auth setup
+opencode auth
+
+# Option 2: Environment variables (supports multiple providers)
+export ANTHROPIC_API_KEY=sk-ant-api03-xxxxxxxxxxxx  # For Claude models
+export OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxxxxx       # For OpenAI models
+export GEMINI_API_KEY=xxxxxxxxxxxxxxxxxxxxxxxx      # For Gemini models
+
+# Option 3: Mise secrets
+mise secrets set ANTHROPIC_API_KEY=sk-ant-api03-xxxxxxxxxxxx
+
+# Option 4: 1Password (multiple keys)
+# In mise.toml:
+# [env]
+# ANTHROPIC_API_KEY = "op://Private/Anthropic/credential"
+# OPENAI_API_KEY = "op://Private/OpenAI/api_key"
+# GEMINI_API_KEY = "op://Private/Google AI/api_key"
+
+# List available models
+opencode models
+
+# Use specific provider
+opencode -m anthropic/claude-sonnet-4-20250514
+```
+
+---
+
+## Quick Setup with Mise Secrets
+
+For solo developers, mise native secrets is the simplest approach:
+
+```bash
+# Set all secrets at once
+mise secrets set GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxx
+mise secrets set ANTHROPIC_API_KEY=sk-ant-api03-xxxxxxxxxxxx
+mise secrets set OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxxxxx
+mise secrets set GEMINI_API_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# Verify secrets are stored
+mise secrets ls
+
+# Reference in mise.toml
+# [env]
+# GITHUB_TOKEN = "mise:GITHUB_TOKEN"
+# ANTHROPIC_API_KEY = "mise:ANTHROPIC_API_KEY"
+# OPENAI_API_KEY = "mise:OPENAI_API_KEY"
+# GEMINI_API_KEY = "mise:GEMINI_API_KEY"
+```
+
+---
+
+## Quick Setup with 1Password
+
+For team environments with 1Password:
+
+```bash
+# 1. Sign in to 1Password CLI
+op signin
+
+# 2. Create items in 1Password for each service
+# 3. Add to mise.toml:
+```
+
+```toml
+# mise.toml or ~/.config/mise/config.toml
+[env]
+GITHUB_TOKEN = "op://Private/GitHub/token"
+ANTHROPIC_API_KEY = "op://Private/Anthropic/credential"
+OPENAI_API_KEY = "op://Private/OpenAI/api_key"
+GEMINI_API_KEY = "op://Private/Google AI/api_key"
+```
+
+```bash
+# 4. Verify secrets resolve
+mise trust
+mise env | grep -E "GITHUB|ANTHROPIC|OPENAI|GEMINI"
+```
 
 ---
 
