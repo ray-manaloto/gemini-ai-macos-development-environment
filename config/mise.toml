@@ -58,6 +58,7 @@ hadolint = "latest"
 
 # --- Infrastructure ---
 "1password-cli" = "latest"
+awscli = { version = "latest", symlink_bins = "true" }
 
 # --- Development Daemon Manager ---
 pitchfork = "latest"
