@@ -1239,9 +1239,31 @@ fi
 '''
 
 [tasks."devcontainer:restart"]
-description = "Restart DevContainer"
-depends = ["devcontainer:down", "devcontainer:up"]
+description = "Restart DevContainer (PROVIDER=devpod|docker)"
 run = """
+PROVIDER="${PROVIDER:-docker}"
+
+echo "=== Restarting DevContainer ==="
+
+# Stop first
+if [ "$PROVIDER" = "docker" ]; then
+  CONTAINER=$(docker ps -q --filter 'name=god-tier-devcontainer' 2>/dev/null)
+  if [ -n "$CONTAINER" ]; then
+    echo "Stopping container..."
+    docker stop "$CONTAINER" > /dev/null
+  fi
+  
+  # Start
+  echo "Starting container..."
+  docker start god-tier-devcontainer > /dev/null 2>&1 || {
+    echo "No container to restart. Use 'mise run devcontainer:up' first."
+    exit 1
+  }
+elif [ "$PROVIDER" = "devpod" ]; then
+  devpod stop . 2>/dev/null || true
+  devpod up .
+fi
+
 echo "DevContainer restarted."
 """
 
