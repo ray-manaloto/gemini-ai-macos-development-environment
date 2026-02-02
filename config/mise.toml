@@ -64,7 +64,7 @@ awscli = { version = "latest", symlink_bins = "true" }
 pitchfork = "latest"
 
 # --- Container Tools ---
-devpod = "latest"
+"aqua:loft-sh/devpod" = "latest"
 
 # --- CLI Tools ---
 github-cli = "latest"
@@ -999,7 +999,7 @@ echo "=== DevContainer Status ==="
 echo ""
 echo "Docker Containers:"
 if command -v docker &> /dev/null; then
-  docker ps -a --filter 'name=devcontainer' --filter 'name=vsc-' --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}' 2>/dev/null || echo "No devcontainers found"
+  docker ps -a --filter 'name=devcontainer' --filter 'name=vsc-' --format 'table {% raw %}{{.Names}}{% endraw %}\t{% raw %}{{.Status}}{% endraw %}\t{% raw %}{{.Ports}}{% endraw %}' 2>/dev/null || echo "No devcontainers found"
 else
   echo "Docker not installed"
 fi
