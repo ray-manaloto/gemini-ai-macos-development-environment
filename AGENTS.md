@@ -56,7 +56,8 @@
 11. **ALWAYS install CLI tools via mise** - Never `curl | sh`, `npm -g`, or direct downloads
     - Install: `mise use -g <tool>@latest`
     - Check: `mise which <tool>` should point to mise installs
-    - Fix: `mise run validate:tools` to detect shadows
+    - Detect: `mise run autofix:status` to find issues
+    - Fix: `mise run autofix:fix` to auto-remediate
 
 ---
 
@@ -232,6 +233,18 @@ Fast pip replacement:
 | `mise run tools:reinstall -- <tool>` | Reinstall specific tool |
 | `mise run tools:doctor` | Full environment health check |
 
+### Autofix Tasks
+
+| Command | Description |
+|---------|-------------|
+| `mise run autofix:status` | Show environment issues (dry-run) |
+| `mise run autofix:fix` | Fix issues with backup |
+| `mise run autofix:json` | JSON output for CI integration |
+| `mise run launchd:install` | Install autofix launchd agent (macOS) |
+| `mise run launchd:uninstall` | Remove launchd agent |
+| `mise run launchd:status` | Check agent status + logs |
+| `mise run launchd:run` | Manually trigger autofix |
+
 ### Authentication Tasks
 
 | Command | Description |
@@ -336,10 +349,12 @@ mise use -g "cargo:<package>"  # Rust package
 | `npm install -g <pkg>` | Bypasses mise, version conflicts | `mise use -g "npm:<pkg>"` |
 | `pip install <pkg>` | System Python pollution | `mise use -g "pipx:<pkg>"` |
 
-### Detecting Shadow Issues
+### Detecting and Fixing Issues
 
 ```bash
-mise run validate:tools    # Check for shadowing
+mise run autofix:status    # Show all issues (shadows, global npm/pip, brew CLI)
+mise run autofix:fix       # Fix issues with backup
+mise run autofix:json      # JSON output for CI
 mise which <tool>          # Should show mise path
 which -a <tool>            # Shows all locations
 ```
@@ -348,7 +363,7 @@ which -a <tool>            # Shows all locations
 
 ## TESTING
 
-### Test Files (254 tests total)
+### Test Files (326 tests total)
 
 | File | Coverage |
 |------|----------|
@@ -363,6 +378,7 @@ which -a <tool>            # Shows all locations
 | test_env_status.bats | env:status task output validation |
 | test_noninteractive_skills.bats | OpenCode skill validation |
 | test_setup.bats | Bootstrap script validation, spec compliance |
+| test_autofix.bats | Autofix system, launchd plist, mise tasks |
 
 ### Running Tests
 

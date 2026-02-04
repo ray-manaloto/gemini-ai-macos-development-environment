@@ -1070,11 +1070,9 @@ fi
 description = "Common setup for all platforms"
 run = """
 echo "=== Common Setup ==="
-# Install all mise tools
 mise install
 mise reshim
 
-# Setup shell activation (idempotent)
 SHELL_RC="${HOME}/.zshrc"
 if [ -f "${HOME}/.bashrc" ] && [ ! -f "${HOME}/.zshrc" ]; then
   SHELL_RC="${HOME}/.bashrc"
@@ -1083,6 +1081,12 @@ fi
 if ! grep -q 'mise activate' "$SHELL_RC" 2>/dev/null; then
   echo 'eval "$(mise activate zsh)"' >> "$SHELL_RC"
   echo "Added mise activation to $SHELL_RC"
+fi
+
+if [ -f "{{config_root}}/config/scripts/autofix.sh" ]; then
+  echo ""
+  echo "=== Running Autofix ==="
+  bash "{{config_root}}/config/scripts/autofix.sh" fix || true
 fi
 
 echo "Common setup complete."
