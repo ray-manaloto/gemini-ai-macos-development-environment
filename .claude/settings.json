@@ -1,0 +1,33 @@
+{
+  "$schema": "https://code.claude.com/settings.json",
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c '[[ -f config/scripts/agent-readiness.sh ]] && bash config/scripts/agent-readiness.sh --quiet || true'"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command", 
+            "command": "bash -c '[[ -f config/scripts/autofix.sh ]] && bash config/scripts/autofix.sh --quiet || true'"
+          }
+        ]
+      }
+    ]
+  },
+  "contextInjection": {
+    "directories": {
+      "AGENTS.md": true,
+      "README.md": false
+    }
+  }
+}

@@ -2047,3 +2047,71 @@ echo "Triggering autofix agent..."
 launchctl start com.godtier.autofix
 echo "Done. Check 'mise run launchd:status' for results."
 """
+
+# =============================================================================
+# Agent Readiness Tasks - AI/LLM setup validation
+# =============================================================================
+
+[tasks."agent:ready"]
+description = "Check AI/LLM agent setup readiness"
+run = """
+#!/bin/bash
+SCRIPT="{{config_root}}/config/scripts/agent-readiness.sh"
+if [ -f "$SCRIPT" ]; then
+  bash "$SCRIPT" status
+else
+  echo "ERROR: agent-readiness.sh not found at $SCRIPT"
+  exit 1
+fi
+"""
+
+[tasks."agent:ready:status"]
+description = "Show AI/LLM agent readiness status"
+run = """
+#!/bin/bash
+SCRIPT="{{config_root}}/config/scripts/agent-readiness.sh"
+if [ -f "$SCRIPT" ]; then
+  bash "$SCRIPT" status
+else
+  echo "ERROR: agent-readiness.sh not found"
+  exit 1
+fi
+"""
+
+[tasks."agent:ready:fix"]
+description = "Fix common AI/LLM agent setup issues"
+run = """
+#!/bin/bash
+SCRIPT="{{config_root}}/config/scripts/agent-readiness.sh"
+if [ -f "$SCRIPT" ]; then
+  bash "$SCRIPT" fix
+else
+  echo "ERROR: agent-readiness.sh not found"
+  exit 1
+fi
+"""
+
+[tasks."agent:ready:json"]
+description = "Output AI/LLM agent readiness as JSON"
+run = """
+#!/bin/bash
+SCRIPT="{{config_root}}/config/scripts/agent-readiness.sh"
+if [ -f "$SCRIPT" ]; then
+  bash "$SCRIPT" --json
+else
+  echo '{"error": "agent-readiness.sh not found"}'
+  exit 1
+fi
+"""
+
+[tasks."agent:ready:quiet"]
+description = "Check agent readiness (only output if issues found)"
+run = """
+#!/bin/bash
+SCRIPT="{{config_root}}/config/scripts/agent-readiness.sh"
+if [ -f "$SCRIPT" ]; then
+  bash "$SCRIPT" --quiet
+else
+  exit 1
+fi
+"""

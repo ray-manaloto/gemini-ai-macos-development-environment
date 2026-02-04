@@ -68,6 +68,22 @@ All commands use `mise run <task>` format. Run `mise tasks` to list all availabl
 ### Environment Status
 - **mise run env:status**: Show comprehensive environment status
 
+### Autofix
+- **mise run autofix:status**: Show environment issues (dry-run)
+- **mise run autofix:fix**: Fix issues with backup
+- **mise run autofix:json**: JSON output for CI integration
+- **mise run launchd:install**: Install autofix launchd agent (macOS)
+- **mise run launchd:uninstall**: Remove launchd agent
+- **mise run launchd:status**: Check agent status + logs
+- **mise run launchd:run**: Manually trigger autofix
+
+### Agent Readiness
+- **mise run agent:ready**: Check AI/LLM agent setup readiness
+- **mise run agent:ready:status**: Show detailed readiness status
+- **mise run agent:ready:fix**: Fix common agent setup issues
+- **mise run agent:ready:json**: JSON output for CI integration
+- **mise run agent:ready:quiet**: Only output if issues found
+
 ---
 
 ## Configuration
@@ -211,7 +227,7 @@ All commands use `mise run <task>` format. Run `mise tasks` to list all availabl
 
 ## Testing
 
-### Test Suite (254 tests)
+### Test Suite (359 tests)
 - tests/test_mise.bats: Mise installation, backends, tasks
 - tests/test_tools.bats: CLI tool availability
 - tests/test_chezmoi.bats: Dotfile template validation
@@ -221,8 +237,10 @@ All commands use `mise run <task>` format. Run `mise tasks` to list all availabl
 - tests/test_skypilot.bats: SkyPilot cloud agent tests
 - tests/test_unified_setup.bats: Platform tasks, config_root, DevContainer
 - tests/test_env_status.bats: env:status task output validation
-- tests/test_noninteractive_skills.bats: Claude Code skill validation
+- tests/test_noninteractive_skills.bats: OpenCode skill validation
 - tests/test_setup.bats: Bootstrap script validation, spec compliance
+- tests/test_autofix.bats: Autofix system, launchd plist, mise tasks
+- tests/test_agent_readiness.bats: Agent readiness, settings.json, mise tasks
 
 ### Running Tests
 ```bash

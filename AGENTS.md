@@ -245,6 +245,16 @@ Fast pip replacement:
 | `mise run launchd:status` | Check agent status + logs |
 | `mise run launchd:run` | Manually trigger autofix |
 
+### Agent Readiness Tasks
+
+| Command | Description |
+|---------|-------------|
+| `mise run agent:ready` | Check AI/LLM agent setup readiness |
+| `mise run agent:ready:status` | Show detailed readiness status |
+| `mise run agent:ready:fix` | Fix common agent setup issues |
+| `mise run agent:ready:json` | JSON output for CI integration |
+| `mise run agent:ready:quiet` | Only output if issues found |
+
 ### Authentication Tasks
 
 | Command | Description |
@@ -363,7 +373,7 @@ which -a <tool>            # Shows all locations
 
 ## TESTING
 
-### Test Files (326 tests total)
+### Test Files (359 tests total)
 
 | File | Coverage |
 |------|----------|
@@ -378,6 +388,8 @@ which -a <tool>            # Shows all locations
 | test_env_status.bats | env:status task output validation |
 | test_noninteractive_skills.bats | OpenCode skill validation |
 | test_setup.bats | Bootstrap script validation, spec compliance |
+| test_autofix.bats | Autofix system, launchd plist, mise tasks |
+| test_agent_readiness.bats | Agent readiness, settings.json, mise tasks |
 | test_autofix.bats | Autofix system, launchd plist, mise tasks |
 
 ### Running Tests
