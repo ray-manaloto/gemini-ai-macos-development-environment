@@ -30,6 +30,7 @@
   "containerEnv": {
     "MISE_TRUSTED_CONFIG_PATHS": "/workspaces",
     "MISE_YES": "1",
+    "MISE_EXPERIMENTAL": "1",
     "MISE_INSTALL_PATH": "/home/vscode/.local/bin/mise",
     "PATH": "/home/vscode/.local/share/mise/shims:/home/vscode/.local/bin:${containerEnv:PATH}"
   },

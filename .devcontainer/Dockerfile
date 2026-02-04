@@ -10,6 +10,7 @@ ARG TARGETARCH=arm64
 
 ENV MISE_TRUSTED_CONFIG_PATHS=/workspaces
 ENV MISE_YES=1
+ENV MISE_EXPERIMENTAL=1
 ENV PATH="/home/${USERNAME}/.local/share/mise/shims:/home/${USERNAME}/.local/bin:${PATH}"
 
 USER root
