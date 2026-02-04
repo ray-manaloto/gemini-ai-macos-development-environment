@@ -98,6 +98,15 @@ go install github.com/LeoHSRodrigues/mise-tui@latest
 
 Status: Placeholder repository with no actual code. Appears abandoned.
 
+### VSCode Extension (Community)
+
+**URL:** https://marketplace.visualstudio.com/items?itemName=rgeraskin.mise
+
+A community VSCode extension by Roman Geraskin:
+- Run `mise install` from IDE
+- Run mise tasks directly from VSCode workspace
+- No need to switch to terminal for common operations
+
 ### Our SwiftBar Plugin Fills a Gap
 
 The `config/scripts/dev-status.1m.sh` SwiftBar plugin we created fills a genuine ecosystem gap:
@@ -106,6 +115,51 @@ The `config/scripts/dev-status.1m.sh` SwiftBar plugin we created fills a genuine
 - **Unique multi-environment support**: Local, Containers, DevContainers, Cloud
 - **Menu bar integration** provides at-a-glance environment status
 - **Actionable items** for common operations
+
+---
+
+## mise-versions.jdx.dev API
+
+### Overview
+
+**URL:** https://mise-versions.jdx.dev/
+
+The official version registry and analytics dashboard for mise:
+- **991 tools** across 12 backend types
+- **Real-time download statistics** (3.39M downloads/30 days, 807K MAU)
+- **Version release tracking** (41.4 tools updated per day)
+
+### API Endpoints
+
+**Base URL:** `https://mise-versions.jdx.dev/api`
+
+#### GET /api/tools
+
+List all tools with metadata:
+
+```bash
+curl 'https://mise-versions.jdx.dev/api/tools'
+curl 'https://mise-versions.jdx.dev/api/tools?limit=50&page=1'
+```
+
+**Response includes:**
+- Tool name, latest version, version count
+- GitHub repo, homepage, description
+- Backend types (core, aqua, asdf, etc.)
+- Security features (checksums, GPG, attestations)
+- 30-day download counts
+
+### Use Cases
+
+```bash
+# Find backends for a tool
+curl -s 'https://mise-versions.jdx.dev/api/tools' | \
+  jq '.tools[] | select(.name == "uv") | .backends'
+
+# Get download stats
+curl -s 'https://mise-versions.jdx.dev/api/tools' | \
+  jq '.downloads | to_entries | sort_by(-.value) | .[0:10]'
+```
 
 ---
 
@@ -446,6 +500,16 @@ Track research iterations to ensure comprehensive coverage:
 - [x] Review external articles (TowardsAI, Medium, Better Stack)
 - [x] Document monorepo tasks feature
 - [x] GitHub discussions review
+
+### Iteration 4: Parallel Subagent Deep Dive (February 2026)
+- [x] Launch 11 parallel librarian agents for comprehensive review
+- [x] Confirm NO official UI/dashboard tools in jdx repos (40+ repos reviewed)
+- [x] Confirm NO UI plugins in mise-plugins org (104 plugins reviewed)
+- [x] Document mise-versions.jdx.dev API endpoints
+- [x] Discover VSCode extension by rgeraskin
+- [x] Verify Discussion #6564 is about monorepo tasks (not UI)
+- [x] Extract actionable tips from tips-and-tricks page
+- [x] Review TowardsAI, Medium, BetterStack articles
 
 ### Future Iterations
 - [ ] Monitor mise releases for GUI/dashboard updates

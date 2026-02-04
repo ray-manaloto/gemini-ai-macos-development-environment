@@ -2236,3 +2236,46 @@ else
   exit 1
 fi
 """
+
+# =============================================================================
+# Research & Ecosystem Monitoring Tasks
+# =============================================================================
+
+[tasks."research:mise"]
+description = "Check mise ecosystem for updates (releases, discussions)"
+run = """
+#!/bin/bash
+echo "━━━ Mise Latest Release ━━━"
+gh release view --repo jdx/mise 2>/dev/null || echo "Run: gh auth login"
+echo ""
+echo "━━━ Recent Discussions (Top 5) ━━━"
+gh api repos/jdx/mise/discussions --jq '.[0:5] | .[] | "- [#" + (.number|tostring) + "] " + .title' 2>/dev/null || echo "GitHub API unavailable"
+echo ""
+echo "━━━ mise-tui Updates ━━━"
+gh release list --repo LeoHSRodrigues/mise-tui --limit 3 2>/dev/null || echo "No releases found"
+"""
+
+[tasks."research:versions"]
+description = "Query mise-versions.jdx.dev API for tool stats"
+run = """
+#!/bin/bash
+echo "━━━ mise-versions.jdx.dev Stats ━━━"
+curl -s 'https://mise-versions.jdx.dev/api/tools?limit=1' | jq '{
+  total_tools: .total_count,
+  backends: .backendCounts
+}' 2>/dev/null || echo "API unavailable"
+echo ""
+echo "━━━ Top 10 Downloads (30 days) ━━━"
+curl -s 'https://mise-versions.jdx.dev/api/tools' | jq -r '.downloads | to_entries | sort_by(-.value) | .[0:10] | .[] | "\(.key): \(.value)"' 2>/dev/null || echo "API unavailable"
+"""
+
+[tasks."research:ecosystem"]
+description = "Full mise ecosystem research summary"
+depends = ["research:mise", "research:versions"]
+run = """
+#!/bin/bash
+echo ""
+echo "━━━ Research Complete ━━━"
+echo "Documentation: research/MISE_ECOSYSTEM_RESEARCH.md"
+echo "Last iteration: 4 (February 2026)"
+"""
