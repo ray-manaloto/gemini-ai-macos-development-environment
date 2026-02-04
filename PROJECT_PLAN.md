@@ -1,7 +1,7 @@
 # Project Plan: God-Tier macOS Development Environment
 
-**Last Updated**: 2026-01-26
-**Status**: P1-P3 Complete - Production Ready
+**Last Updated**: 2026-02-03
+**Status**: P1-P4 Complete - Production Ready + AI Agent Optimized
 **Context Recovery Document**: This file maintains project state for AI context resets
 
 ---
@@ -62,11 +62,11 @@ bats tests/test_starship.bats
 bats tests/test_integration.bats
 ```
 
-### Test Coverage (254 tests total)
+### Test Coverage (402 tests total)
 | Test File | Coverage | Tests |
 |-----------|----------|-------|
 | `test_mise.bats` | Mise installation, backends, tasks | 12 |
-| `test_tools.bats` | All CLI tool availability | 13 |
+| `test_tools.bats` | All CLI tool availability | 29 |
 | `test_chezmoi.bats` | Template validation | 8 |
 | `test_starship.bats` | Prompt configuration | 10 |
 | `test_integration.bats` | End-to-end project structure | 25 |
@@ -76,6 +76,10 @@ bats tests/test_integration.bats
 | `test_env_status.bats` | env:status task output validation | 18 |
 | `test_noninteractive_skills.bats` | OpenCode skill validation | 25 |
 | `test_setup.bats` | Bootstrap script validation | 47 |
+| `test_autofix.bats` | Autofix system, launchd plist | 35 |
+| `test_agent_readiness.bats` | AI/LLM agent setup validation | 32 |
+| `test_mcp.bats` | MCP integration tests | 35 |
+| `test_swiftbar.bats` | SwiftBar menu bar plugin | 30 |
 
 ### Health Check
 ```bash
@@ -90,13 +94,13 @@ mise config
 
 ### Expected Test Output
 ```
-1..108
+1..402
 ok 1 mise is installed
 ok 2 mise doctor reports no critical issues
 ...
-ok 108 starship can render prompt
+ok 402 swiftbar plugin has correct permissions
 
-254 tests, 0 failures
+402 tests, 0 failures
 ```
 
 ---
@@ -183,20 +187,36 @@ Complete the foundational setup so `./setup.sh` produces a fully working environ
 | US-8 | macOS defaults script | ✅ Complete | `config/scripts/macos-defaults.sh` |
 | US-9 | Migration guide from nvm/pyenv | ✅ Complete | `MIGRATION.md` |
 
-### P4 - Nice to Have
-| ID | Story | Status |
-|----|-------|--------|
-| US-10 | Proxy configuration | ⏳ Backlog |
-| US-11 | Team onboarding docs | ⏳ Backlog |
-| US-12 | Ralph Orchestrator integration | ✅ Complete |
+### P4 - Nice to Have - COMPLETE
+| ID | Story | Status | Deliverable |
+|----|-------|--------|-------------|
+| US-10 | Proxy configuration | ✅ Complete | `PROXY.md` |
+| US-11 | Team onboarding docs | ✅ Complete | `TEAM_ONBOARDING.md` |
+| US-12 | Ralph Orchestrator integration | ✅ Complete | oh-my-opencode docs |
+| US-13 | Autofix system | ✅ Complete | `config/scripts/autofix.sh`, launchd agent |
+| US-14 | AI/LLM agent readiness | ✅ Complete | `config/scripts/agent-readiness.sh` |
+| US-15 | Menu bar status (SwiftBar) | ✅ Complete | `config/scripts/dev-status.1m.sh` |
+| US-16 | Research automation | ✅ Complete | mise research:* tasks |
+| US-17 | MCP integration | ✅ Complete | `config/scripts/setup-mcp.sh` |
+| US-18 | macOS testing docs | ✅ Complete | `MACOS_TESTING.md` |
+| US-19 | Future tools analysis | ✅ Complete | `FUTURE_TOOLS.md` |
+| US-20 | AI agent best practices | ✅ Complete | Vercel research applied to AGENTS.md |
 
-### Additional Deliverables (P2-P3)
+### Additional Deliverables (P2-P4)
 | Item | Description |
 |------|-------------|
 | `SKYPILOT.md` | Cloud agent documentation |
-| `tests/test_ide_configs.bats` | 31 tests for IDE/DevContainer/uninstall |
-| `tests/test_skypilot.bats` | 14 tests for SkyPilot/AWS |
-| Updated `AGENTS.md` | 510 lines, comprehensive knowledge base |
+| `PROXY.md` | Corporate HTTP/HTTPS proxy setup |
+| `TEAM_ONBOARDING.md` | Team shared patterns, CI/CD, FAQ |
+| `FUTURE_TOOLS.md` | Future tool analysis (atuin, age, direnv) |
+| `MACOS_TESTING.md` | macOS testing strategies (Tart, Lume) |
+| `tests/test_autofix.bats` | 35 tests for autofix system |
+| `tests/test_agent_readiness.bats` | 32 tests for AI agent setup |
+| `tests/test_mcp.bats` | 35 tests for MCP integration |
+| `tests/test_swiftbar.bats` | 30 tests for menu bar plugin |
+| `research/AGENT_BEST_PRACTICES.md` | Vercel AI agent research (2026) |
+| `research/MISE_ECOSYSTEM_RESEARCH.md` | Comprehensive ecosystem analysis |
+| Updated `AGENTS.md` | 327 lines, pipe-optimized format (54% reduction)
 
 ---
 

@@ -114,7 +114,7 @@ All commands use `mise run <task>` format. Run `mise tasks` to list all availabl
 
 ### Level 1: Mise (Orchestrator)
 **Purpose**: Global tool version manager & orchestrator  
-**Install**: `curl https://mise.run | sh`  
+**Install**: `curl https://mise.run | sh` (Note: This is the ONLY acceptable curl|sh - mise is the bootstrap. All other tools MUST use `mise use -g`)  
 **Config**: `~/.config/mise/config.toml`
 
 ### Level 2: Bun (JavaScript/TypeScript)

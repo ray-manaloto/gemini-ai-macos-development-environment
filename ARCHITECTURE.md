@@ -40,7 +40,7 @@ This project implements a **mise-first development environment** for macOS with 
 | **Python Packages** | Uv (10x faster than pip) |
 | **Configuration** | Pkl → TOML (type-safe, compiled) |
 | **Secrets** | 1Password CLI, Infisical, mise secrets |
-| **Testing** | BATS (254 tests) |
+| **Testing** | BATS (402 tests) |
 | **AI Integration** | MCP servers, Claude Code, OpenCode |
 
 ---
@@ -194,7 +194,7 @@ Available in PATH via: eval "$(mise activate zsh)"
 │  │     Pkl      │  │     BATS     │  │   SkyPilot   │          │
 │  │              │  │              │  │              │          │
 │  │  • Config    │  │  • Tests     │  │  • Cloud     │          │
-│  │  • Type-safe │  │  • 254 tests │  │  • AWS Spot  │          │
+│  │  • Type-safe │  │  • 402 tests │  │  • AWS Spot  │          │
 │  │  • Generate  │  │  • CI/CD     │  │  • Agents    │          │
 │  └──────────────┘  └──────────────┘  └──────────────┘          │
 └─────────────────────────────────────────────────────────────────┘
@@ -570,7 +570,7 @@ Instance terminated
 | `config/main.pkl` | Pkl source for mise.toml |
 | `config/starship.toml` | Shell prompt configuration |
 | `config/chezmoi/` | Dotfile templates |
-| `tests/*.bats` | Test suite (254 tests) |
+| `tests/*.bats` | Test suite (402 tests) |
 | `setup.sh` | Bootstrap script |
 | `AGENTS.md` | Project knowledge base |
 | `CLAUDE.md` | AI assistant context |
