@@ -35,6 +35,9 @@
 | Manage secrets | SECRETS.md, .env.example | 1Password, Infisical, mise secrets |
 | Migrate from other tools | MIGRATION.md | nvm, pyenv, asdf migration guide |
 | Use cloud agents | SKYPILOT.md, templates/agent.yaml | SkyPilot AWS spot instances |
+| Configure proxy | PROXY.md | Corporate HTTP/HTTPS proxy setup |
+| Onboard team members | TEAM_ONBOARDING.md | Shared patterns, CI/CD, FAQ |
+| Research future tools | FUTURE_TOOLS.md | atuin, age, direnv analysis |
 | Uninstall environment | uninstall.sh | Interactive with --dry-run, --force |
 
 ### Critical Rules (NEVER BREAK)

@@ -42,7 +42,11 @@ delta = "latest"
 lsd = "latest"
 hyperfine = "latest"
 glow = "latest"
+atuin = "latest"
 "github:ast-grep/ast-grep" = "latest"
+
+# --- Security & Encryption ---
+"aqua:FiloSottile/age" = "latest"
 
 # --- Data Processing ---
 jq = "latest"
@@ -604,7 +608,8 @@ elif [ -f "$HOME/.local/share/mise/shims/aws" ]; then
 fi
 
 if [ -n "$AWS_CMD" ]; then
-  if $AWS_CMD sts get-caller-identity &> /dev/null; then
+  # Redirect all output to avoid "Unable to locate credentials" message
+  if $AWS_CMD sts get-caller-identity >/dev/null 2>&1; then
     ACCOUNT=$($AWS_CMD sts get-caller-identity --query 'Account' --output text 2>/dev/null)
     echo "  ✓ Authenticated (Account: $ACCOUNT)"
   else
@@ -1679,4 +1684,169 @@ fi
 
 echo ""
 echo "DevContainer deleted."
+"""
+
+# =============================================================================
+# Proxy Configuration Tasks (Corporate Networks)
+# =============================================================================
+
+[tasks."proxy:status"]
+description = "Show current proxy configuration"
+run = """
+echo "=== Proxy Configuration Status ==="
+echo ""
+
+echo "Environment Variables:"
+echo "  HTTP_PROXY:  ${HTTP_PROXY:-<not set>}"
+echo "  HTTPS_PROXY: ${HTTPS_PROXY:-<not set>}"
+echo "  NO_PROXY:    ${NO_PROXY:-<not set>}"
+echo "  http_proxy:  ${http_proxy:-<not set>}"
+echo "  https_proxy: ${https_proxy:-<not set>}"
+echo ""
+
+echo "Git Proxy:"
+GIT_HTTP_PROXY=$(git config --global --get http.proxy 2>/dev/null || echo "<not set>")
+GIT_HTTPS_PROXY=$(git config --global --get https.proxy 2>/dev/null || echo "<not set>")
+echo "  http.proxy:  $GIT_HTTP_PROXY"
+echo "  https.proxy: $GIT_HTTPS_PROXY"
+echo ""
+
+echo "npm/Bun Proxy:"
+if command -v npm &> /dev/null; then
+  NPM_PROXY=$(npm config get proxy 2>/dev/null || echo "<not set>")
+  NPM_HTTPS_PROXY=$(npm config get https-proxy 2>/dev/null || echo "<not set>")
+  echo "  proxy:       $NPM_PROXY"
+  echo "  https-proxy: $NPM_HTTPS_PROXY"
+else
+  echo "  npm not available (using bun)"
+fi
+echo ""
+
+echo "Connectivity Test:"
+if [ -n "$HTTP_PROXY" ] || [ -n "$HTTPS_PROXY" ]; then
+  echo "  Testing via proxy..."
+  if curl -s --max-time 5 https://api.github.com > /dev/null 2>&1; then
+    echo "  ✓ GitHub API reachable"
+  else
+    echo "  ✗ GitHub API unreachable - check proxy settings"
+  fi
+else
+  echo "  No proxy configured - testing direct connection..."
+  if curl -s --max-time 5 https://api.github.com > /dev/null 2>&1; then
+    echo "  ✓ GitHub API reachable (direct)"
+  else
+    echo "  ✗ GitHub API unreachable - may need proxy"
+  fi
+fi
+echo ""
+echo "For configuration: mise run proxy:setup"
+echo "For documentation: see PROXY.md"
+"""
+
+[tasks."proxy:setup"]
+description = "Interactive proxy configuration"
+run = """
+echo "=== Proxy Configuration Setup ==="
+echo ""
+echo "This will configure proxy settings for:"
+echo "  - Environment variables (HTTP_PROXY, HTTPS_PROXY, NO_PROXY)"
+echo "  - Git (http.proxy, https.proxy)"
+echo "  - npm/Bun"
+echo ""
+
+read -p "Enter proxy URL (e.g., http://proxy.company.com:8080): " PROXY_URL
+
+if [ -z "$PROXY_URL" ]; then
+  echo "No proxy URL provided. Exiting."
+  exit 0
+fi
+
+read -p "Enter NO_PROXY hosts (default: localhost,127.0.0.1,.local): " NO_PROXY_HOSTS
+NO_PROXY_HOSTS="${NO_PROXY_HOSTS:-localhost,127.0.0.1,.local}"
+
+echo ""
+echo "Configuring proxy..."
+
+echo "Setting Git proxy..."
+git config --global http.proxy "$PROXY_URL"
+git config --global https.proxy "$PROXY_URL"
+
+if command -v npm &> /dev/null; then
+  echo "Setting npm proxy..."
+  npm config set proxy "$PROXY_URL"
+  npm config set https-proxy "$PROXY_URL"
+fi
+
+echo ""
+echo "=== Manual Steps Required ==="
+echo ""
+echo "Add these to your shell profile (~/.zshrc or ~/.bashrc):"
+echo ""
+echo "  export HTTP_PROXY=\"$PROXY_URL\""
+echo "  export HTTPS_PROXY=\"$PROXY_URL\""
+echo "  export NO_PROXY=\"$NO_PROXY_HOSTS\""
+echo "  export http_proxy=\"$PROXY_URL\""
+echo "  export https_proxy=\"$PROXY_URL\""
+echo "  export no_proxy=\"$NO_PROXY_HOSTS\""
+echo ""
+echo "Or add to .env file and source it."
+echo ""
+echo "Proxy configuration complete. Run 'mise run proxy:status' to verify."
+"""
+
+[tasks."proxy:clear"]
+description = "Clear all proxy configuration"
+run = """
+echo "=== Clearing Proxy Configuration ==="
+echo ""
+
+echo "Clearing Git proxy..."
+git config --global --unset http.proxy 2>/dev/null || true
+git config --global --unset https.proxy 2>/dev/null || true
+
+if command -v npm &> /dev/null; then
+  echo "Clearing npm proxy..."
+  npm config delete proxy 2>/dev/null || true
+  npm config delete https-proxy 2>/dev/null || true
+fi
+
+echo ""
+echo "Git and npm proxy settings cleared."
+echo ""
+echo "To clear environment variables, remove from shell profile:"
+echo "  unset HTTP_PROXY HTTPS_PROXY NO_PROXY http_proxy https_proxy no_proxy"
+echo ""
+echo "Proxy configuration cleared. Run 'mise run proxy:status' to verify."
+"""
+
+[tasks."proxy:test"]
+description = "Test proxy connectivity"
+run = """
+echo "=== Proxy Connectivity Test ==="
+echo ""
+
+ENDPOINTS=(
+  "https://api.github.com|GitHub API"
+  "https://registry.npmjs.org|npm Registry"
+  "https://pypi.org|PyPI"
+  "https://raw.githubusercontent.com|GitHub Raw"
+)
+
+for endpoint in "${ENDPOINTS[@]}"; do
+  URL="${endpoint%%|*}"
+  NAME="${endpoint##*|}"
+  printf "Testing %-20s " "$NAME..."
+  if curl -s --max-time 10 "$URL" > /dev/null 2>&1; then
+    echo "✓ OK"
+  else
+    echo "✗ FAILED"
+  fi
+done
+
+echo ""
+if [ -n "$HTTP_PROXY" ] || [ -n "$HTTPS_PROXY" ]; then
+  echo "Tests ran through proxy: ${HTTPS_PROXY:-$HTTP_PROXY}"
+else
+  echo "Tests ran with direct connection (no proxy configured)"
+fi
 """

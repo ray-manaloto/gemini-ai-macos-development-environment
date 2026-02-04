@@ -51,6 +51,7 @@ RUN ~/.local/bin/mise install \
     "npm:bats" \
     ripgrep fd fzf jq yq starship bat eza zoxide glow \
     shellcheck hadolint \
+    atuin "aqua:FiloSottile/age" \
     --yes || true
 
 # Verify installations
@@ -62,7 +63,10 @@ RUN ~/.local/bin/mise --version \
     && (command -v uv && uv --version) || echo "uv: will install on first use" \
     && echo "=== AI/LLM Tools ===" \
     && (command -v claude && claude --version) || echo "claude: will install on first use" \
-    && (command -v gemini && gemini --version 2>/dev/null) || echo "gemini: will install on first use"
+    && (command -v gemini && gemini --version 2>/dev/null) || echo "gemini: will install on first use" \
+    && echo "=== Shell Enhancements ===" \
+    && (command -v atuin && atuin --version) || echo "atuin: will install on first use" \
+    && (command -v age && age --version) || echo "age: will install on first use"
 
 WORKDIR /workspaces
 

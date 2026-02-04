@@ -62,6 +62,22 @@ setup() {
   [ "$status" -eq 0 ]
 }
 
+@test "atuin is installed" {
+  if ! command_exists atuin; then
+    skip "atuin not yet installed"
+  fi
+  run atuin --version
+  [ "$status" -eq 0 ]
+}
+
+@test "age is installed" {
+  if ! command_exists age; then
+    skip "age not yet installed"
+  fi
+  run age --version
+  [ "$status" -eq 0 ]
+}
+
 # =============================================================================
 # Search Tools
 # =============================================================================
