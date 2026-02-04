@@ -550,6 +550,273 @@ fi
 """
 
 # =============================================================================
+# DevEnvManager Native App Tasks
+# =============================================================================
+
+[tasks."devenv-app:install"]
+description = "Install DevEnvManager.app (downloads prebuilt release)"
+run = """
+#!/bin/bash
+set -euo pipefail
+
+echo "=== DevEnvManager Installation ==="
+echo ""
+
+REPO="ray-manaloto/gemini-ai-macos-development-environment"
+APP_NAME="DevEnvManager.app"
+INSTALL_DIR="$HOME/Applications"
+DOWNLOAD_DIR="${TMPDIR:-/tmp}/devenvmanager-install"
+
+# Check if already installed
+if [ -d "$INSTALL_DIR/$APP_NAME" ]; then
+  echo "⚠️  DevEnvManager is already installed at: $INSTALL_DIR/$APP_NAME"
+  echo ""
+  read -p "Do you want to reinstall? (y/N) " -n 1 -r
+  echo ""
+  if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    echo "Installation cancelled."
+    exit 0
+  fi
+  echo "Removing existing installation..."
+  rm -rf "$INSTALL_DIR/$APP_NAME"
+fi
+
+# Get latest release
+echo "📥 Fetching latest release from GitHub..."
+RELEASE_URL=$(gh api repos/$REPO/releases/latest --jq '.assets[] | select(.name | endswith(".zip")) | .browser_download_url' 2>/dev/null || echo "")
+
+if [ -z "$RELEASE_URL" ]; then
+  echo "❌ No release found. The app may need to be built first."
+  echo ""
+  echo "Options:"
+  echo "  1. Build from source: mise run devenv-app:build"
+  echo "  2. Wait for CI to create a release"
+  echo ""
+  echo "For contributors, see: DevEnvManager/README.md"
+  exit 1
+fi
+
+# Download and extract
+mkdir -p "$DOWNLOAD_DIR"
+cd "$DOWNLOAD_DIR"
+
+echo "📥 Downloading: $(basename $RELEASE_URL)"
+curl -fsSL -o devenvmanager.zip "$RELEASE_URL"
+
+echo "📦 Extracting..."
+unzip -q -o devenvmanager.zip
+
+# Install
+mkdir -p "$INSTALL_DIR"
+mv "$APP_NAME" "$INSTALL_DIR/"
+
+# Cleanup
+rm -rf "$DOWNLOAD_DIR"
+
+echo ""
+echo "✅ DevEnvManager installed to: $INSTALL_DIR/$APP_NAME"
+echo ""
+echo "🚀 Launching DevEnvManager..."
+open "$INSTALL_DIR/$APP_NAME"
+echo ""
+echo "The app icon should appear in your menu bar."
+echo "Run 'mise run devenv-app:status' to check."
+"""
+
+[tasks."devenv-app:build"]
+description = "Build DevEnvManager from source (requires Xcode.app)"
+run = """
+#!/bin/bash
+set -euo pipefail
+
+echo "=== DevEnvManager Build ==="
+echo ""
+
+# Check for Xcode
+if ! xcode-select -p | grep -q "Xcode.app"; then
+  echo "❌ Full Xcode.app is required to build DevEnvManager."
+  echo ""
+  echo "Current developer path: $(xcode-select -p)"
+  echo ""
+  echo "To install Xcode:"
+  echo "  1. Download from Mac App Store: https://apps.apple.com/us/app/xcode/id497799835"
+  echo "  2. After install, run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer"
+  echo ""
+  echo "Alternative: Install prebuilt app with: mise run devenv-app:install"
+  exit 1
+fi
+
+# Check for XcodeGen
+if ! command -v xcodegen &> /dev/null; then
+  echo "📥 Installing XcodeGen..."
+  mise use -g "ubi:yonaskolb/XcodeGen"
+  mise reshim
+fi
+
+cd "{{config_root}}/DevEnvManager"
+
+# Generate Xcode project
+echo "📝 Generating Xcode project..."
+xcodegen generate
+
+# Build
+echo "🔨 Building DevEnvManager..."
+xcodebuild -scheme DevEnvManager -configuration Release -derivedDataPath build clean build
+
+# Find the built app
+APP_PATH="build/Build/Products/Release/DevEnvManager.app"
+if [ ! -d "$APP_PATH" ]; then
+  echo "❌ Build failed - app not found at: $APP_PATH"
+  exit 1
+fi
+
+# Install to ~/Applications
+INSTALL_DIR="$HOME/Applications"
+mkdir -p "$INSTALL_DIR"
+
+if [ -d "$INSTALL_DIR/DevEnvManager.app" ]; then
+  echo "⚠️  Replacing existing installation..."
+  rm -rf "$INSTALL_DIR/DevEnvManager.app"
+fi
+
+cp -R "$APP_PATH" "$INSTALL_DIR/"
+
+echo ""
+echo "✅ DevEnvManager built and installed to: $INSTALL_DIR/DevEnvManager.app"
+echo ""
+echo "🚀 Launching DevEnvManager..."
+open "$INSTALL_DIR/DevEnvManager.app"
+"""
+
+[tasks."devenv-app:status"]
+description = "Show DevEnvManager status"
+run = """
+echo "=== DevEnvManager Status ==="
+echo ""
+
+INSTALL_DIR="$HOME/Applications"
+APP_PATH="$INSTALL_DIR/DevEnvManager.app"
+
+if [ -d "$APP_PATH" ]; then
+  echo "✅ Installed: $APP_PATH"
+  
+  # Get version from Info.plist
+  VERSION=$(defaults read "$APP_PATH/Contents/Info.plist" CFBundleShortVersionString 2>/dev/null || echo "unknown")
+  echo "   Version: $VERSION"
+  
+  # Check if running
+  if pgrep -x "DevEnvManager" > /dev/null; then
+    PID=$(pgrep -x "DevEnvManager")
+    echo "✅ Running (PID: $PID)"
+  else
+    echo "⚪ Not running"
+  fi
+else
+  echo "❌ Not installed"
+  echo ""
+  echo "Install with: mise run devenv-app:install"
+fi
+"""
+
+[tasks."devenv-app:open"]
+description = "Open DevEnvManager app"
+run = """
+INSTALL_DIR="$HOME/Applications"
+APP_PATH="$INSTALL_DIR/DevEnvManager.app"
+
+if [ -d "$APP_PATH" ]; then
+  open "$APP_PATH"
+  echo "✅ DevEnvManager opened"
+else
+  echo "❌ DevEnvManager not installed"
+  echo "Install with: mise run devenv-app:install"
+fi
+"""
+
+[tasks."devenv-app:quit"]
+description = "Quit DevEnvManager app"
+run = """
+if pgrep -x "DevEnvManager" > /dev/null; then
+  osascript -e 'tell application "DevEnvManager" to quit'
+  echo "✅ DevEnvManager quit"
+else
+  echo "⚪ DevEnvManager is not running"
+fi
+"""
+
+[tasks."devenv-app:restart"]
+description = "Restart DevEnvManager app"
+run = """
+INSTALL_DIR="$HOME/Applications"
+APP_PATH="$INSTALL_DIR/DevEnvManager.app"
+
+if [ ! -d "$APP_PATH" ]; then
+  echo "❌ DevEnvManager not installed"
+  echo "Install with: mise run devenv-app:install"
+  exit 1
+fi
+
+echo "Restarting DevEnvManager..."
+if pgrep -x "DevEnvManager" > /dev/null; then
+  osascript -e 'tell application "DevEnvManager" to quit'
+  sleep 1
+fi
+open "$APP_PATH"
+echo "✅ DevEnvManager restarted"
+"""
+
+[tasks."devenv-app:uninstall"]
+description = "Uninstall DevEnvManager app"
+run = """
+echo "=== DevEnvManager Uninstall ==="
+echo ""
+
+INSTALL_DIR="$HOME/Applications"
+APP_PATH="$INSTALL_DIR/DevEnvManager.app"
+
+if [ ! -d "$APP_PATH" ]; then
+  echo "⚪ DevEnvManager is not installed"
+  exit 0
+fi
+
+# Quit if running
+if pgrep -x "DevEnvManager" > /dev/null; then
+  echo "Quitting DevEnvManager..."
+  osascript -e 'tell application "DevEnvManager" to quit' 2>/dev/null || true
+  sleep 1
+fi
+
+# Remove app
+rm -rf "$APP_PATH"
+echo "✅ DevEnvManager.app removed"
+
+# Remove preferences
+PREFS="$HOME/Library/Preferences/dev.devenvmanager.plist"
+if [ -f "$PREFS" ]; then
+  rm -f "$PREFS"
+  echo "✅ Preferences removed"
+fi
+
+# Remove cache
+CACHE="$HOME/Library/Caches/dev.devenvmanager"
+if [ -d "$CACHE" ]; then
+  rm -rf "$CACHE"
+  echo "✅ Cache removed"
+fi
+
+echo ""
+echo "DevEnvManager has been uninstalled."
+"""
+
+[tasks."devenv-app:logs"]
+description = "View DevEnvManager logs"
+run = """
+echo "=== DevEnvManager Logs ==="
+echo ""
+log show --predicate 'process == "DevEnvManager"' --last 5m --style compact 2>/dev/null || echo "No recent logs found"
+"""
+
+# =============================================================================
 # Tool Management Tasks
 # =============================================================================
 

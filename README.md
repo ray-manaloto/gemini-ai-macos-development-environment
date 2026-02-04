@@ -130,6 +130,17 @@ mise run agent:up    # Launch cloud agent
 mise run agent:down  # Terminate when done
 ```
 
+### DevEnvManager (Menu Bar App)
+
+Native macOS menu bar app for visual tool management:
+
+```bash
+mise run devenv-app:install  # Download and install
+mise run devenv-app:status   # Check status
+```
+
+Features: Mise tools, Homebrew services, OrbStack containers, port detection. See [DevEnvManager/README.md](DevEnvManager/README.md).
+
 ## Configuration
 
 The `config/main.pkl` file is the source of truth. It compiles to `~/.config/mise/config.toml`.
@@ -143,7 +154,7 @@ The `config/main.pkl` file is the source of truth. It compiles to `~/.config/mis
 | **Cloud & Containers** | orbstack, skypilot, devpod |
 | **AI Agents** | claude-code, opencode-ai, gemini-cli, github-cli |
 | **Secrets** | 1password-cli, infisical |
-| **GUI** | swiftbar, zed |
+| **GUI** | swiftbar, zed, DevEnvManager |
 
 ### Mise Tasks
 
@@ -156,6 +167,7 @@ The `config/main.pkl` file is the source of truth. It compiles to `~/.config/mis
 | `mise run agent:down` | Terminate cloud agents |
 | `mise run setup-mcp` | Configure mise MCP for Claude |
 | `mise run setup-extensions` | Install GitHub Copilot extension |
+| `mise run devenv-app:install` | Install DevEnvManager menu bar app |
 
 ## Project Structure
 
@@ -164,6 +176,11 @@ gemini-ai-macos-development-environment/
 ├── config/
 │   ├── main.pkl              # Pkl configuration → generates mise TOML
 │   └── scripts/              # Task scripts (dashboard, validate, etc.)
+├── DevEnvManager/            # Native macOS menu bar app (Swift/SwiftUI)
+│   ├── App/                  # Entry point, delegate
+│   ├── Domain/               # Business logic (Mise, Homebrew, OrbStack)
+│   ├── Presentation/         # UI layer (MenuBarExtra)
+│   └── project.yml           # XcodeGen configuration
 ├── templates/
 │   └── agent.yaml            # SkyPilot AWS agent template
 ├── research/
@@ -173,7 +190,8 @@ gemini-ai-macos-development-environment/
 │   └── ...                         # Additional research docs
 ├── .github/
 │   └── workflows/
-│       └── validate.yml      # CI validation
+│       ├── validate.yml      # CI validation
+│       └── build-devenvmanager.yml  # DevEnvManager builds
 ├── setup.sh                  # Bootstrap script
 ├── pixi.toml                 # Pixi dependencies
 ├── README.md                 # This file
@@ -263,4 +281,4 @@ mise ls
 
 ---
 
-*Last updated: January 2026*
+*Last updated: February 2026*

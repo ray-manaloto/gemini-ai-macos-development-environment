@@ -1,5 +1,5 @@
 # PROJECT KNOWLEDGE BASE
-Generated:2026-01-26|Branch:main
+Generated:2026-02-04|Branch:main
 
 ## FOR LLM AGENTS
 
@@ -90,6 +90,11 @@ gemini-ai-macos-development-environment/
 │   ├── starship.toml      # Prompt
 │   ├── chezmoi/           # Dotfiles
 │   └── scripts/           # validate.sh, dashboard.py
+├── DevEnvManager/         # Native macOS menu bar app (Swift/SwiftUI)
+│   ├── App/               # Entry point, delegate
+│   ├── Domain/            # Business logic (Mise, Homebrew, OrbStack)
+│   ├── Presentation/      # UI layer (MenuBarExtra)
+│   └── project.yml        # XcodeGen configuration
 ├── tests/                 # 402 BATS tests
 ├── research/              # 12+ research docs
 ├── openspec/              # Specs, changes
@@ -149,6 +154,16 @@ mise run devcontainer:ssh|Connect
 ### Menu Bar (SwiftBar)
 mise run menubar:install|Install plugin
 mise run menubar:status|Check status
+
+### DevEnvManager (Native App)
+mise run devenv-app:install|Download from GitHub Release
+mise run devenv-app:build|Build from source (requires Xcode)
+mise run devenv-app:status|Check installation/running status
+mise run devenv-app:open|Open the app
+mise run devenv-app:quit|Quit the app
+mise run devenv-app:restart|Restart the app
+mise run devenv-app:uninstall|Remove app and data
+mise run devenv-app:logs|View system logs
 
 ---
 
