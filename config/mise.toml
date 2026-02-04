@@ -429,6 +429,127 @@ description = "Configure mise MCP"
 run = "sh {{config_root}}/config/scripts/setup-mcp.sh"
 
 # =============================================================================
+# SwiftBar Menu Bar Tasks
+# =============================================================================
+
+[tasks."menubar:install"]
+description = "Install SwiftBar and configure plugin"
+run = """
+echo "=== SwiftBar Menu Bar Installation ==="
+echo ""
+
+# Check if SwiftBar is installed
+if [ -d "/Applications/SwiftBar.app" ]; then
+  echo "✅ SwiftBar is already installed"
+else
+  echo "📥 Installing SwiftBar via Homebrew..."
+  if command -v brew &> /dev/null; then
+    brew install --cask swiftbar
+    echo "✅ SwiftBar installed"
+  else
+    echo "❌ Homebrew not found. Install SwiftBar manually:"
+    echo "   https://swiftbar.app"
+    exit 1
+  fi
+fi
+
+# Configure plugin directory
+PLUGIN_DIR="{{config_root}}/config/scripts"
+echo ""
+echo "📂 Configuring SwiftBar plugin directory..."
+defaults write com.ameba.SwiftBar PluginDirectory "$PLUGIN_DIR"
+echo "✅ Plugin directory set to: $PLUGIN_DIR"
+
+# Make plugin executable
+chmod +x "$PLUGIN_DIR/dev-status.1m.sh"
+echo "✅ Plugin made executable"
+
+# Launch SwiftBar
+echo ""
+echo "🚀 Launching SwiftBar..."
+open -a SwiftBar
+
+echo ""
+echo "✨ SwiftBar setup complete!"
+echo "   Look for the status icon in your menu bar"
+"""
+
+[tasks."menubar:uninstall"]
+description = "Remove SwiftBar configuration"
+run = """
+echo "=== SwiftBar Removal ==="
+defaults delete com.ameba.SwiftBar PluginDirectory 2>/dev/null || true
+echo "✅ SwiftBar configuration removed"
+echo ""
+echo "To fully uninstall SwiftBar:"
+echo "  brew uninstall --cask swiftbar"
+"""
+
+[tasks."menubar:status"]
+description = "Show SwiftBar status"
+run = """
+echo "=== SwiftBar Status ==="
+echo ""
+
+if [ -d "/Applications/SwiftBar.app" ]; then
+  echo "✅ SwiftBar: Installed"
+  
+  # Check if running
+  if pgrep -x "SwiftBar" > /dev/null; then
+    echo "✅ SwiftBar: Running"
+  else
+    echo "⚪ SwiftBar: Not running"
+  fi
+  
+  # Show plugin directory
+  PLUGIN_DIR=$(defaults read com.ameba.SwiftBar PluginDirectory 2>/dev/null || echo "Not configured")
+  echo "📂 Plugin directory: $PLUGIN_DIR"
+  
+  # List plugins
+  if [ -d "$PLUGIN_DIR" ]; then
+    echo ""
+    echo "📋 Plugins found:"
+    ls -la "$PLUGIN_DIR"/*.sh 2>/dev/null | awk '{print "   " $NF}'
+  fi
+else
+  echo "❌ SwiftBar: Not installed"
+  echo ""
+  echo "Install with: mise run menubar:install"
+fi
+"""
+
+[tasks."menubar:refresh"]
+description = "Refresh SwiftBar plugins"
+run = """
+echo "🔄 Refreshing SwiftBar..."
+osascript -e 'tell application "SwiftBar" to refreshAllPlugins'
+echo "✅ All plugins refreshed"
+"""
+
+[tasks."menubar:open"]
+description = "Open SwiftBar app"
+run = """
+if [ -d "/Applications/SwiftBar.app" ]; then
+  open -a SwiftBar
+  echo "✅ SwiftBar opened"
+else
+  echo "❌ SwiftBar not installed"
+  echo "Install with: mise run menubar:install"
+fi
+"""
+
+[tasks."menubar:edit"]
+description = "Edit the dev-status plugin"
+run = """
+PLUGIN="{{config_root}}/config/scripts/dev-status.1m.sh"
+if [ -f "$PLUGIN" ]; then
+  ${EDITOR:-open} "$PLUGIN"
+else
+  echo "❌ Plugin not found: $PLUGIN"
+fi
+"""
+
+# =============================================================================
 # Tool Management Tasks
 # =============================================================================
 

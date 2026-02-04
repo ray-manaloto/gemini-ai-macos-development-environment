@@ -255,6 +255,17 @@ Fast pip replacement:
 | `mise run agent:ready:json` | JSON output for CI integration |
 | `mise run agent:ready:quiet` | Only output if issues found |
 
+### Menu Bar Tasks (SwiftBar)
+
+| Command | Description |
+|---------|-------------|
+| `mise run menubar:install` | Install SwiftBar and configure plugin |
+| `mise run menubar:uninstall` | Remove SwiftBar configuration |
+| `mise run menubar:status` | Show SwiftBar status |
+| `mise run menubar:refresh` | Refresh SwiftBar plugins |
+| `mise run menubar:open` | Open SwiftBar app |
+| `mise run menubar:edit` | Edit the dev-status plugin |
+
 ### Authentication Tasks
 
 | Command | Description |
@@ -373,7 +384,7 @@ which -a <tool>            # Shows all locations
 
 ## TESTING
 
-### Test Files (359 tests total)
+### Test Files (402 tests total)
 
 | File | Coverage |
 |------|----------|
@@ -390,6 +401,7 @@ which -a <tool>            # Shows all locations
 | test_setup.bats | Bootstrap script validation, spec compliance |
 | test_autofix.bats | Autofix system, launchd plist, mise tasks |
 | test_agent_readiness.bats | Agent readiness, settings.json, mise tasks |
+| test_swiftbar.bats | SwiftBar plugin, menu bar tasks, multi-env support |
 | test_autofix.bats | Autofix system, launchd plist, mise tasks |
 
 ### Running Tests

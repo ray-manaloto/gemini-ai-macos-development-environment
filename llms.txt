@@ -84,6 +84,14 @@ All commands use `mise run <task>` format. Run `mise tasks` to list all availabl
 - **mise run agent:ready:json**: JSON output for CI integration
 - **mise run agent:ready:quiet**: Only output if issues found
 
+### Menu Bar (SwiftBar)
+- **mise run menubar:install**: Install SwiftBar and configure plugin
+- **mise run menubar:uninstall**: Remove SwiftBar configuration
+- **mise run menubar:status**: Show SwiftBar status
+- **mise run menubar:refresh**: Refresh SwiftBar plugins
+- **mise run menubar:open**: Open SwiftBar app
+- **mise run menubar:edit**: Edit the dev-status plugin
+
 ---
 
 ## Configuration
@@ -227,7 +235,7 @@ All commands use `mise run <task>` format. Run `mise tasks` to list all availabl
 
 ## Testing
 
-### Test Suite (359 tests)
+### Test Suite (402 tests)
 - tests/test_mise.bats: Mise installation, backends, tasks
 - tests/test_tools.bats: CLI tool availability
 - tests/test_chezmoi.bats: Dotfile template validation
@@ -241,6 +249,7 @@ All commands use `mise run <task>` format. Run `mise tasks` to list all availabl
 - tests/test_setup.bats: Bootstrap script validation, spec compliance
 - tests/test_autofix.bats: Autofix system, launchd plist, mise tasks
 - tests/test_agent_readiness.bats: Agent readiness, settings.json, mise tasks
+- tests/test_swiftbar.bats: SwiftBar plugin, menu bar tasks, multi-env support
 
 ### Running Tests
 ```bash
