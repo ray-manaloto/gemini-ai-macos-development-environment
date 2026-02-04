@@ -38,6 +38,7 @@
 | Configure proxy | PROXY.md | Corporate HTTP/HTTPS proxy setup |
 | Onboard team members | TEAM_ONBOARDING.md | Shared patterns, CI/CD, FAQ |
 | Research future tools | FUTURE_TOOLS.md | atuin, age, direnv analysis |
+| Test on macOS | MACOS_TESTING.md | Tart, Lume, GitHub Actions, nix-darwin |
 | Uninstall environment | uninstall.sh | Interactive with --dry-run, --force |
 
 ### Critical Rules (NEVER BREAK)

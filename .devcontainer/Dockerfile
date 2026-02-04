@@ -3,7 +3,7 @@
 # Primary usage: devcontainer.json with mise feature
 # Build standalone: docker build -t god-tier-dev .devcontainer/
 
-FROM mcr.microsoft.com/devcontainers/base:ubuntu-22.04
+FROM mcr.microsoft.com/devcontainers/base:ubuntu-24.04
 
 ARG USERNAME=vscode
 ARG TARGETARCH=arm64
