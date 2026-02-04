@@ -1850,3 +1850,196 @@ else
   echo "Tests ran with direct connection (no proxy configured)"
 fi
 """
+
+# =============================================================================
+# Autofix Tasks - Detect and remediate tool installation issues
+# =============================================================================
+
+[tasks."autofix:status"]
+description = "Show environment issues without fixing (dry-run)"
+run = """
+#!/bin/bash
+SCRIPT="{{config_root}}/config/scripts/autofix.sh"
+if [ -f "$SCRIPT" ]; then
+  bash "$SCRIPT" status
+else
+  echo "ERROR: autofix.sh not found at $SCRIPT"
+  exit 1
+fi
+"""
+
+[tasks."autofix:fix"]
+description = "Fix environment issues with backup"
+run = """
+#!/bin/bash
+SCRIPT="{{config_root}}/config/scripts/autofix.sh"
+if [ -f "$SCRIPT" ]; then
+  bash "$SCRIPT" fix
+else
+  echo "ERROR: autofix.sh not found at $SCRIPT"
+  exit 1
+fi
+"""
+
+[tasks."autofix:json"]
+description = "Output environment issues as JSON (for integration)"
+run = """
+#!/bin/bash
+SCRIPT="{{config_root}}/config/scripts/autofix.sh"
+if [ -f "$SCRIPT" ]; then
+  bash "$SCRIPT" --json
+else
+  echo '{"error": "autofix.sh not found"}'
+  exit 1
+fi
+"""
+
+# =============================================================================
+# Launchd Tasks - macOS daemon management for autofix
+# =============================================================================
+
+[tasks."launchd:install"]
+description = "Install autofix launchd agent (macOS only)"
+run = """
+#!/bin/bash
+set -euo pipefail
+
+if [ "$(uname)" != "Darwin" ]; then
+  echo "ERROR: launchd is only available on macOS"
+  exit 1
+fi
+
+PLIST_SRC="{{config_root}}/config/launchd/com.godtier.autofix.plist"
+PLIST_DST="$HOME/Library/LaunchAgents/com.godtier.autofix.plist"
+LOG_DIR="$HOME/Library/Logs"
+
+if [ ! -f "$PLIST_SRC" ]; then
+  echo "ERROR: Plist not found at $PLIST_SRC"
+  exit 1
+fi
+
+echo "=== Installing Autofix Launchd Agent ==="
+
+# Unload existing if present
+if launchctl list | grep -q "com.godtier.autofix"; then
+  echo "Unloading existing agent..."
+  launchctl unload "$PLIST_DST" 2>/dev/null || true
+fi
+
+# Create LaunchAgents directory if needed
+mkdir -p "$HOME/Library/LaunchAgents"
+mkdir -p "$LOG_DIR"
+
+# Copy plist (substituting paths)
+CONFIG_ROOT="{{config_root}}"
+sed -e "s|{{CONFIG_ROOT}}|$CONFIG_ROOT|g" \
+    -e "s|{{HOME}}|$HOME|g" \
+    "$PLIST_SRC" > "$PLIST_DST"
+
+# Load the agent
+launchctl load "$PLIST_DST"
+
+echo "✅ Autofix agent installed and loaded"
+echo ""
+echo "The agent will:"
+echo "  - Run autofix on login"
+echo "  - Run autofix daily at 9 AM"
+echo "  - Log to $LOG_DIR/godtier-autofix.log"
+echo ""
+echo "Use 'mise run launchd:status' to check status"
+"""
+
+[tasks."launchd:uninstall"]
+description = "Uninstall autofix launchd agent (macOS only)"
+run = """
+#!/bin/bash
+set -euo pipefail
+
+if [ "$(uname)" != "Darwin" ]; then
+  echo "ERROR: launchd is only available on macOS"
+  exit 1
+fi
+
+PLIST_DST="$HOME/Library/LaunchAgents/com.godtier.autofix.plist"
+
+echo "=== Uninstalling Autofix Launchd Agent ==="
+
+if launchctl list | grep -q "com.godtier.autofix"; then
+  echo "Unloading agent..."
+  launchctl unload "$PLIST_DST" 2>/dev/null || true
+fi
+
+if [ -f "$PLIST_DST" ]; then
+  rm "$PLIST_DST"
+  echo "Removed plist file"
+fi
+
+echo "✅ Autofix agent uninstalled"
+"""
+
+[tasks."launchd:status"]
+description = "Show autofix launchd agent status (macOS only)"
+run = """
+#!/bin/bash
+
+if [ "$(uname)" != "Darwin" ]; then
+  echo "ERROR: launchd is only available on macOS"
+  exit 1
+fi
+
+PLIST_DST="$HOME/Library/LaunchAgents/com.godtier.autofix.plist"
+LOG_FILE="$HOME/Library/Logs/godtier-autofix.log"
+
+echo "=== Autofix Launchd Agent Status ==="
+echo ""
+
+# Check if plist exists
+if [ -f "$PLIST_DST" ]; then
+  echo "✓ Plist installed: $PLIST_DST"
+else
+  echo "✗ Plist not installed"
+  echo ""
+  echo "Run 'mise run launchd:install' to install"
+  exit 0
+fi
+
+# Check if loaded
+echo ""
+if launchctl list | grep -q "com.godtier.autofix"; then
+  echo "✓ Agent is loaded"
+  launchctl list | grep "com.godtier.autofix"
+else
+  echo "✗ Agent not loaded"
+  echo ""
+  echo "Run: launchctl load $PLIST_DST"
+fi
+
+# Show recent logs
+echo ""
+if [ -f "$LOG_FILE" ]; then
+  echo "=== Recent Logs (last 10 lines) ==="
+  tail -10 "$LOG_FILE"
+else
+  echo "No log file yet (agent hasn't run)"
+fi
+"""
+
+[tasks."launchd:run"]
+description = "Manually trigger the launchd autofix agent (macOS only)"
+run = """
+#!/bin/bash
+
+if [ "$(uname)" != "Darwin" ]; then
+  echo "ERROR: launchd is only available on macOS"
+  exit 1
+fi
+
+if ! launchctl list | grep -q "com.godtier.autofix"; then
+  echo "ERROR: Agent not installed. Run 'mise run launchd:install' first."
+  exit 1
+fi
+
+echo "Triggering autofix agent..."
+launchctl start com.godtier.autofix
+echo "Done. Check 'mise run launchd:status' for results."
+"""
