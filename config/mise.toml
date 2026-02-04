@@ -2266,7 +2266,7 @@ curl -s 'https://mise-versions.jdx.dev/api/tools?limit=1' | jq '{
 }' 2>/dev/null || echo "API unavailable"
 echo ""
 echo "━━━ Top 10 Downloads (30 days) ━━━"
-curl -s 'https://mise-versions.jdx.dev/api/tools' | jq -r '.downloads | to_entries | sort_by(-.value) | .[0:10] | .[] | "\(.key): \(.value)"' 2>/dev/null || echo "API unavailable"
+curl -s 'https://mise-versions.jdx.dev/api/tools' | jq -r '.downloads | to_entries | sort_by(-.value) | .[0:10] | .[] | "\\(.key): \\(.value)"' 2>/dev/null || echo "API unavailable"
 """
 
 [tasks."research:ecosystem"]
