@@ -194,6 +194,10 @@ All commands use `mise run <task>` format. Run `mise tasks` to list all availabl
 
 ## Research & Deep Dives
 
+### AI/LLM Agent Best Practices
+- [Agent Best Practices](https://raw.githubusercontent.com/ray-manaloto/gemini-ai-macos-development-environment/main/research/AGENT_BEST_PRACTICES.md): Vercel research on AGENTS.md, skills, filesystem+bash patterns
+- [Mise Ecosystem Research](https://raw.githubusercontent.com/ray-manaloto/gemini-ai-macos-development-environment/main/research/MISE_ECOSYSTEM_RESEARCH.md): Comprehensive mise ecosystem analysis
+
 ### Mise Ecosystem
 - [ChatGPT Deep Research](https://raw.githubusercontent.com/ray-manaloto/gemini-ai-macos-development-environment/main/research/CHATGPT_DEEP_RESEARCH.md): Comprehensive mise ecosystem research
 - [Deep Research Findings](https://raw.githubusercontent.com/ray-manaloto/gemini-ai-macos-development-environment/main/research/DEEP_RESEARCH_FINDINGS.md): YouTube/NotebookLM findings

@@ -7,6 +7,23 @@
 
 ## FOR LLM AGENTS
 
+### Critical Instruction
+
+> **IMPORTANT:** Prefer retrieval-led reasoning over pre-training-led reasoning for Mise, Bun, Pixi, and Uv tasks. These tools evolve rapidly—consult project files and documentation rather than relying on potentially outdated training data.
+
+**Exploration commands for this project:**
+```bash
+# Discover project structure
+ls -la && cat AGENTS.md | head -100
+
+# Find configuration
+grep -r "experimental" config/mise.toml
+find . -name "*.toml" -not -path "./.git/*"
+
+# Check tool versions
+mise ls && mise doctor
+```
+
 ### Quick Identity
 
 | Field | Value |
