@@ -25,7 +25,7 @@ I want to...|Go to...|Key info
 Understand philosophy|CLAUDE.md|Tool hierarchy, patterns
 Install everything|setup.sh|Run once
 Add/modify tools|config/mise.toml|SOURCE OF TRUTH
-Run tests|tests/*.bats|923 tests, `bats tests/`
+Run tests|tests/*.bats|948 tests, `bats tests/`
 Validate env|`mise run validate`|Health check
 Configure dotfiles|config/chezmoi/|Templates
 Configure prompt|config/starship.toml|Modules
@@ -220,7 +220,7 @@ Wrong|Why|Right
 
 ## TESTING
 
-### Test Files (923 total)
+### Test Files (948 total)
 test_mise.bats|Mise backends, tasks
 test_tools.bats|CLI availability
 test_chezmoi.bats|Dotfile templates
@@ -350,22 +350,43 @@ Config not loading|`cp config/mise.toml ~/.config/mise/config.toml`
 
 ---
 
-## EXTERNAL SKILLS & AGENTS (from samhvw8/dotfiles)
+## PROJECT SKILLS (AI Agent Capabilities)
 
-### Skills (25)
-Core|0-claude, 0-planning, 0-prompt-architect, 0-research, 0-sequential-thinking
-Dev|backend-development, frontend-development, databases, code-quality, git-workflow
-Infra|infra-engineer, mise-expert
-Special|3d-graphics, ai-tools, browser-history, canvas-design, chrome-devtools, docs-discovery, media-processing, mobile-development, nextjs-turborepo, payment-integration, problem-solving, repomix, shopify
+Skills are project-level only (`.claude/skills/`, `.opencode/skills/`, `.agents/skills/`).
+Managed via `bunx skills add/remove/list`. Never install globally.
 
-### Agents (24)
-Arch|system-architect, react-next-architect, svelte-kit-architect, devops-architect
-Quality|code-reviewer, refactoring-expert, quality-engineer, security-engineer
-Dev|python-expert, database-admin
-Research|researcher, planner, requirements-analyst, brainstormer, scout
-Docs|docs-manager, copywriter, journal-writer
-Test|tester, debugger
-Other|ui-ux-designer, project-manager, learning-guide, mcp-manager
+### Custom Project Skills (5)
+Skill|Domain|Triggers
+mise-expert|Mise config, tasks, backends|mise.toml, tool install, mise settings
+bats-testing|BATS test patterns, assertions|test writing, test failures, .bats files
+shell-scripting|Bash scripts, SwiftBar plugin|.sh files, setup.sh, shell functions
+rust-dev|Iced + Tauri Rust backends|.rs files, Cargo.toml, cargo commands
+menu-bar-dev|All 4 menu bar implementations|NSStatusItem, tray, DevEnvManager
+
+### Installed Skills (7, from trusted sources)
+Source|Skill|Purpose
+anthropics/skills|skill-creator|Create/update skills
+anthropics/skills|mcp-builder|Build MCP servers
+anthropics/skills|webapp-testing|Playwright web testing
+obra/superpowers|systematic-debugging|Bug investigation workflow
+obra/superpowers|test-driven-development|Red-green-refactor TDD
+obra/superpowers|verification-before-completion|Evidence before assertions
+vercel-labs/agent-skills|web-design-guidelines|UI/UX review
+
+### Workflow Skills (14, OpenSpec + Dev)
+openspec-*|10 skills for OpenSpec change workflow (explore, new, apply, verify, archive, etc.)
+analyze|Non-interactive code analysis (structure, deps, patterns)
+investigate|Non-interactive issue investigation (root cause, evidence)
+tdd|Non-interactive TDD red-green-refactor
+refactor|Non-interactive code refactoring
+
+### Skills Architecture
+```
+.agents/skills/    ← Universal source (26 skills, managed by bunx)
+  ├── symlink → .claude/skills/     (26 total: all symlinked)
+  └── symlink → .opencode/skills/   (26 total: all symlinked)
+```
+AGENTS.md = horizontal knowledge (always loaded). Skills = vertical action workflows (loaded on trigger).
 
 ---
 
