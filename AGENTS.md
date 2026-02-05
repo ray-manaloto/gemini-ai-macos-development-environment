@@ -1,5 +1,5 @@
 # PROJECT KNOWLEDGE BASE
-Generated:2026-02-04|Branch:main
+Generated:2026-02-04|Branch:feat/ai-optimization-from-downloads (PR #1)
 
 ## FOR LLM AGENTS
 
@@ -31,7 +31,7 @@ Configure dotfiles|config/chezmoi/|Templates
 Configure prompt|config/starship.toml|Modules
 View manual|`mise run help`|MANUAL.md
 Project plan|PROJECT_PLAN.md|Sprints, backlog
-Research docs|research/|12+ documents
+Research docs|research/|15+ documents
 OpenSpec|.claude/,.gemini/,.Claude/,.cursor/|10 commands each
 Secrets|SECRETS.md|1Password, Infisical
 Migration|MIGRATION.md|nvm, pyenv, asdf
@@ -90,13 +90,27 @@ gemini-ai-macos-development-environment/
 │   ├── starship.toml      # Prompt
 │   ├── chezmoi/           # Dotfiles
 │   └── scripts/           # validate.sh, dashboard.py
-├── DevEnvManager/         # Native macOS menu bar app (Swift/SwiftUI)
-│   ├── App/               # Entry point, delegate
+├── DevEnvManager/         # Spec B: Native Swift menu bar app (requires Xcode)
+│   ├── App/               # AppDelegate (NSStatusItem + NSPopover)
 │   ├── Domain/            # Business logic (Mise, Homebrew, OrbStack)
-│   ├── Presentation/      # UI layer (MenuBarExtra)
+│   ├── Presentation/      # UI layer
 │   └── project.yml        # XcodeGen configuration
+├── DevEnvManager-SwiftBar/  # Spec A: Enhanced SwiftBar plugin (bash)
+│   ├── dev-status.5s.sh   # 503-line bash plugin
+│   └── tests/             # BATS tests (10 tests)
+├── DevEnvManager-Iced/    # Spec C: Rust iced + tray-icon (5.4 MB binary)
+│   ├── src/               # app.rs, tray.rs, config.rs, domain/, views/
+│   ├── Cargo.toml         # iced 0.14, tray-icon 0.21
+│   └── target/release/    # Pre-built binary
+├── DevEnvManager-Tauri/   # Spec D: Tauri 2 + React
+│   ├── src-tauri/src/     # lib.rs, tray.rs, commands/
+│   ├── src/               # React frontend (App, components, hooks)
+│   └── package.json       # bun + react + tauri CLI
 ├── tests/                 # 402 BATS tests
-├── research/              # 12+ research docs
+├── research/              # 15+ research docs
+│   ├── DEVENVMANAGER_TRAY_RESEARCH.md   # Notch overflow analysis
+│   ├── MENUBAR_IMPLEMENTATION_SPECS.md  # 4-way specs (1,195 lines)
+│   └── MENUBAR_COMPARISON_REPORT.md     # Metrics + ranking
 ├── openspec/              # Specs, changes
 ├── templates/agent.yaml   # SkyPilot AWS
 ├── .claude/,.gemini/,.Claude/,.cursor/  # AI configs
@@ -164,6 +178,23 @@ mise run devenv-app:quit|Quit the app
 mise run devenv-app:restart|Restart the app
 mise run devenv-app:uninstall|Remove app and data
 mise run devenv-app:logs|View system logs
+
+### DevEnvManager Implementations (P5 - Menu Bar Exploration)
+```bash
+# A: SwiftBar (needs SwiftBar.app from brew)
+open /Applications/SwiftBar.app
+
+# C: Iced (pure Rust binary, ready to run)
+./DevEnvManager-Iced/target/release/devenv-manager-iced &
+
+# D: Tauri 2 (Rust + React dev server)
+cd DevEnvManager-Tauri && bun tauri dev
+
+# B: Swift (requires Xcode.app, not CLT)
+# cd DevEnvManager && xcodegen generate && xcodebuild build
+```
+Ranking: B (Swift) > C (Iced) > D (Tauri) > A (SwiftBar)
+Details: research/MENUBAR_COMPARISON_REPORT.md
 
 ---
 

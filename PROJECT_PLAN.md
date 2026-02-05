@@ -1,7 +1,8 @@
 # Project Plan: God-Tier macOS Development Environment
 
-**Last Updated**: 2026-02-03
-**Status**: P1-P4 Complete - Production Ready + AI Agent Optimized
+**Last Updated**: 2026-02-04
+**Status**: P1-P4 Complete, P5 In Progress (Menu Bar Exploration)
+**Branch**: `feat/ai-optimization-from-downloads` (PR #1 open)
 **Context Recovery Document**: This file maintains project state for AI context resets
 
 ---
@@ -218,6 +219,68 @@ Complete the foundational setup so `./setup.sh` produces a fully working environ
 | `research/MISE_ECOSYSTEM_RESEARCH.md` | Comprehensive ecosystem analysis |
 | Updated `AGENTS.md` | 327 lines, pipe-optimized format (54% reduction)
 
+### P5 - DevEnvManager Menu Bar Exploration - IN PROGRESS
+
+**Goal**: Solve the notch-overflow tray icon problem on M2 Max MacBooks. Build 4 side-by-side menu bar implementations to compare frameworks, then pick one for production.
+
+**Problem**: The existing DevEnvManager.app's menu bar icon (commit `a0b3eed`) is hidden behind the MacBook Pro notch at X=781 (notch starts ~X=772).
+
+**Branch**: `feat/ai-optimization-from-downloads` (PR #1 open, mergeable)
+
+| ID | Implementation | Status | Directory | Build |
+|----|---------------|--------|-----------|-------|
+| A | Enhanced SwiftBar Plugin | ✅ Complete | `DevEnvManager-SwiftBar/` | `bash -n` pass, BATS 10/10 |
+| B | Native Swift NSStatusItem Fix | ✅ Complete | `DevEnvManager/` (modified) | Needs Xcode.app for full build |
+| C | Rust iced + tray-icon | ✅ Complete | `DevEnvManager-Iced/` | `cargo check` clean, 5.4 MB release binary |
+| D | Tauri 2 + React | ✅ Complete | `DevEnvManager-Tauri/` | `cargo check` clean, `bun tauri dev` works |
+
+**Key Commits (on `feat/ai-optimization-from-downloads`)**:
+| Commit | Description |
+|--------|-------------|
+| `a0b3eed` | Original native macOS menu bar app + GitHub Actions build pipeline |
+| `51740c5` | All 4 implementations with compile-verified Rust (80 files, 7,280 LOC) |
+| `81b1076` | Comparison report with quantitative metrics |
+
+**Research Docs**:
+| File | Content |
+|------|---------|
+| `research/DEVENVMANAGER_TRAY_RESEARCH.md` | Notch overflow analysis, framework comparison |
+| `research/MENUBAR_IMPLEMENTATION_SPECS.md` | Detailed specs for all 4 implementations (1,195 lines) |
+| `research/MENUBAR_COMPARISON_REPORT.md` | Build metrics, architecture assessment, ranking |
+
+**Fixes Applied**:
+- Iced: Removed deprecated `tokio-process`, fixed `daemon()` API, `checkbox()` API, lifetime annotations
+- Tauri: Fixed `Image<'static>`, `tauri_plugin_store::Builder`, `Emitter` import, autostart init, RGBA icons
+- Swift: Replaced Combine `objectWillChange` with `withObservationTracking` for `@Observable` stores
+- SwiftBar: Plugin copied to SwiftBar's configured directory (`~/dev/swiftbar/`)
+
+**Launch Commands**:
+```bash
+# SwiftBar (needs SwiftBar.app from brew)
+open /Applications/SwiftBar.app
+
+# Iced (pure Rust binary, ready to run)
+./DevEnvManager-Iced/target/release/devenv-manager-iced &
+
+# Tauri 2 (Rust + React dev server)
+cd DevEnvManager-Tauri && bun tauri dev
+
+# Swift (requires Xcode.app)
+# cd DevEnvManager && xcodegen generate && xcodebuild build
+```
+
+**Ranking** (from comparison report):
+1. **B: Native Swift** — Best native UX, smallest footprint. Blocked by Xcode requirement.
+2. **C: Iced + tray-icon** — Best pure-Rust option. 5.4 MB binary, clean architecture. Pre-1.0 API risk.
+3. **D: Tauri 2** — Most feature-rich, largest ecosystem. WebView memory overhead.
+4. **A: SwiftBar** — Best for quick status, limited interactivity.
+
+**Next Steps**:
+- [ ] Runtime test all 4 implementations side-by-side
+- [ ] Verify notch handling on each
+- [ ] Consider egui + tray-icon as 5th contender (~2 MB binary)
+- [ ] Pick winner and merge to main
+
 ---
 
 ## Technical Architecture
@@ -408,6 +471,18 @@ ls -la tests/            # Test files
 ---
 
 ## Changelog
+
+### 2026-02-04 (Session 6 - P5 Menu Bar Exploration)
+- **STARTED**: P5 Sprint - DevEnvManager Menu Bar Exploration
+- Built 4 parallel menu bar implementations to solve notch-overflow tray icon problem
+- **Spec A**: Enhanced SwiftBar bash plugin (503 lines, BATS 10/10)
+- **Spec B**: Fixed native Swift AppDelegate — replaced Combine with `withObservationTracking`
+- **Spec C**: Rust iced + tray-icon — 5.4 MB release binary, clean `cargo check`
+- **Spec D**: Tauri 2 + React — fixed 6 compile errors, RGBA icon regeneration
+- Added 3 research docs: tray research, implementation specs (1,195 lines), comparison report
+- Installed SwiftBar via `brew --cask`, launched Iced binary, ran Tauri dev server
+- Updated AGENTS.md, CLAUDE.md, llms.txt, PROJECT_PLAN.md with P5 context
+- **Commits**: `51740c5` (80 files, 7,280 LOC), `81b1076` (comparison report)
 
 ### 2026-01-26 (Session 3)
 - Added Quick Start section with installation instructions

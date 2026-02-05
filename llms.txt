@@ -206,6 +206,11 @@ All commands use `mise run <task>` format. Run `mise tasks` to list all availabl
 ### MCP Integration
 - [MCP Setup](https://raw.githubusercontent.com/ray-manaloto/gemini-ai-macos-development-environment/main/research/MISE_MCP_SETUP.md): Model Context Protocol integration guide
 
+### DevEnvManager Menu Bar (P5)
+- [Tray Research](https://raw.githubusercontent.com/ray-manaloto/gemini-ai-macos-development-environment/main/research/DEVENVMANAGER_TRAY_RESEARCH.md): Notch overflow analysis, framework comparison
+- [Implementation Specs](https://raw.githubusercontent.com/ray-manaloto/gemini-ai-macos-development-environment/main/research/MENUBAR_IMPLEMENTATION_SPECS.md): 4-way implementation specs (SwiftBar, Swift, Iced, Tauri)
+- [Comparison Report](https://raw.githubusercontent.com/ray-manaloto/gemini-ai-macos-development-environment/main/research/MENUBAR_COMPARISON_REPORT.md): Build metrics, architecture assessment, ranking
+
 ### Additional Research
 - research/BATS_TESTING_GUIDE.md: BATS testing framework guide
 - research/BUN_INTEGRATION.md: Bun integration patterns
@@ -400,6 +405,6 @@ mise upgrade                    # Update mise itself
 
 ---
 
-**Last Updated**: 2026-01-31  
-**Version**: 2.0  
+**Last Updated**: 2026-02-04  
+**Version**: 2.1  
 **Maintainer**: Ray Manaloto

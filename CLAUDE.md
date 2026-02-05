@@ -376,18 +376,39 @@ mise run agent:down
 ```
 gemini-ai-macos-development-environment/
 ├── config/
-│   ├── main.pkl           # Pkl configuration (generates TOML)
-│   └── scripts/           # Task scripts
+│   ├── mise.toml          # SOURCE OF TRUTH
+│   ├── main.pkl           # Pkl → generates TOML
+│   ├── starship.toml      # Shell prompt config
+│   ├── chezmoi/           # Dotfile templates
+│   └── scripts/           # validate.sh, dashboard.py
+├── DevEnvManager/         # Spec B: Native Swift menu bar app (requires Xcode)
+│   ├── App/               # AppDelegate (NSStatusItem + NSPopover)
+│   ├── Domain/            # Business logic (Mise, Homebrew, OrbStack)
+│   ├── Presentation/      # UI layer
+│   └── project.yml        # XcodeGen configuration
+├── DevEnvManager-SwiftBar/  # Spec A: Enhanced SwiftBar plugin (bash)
+│   ├── dev-status.5s.sh   # 503-line bash plugin
+│   └── tests/             # BATS tests (10 tests)
+├── DevEnvManager-Iced/    # Spec C: Rust iced + tray-icon (5.4 MB binary)
+│   ├── src/               # app.rs, tray.rs, config.rs, domain/, views/
+│   ├── Cargo.toml         # iced 0.14, tray-icon 0.21
+│   └── target/release/    # Pre-built binary
+├── DevEnvManager-Tauri/   # Spec D: Tauri 2 + React
+│   ├── src-tauri/src/     # lib.rs, tray.rs, commands/
+│   ├── src/               # React frontend (App, components, hooks)
+│   └── package.json       # bun + react + tauri CLI
 ├── templates/
 │   └── agent.yaml         # SkyPilot agent template
-├── research/
-│   ├── CHATGPT_DEEP_RESEARCH.md    # ChatGPT research report
-│   ├── DEEP_RESEARCH_FINDINGS.md   # NotebookLM findings
-│   ├── GAPS_ANALYSIS.md            # Gap analysis
-│   └── ...                         # Additional research
+├── research/              # 15+ research docs
+│   ├── DEVENVMANAGER_TRAY_RESEARCH.md   # Notch overflow analysis
+│   ├── MENUBAR_IMPLEMENTATION_SPECS.md  # 4-way specs (1,195 lines)
+│   ├── MENUBAR_COMPARISON_REPORT.md     # Metrics + ranking
+│   └── ...                              # Additional research
+├── tests/                 # 402 BATS tests
 ├── .github/
 │   └── workflows/
-│       └── validate.yml   # CI validation
+│       ├── validate.yml               # CI validation
+│       └── build-devenvmanager.yml    # DevEnvManager builds
 ├── setup.sh               # Bootstrap script
 ├── pixi.toml              # Pixi dependencies
 ├── README.md              # User documentation
@@ -457,6 +478,39 @@ mise run tools:fix-shadows --force
 
 ---
 
+## DevEnvManager — Menu Bar Implementations (P5)
+
+**Problem**: The original DevEnvManager.app's tray icon gets hidden behind the MacBook Pro notch (X=781, notch starts ~X=772).
+
+**Solution**: Built 4 parallel implementations to compare frameworks.
+
+| Spec | Directory | Framework | Status |
+|------|-----------|-----------|--------|
+| A | `DevEnvManager-SwiftBar/` | SwiftBar bash plugin | Complete |
+| B | `DevEnvManager/` (modified) | Native Swift NSStatusItem | Complete (needs Xcode.app) |
+| C | `DevEnvManager-Iced/` | Rust iced + tray-icon | Complete (5.4 MB binary) |
+| D | `DevEnvManager-Tauri/` | Tauri 2 + React | Complete |
+
+**Launch Commands**:
+```bash
+# SwiftBar (needs SwiftBar.app from brew)
+open /Applications/SwiftBar.app
+
+# Iced (pure Rust binary, ready to run)
+./DevEnvManager-Iced/target/release/devenv-manager-iced &
+
+# Tauri 2 (Rust + React dev server)
+cd DevEnvManager-Tauri && bun tauri dev
+
+# Swift (requires Xcode.app, not just CLT)
+# cd DevEnvManager && xcodegen generate && xcodebuild build
+```
+
+**Ranking**: B (Swift) > C (Iced) > D (Tauri) > A (SwiftBar)
+**Research**: `research/MENUBAR_COMPARISON_REPORT.md`, `research/MENUBAR_IMPLEMENTATION_SPECS.md`
+
+---
+
 ## Research Documentation
 
 The `research/` directory contains deep research findings:
@@ -468,6 +522,9 @@ The `research/` directory contains deep research findings:
 | `GAPS_ANALYSIS.md` | Gap analysis and recommendations |
 | `MISE_MCP_SETUP.md` | MCP integration guide |
 | `AUTOMATION_DOCUMENTATION.md` | Automation patterns |
+| `DEVENVMANAGER_TRAY_RESEARCH.md` | Notch overflow analysis, framework comparison |
+| `MENUBAR_IMPLEMENTATION_SPECS.md` | 4-way implementation specs (1,195 lines) |
+| `MENUBAR_COMPARISON_REPORT.md` | Build metrics, architecture, ranking |
 
 ---
 
@@ -492,4 +549,4 @@ Track mise ecosystem releases:
 
 ---
 
-*Last updated: January 2026*
+*Last updated: February 2026*
