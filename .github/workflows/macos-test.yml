@@ -39,7 +39,7 @@ jobs:
       - name: Install mise
         uses: jdx/mise-action@v2
         with:
-          version: latest
+          version: 2026.2.3
           install: true
 
       - name: Trust mise configuration
