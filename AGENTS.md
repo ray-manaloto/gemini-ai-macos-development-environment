@@ -1,5 +1,5 @@
 # PROJECT KNOWLEDGE BASE
-Generated:2026-02-04|Branch:feat/ai-optimization-from-downloads (PR #1)
+Generated:2026-02-05|Branch:feat/ai-optimization-from-downloads (PR #1)
 
 ## FOR LLM AGENTS
 
@@ -25,7 +25,7 @@ I want to...|Go to...|Key info
 Understand philosophy|CLAUDE.md|Tool hierarchy, patterns
 Install everything|setup.sh|Run once
 Add/modify tools|config/mise.toml|SOURCE OF TRUTH
-Run tests|tests/*.bats|402 tests, `bats tests/`
+Run tests|tests/*.bats|923 tests, `bats tests/`
 Validate env|`mise run validate`|Health check
 Configure dotfiles|config/chezmoi/|Templates
 Configure prompt|config/starship.toml|Modules
@@ -220,7 +220,7 @@ Wrong|Why|Right
 
 ## TESTING
 
-### Test Files (402 total)
+### Test Files (923 total)
 test_mise.bats|Mise backends, tasks
 test_tools.bats|CLI availability
 test_chezmoi.bats|Dotfile templates
@@ -232,12 +232,22 @@ test_unified_setup.bats|Platform tasks
 test_autofix.bats|Autofix system
 test_agent_readiness.bats|Agent setup
 test_swiftbar.bats|Menu bar
+test_menubar_core.bats|Core parity (68)
+DevEnvManager-SwiftBar/tests/|SwiftBar (272)
+DevEnvManager/Tests/|Swift validation (91)
+DevEnvManager-Iced/tests/|Iced Rust (48)
+DevEnvManager-Tauri/src-tauri/tests/|Tauri Rust (42)
 
 ### Running
 ```bash
 eval "$(mise activate bash --shims)"
-bats tests/              # All
+bats tests/              # All core tests
 bats tests/test_mise.bats  # Specific
+bats tests/test_menubar_core.bats  # Menu bar parity
+bats DevEnvManager-SwiftBar/tests/  # SwiftBar (272)
+bats DevEnvManager/Tests/  # Swift (91)
+cd DevEnvManager-Iced && cargo test  # Iced (48)
+cd DevEnvManager-Tauri/src-tauri && cargo test  # Tauri (42)
 ```
 
 ---

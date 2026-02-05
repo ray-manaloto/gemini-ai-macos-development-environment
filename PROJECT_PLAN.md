@@ -1,7 +1,7 @@
 # Project Plan: God-Tier macOS Development Environment
 
-**Last Updated**: 2026-02-04
-**Status**: P1-P4 Complete, P5 In Progress (Menu Bar Exploration)
+**Last Updated**: 2026-02-05
+**Status**: P1-P4 Complete, P5 In Progress (Menu Bar Exploration — 521 tests, 10 fixes applied)
 **Branch**: `feat/ai-optimization-from-downloads` (PR #1 open)
 **Context Recovery Document**: This file maintains project state for AI context resets
 
@@ -63,7 +63,7 @@ bats tests/test_starship.bats
 bats tests/test_integration.bats
 ```
 
-### Test Coverage (402 tests total)
+### Test Coverage (923 tests total)
 | Test File | Coverage | Tests |
 |-----------|----------|-------|
 | `test_mise.bats` | Mise installation, backends, tasks | 12 |
@@ -81,6 +81,12 @@ bats tests/test_integration.bats
 | `test_agent_readiness.bats` | AI/LLM agent setup validation | 32 |
 | `test_mcp.bats` | MCP integration tests | 35 |
 | `test_swiftbar.bats` | SwiftBar menu bar plugin | 30 |
+| `test_menubar_core.bats` | Core parity across all 4 menu bar apps | 68 |
+| **Menu Bar Implementation Tests** | | |
+| `DevEnvManager-SwiftBar/tests/` | SwiftBar plugin tests (117 existing + 155 new) | 272 |
+| `DevEnvManager/Tests/test_swift_validation.bats` | Swift app validation | 91 |
+| `DevEnvManager-Iced/tests/*.rs` | Iced Rust unit tests | 48 |
+| `DevEnvManager-Tauri/src-tauri/tests/*.rs` | Tauri Rust unit tests | 42 |
 
 ### Health Check
 ```bash
@@ -95,13 +101,13 @@ mise config
 
 ### Expected Test Output
 ```
-1..402
+1..923
 ok 1 mise is installed
 ok 2 mise doctor reports no critical issues
 ...
-ok 402 swiftbar plugin has correct permissions
+ok 923 tauri ports parsing realistic lsof output
 
-402 tests, 0 failures
+923 tests, 0 failures
 ```
 
 ---
@@ -227,12 +233,13 @@ Complete the foundational setup so `./setup.sh` produces a fully working environ
 
 **Branch**: `feat/ai-optimization-from-downloads` (PR #1 open, mergeable)
 
-| ID | Implementation | Status | Directory | Build |
-|----|---------------|--------|-----------|-------|
-| A | Enhanced SwiftBar Plugin | ✅ Complete | `DevEnvManager-SwiftBar/` | `bash -n` pass, BATS 10/10 |
-| B | Native Swift NSStatusItem Fix | ✅ Complete | `DevEnvManager/` (modified) | Needs Xcode.app for full build |
-| C | Rust iced + tray-icon | ✅ Complete | `DevEnvManager-Iced/` | `cargo check` clean, 5.4 MB release binary |
-| D | Tauri 2 + React | ✅ Complete | `DevEnvManager-Tauri/` | `cargo check` clean, `bun tauri dev` works |
+| ID | Implementation | Status | Directory | Build | Tests |
+|----|---------------|--------|-----------|-------|-------|
+| A | Enhanced SwiftBar Plugin | ✅ Complete | `DevEnvManager-SwiftBar/` | `bash -n` pass | 272 BATS |
+| B | Native Swift NSStatusItem Fix | ✅ Complete | `DevEnvManager/` (modified) | Needs Xcode.app | 91 BATS |
+| C | Rust iced + tray-icon | ✅ Complete | `DevEnvManager-Iced/` | `cargo check` clean, 5.4 MB binary | 48 Rust |
+| D | Tauri 2 + React | ✅ Complete | `DevEnvManager-Tauri/` | `cargo check` clean, `bun tauri dev` | 42 Rust |
+| — | Core Parity | ✅ Complete | `tests/test_menubar_core.bats` | — | 68 BATS |
 
 **Key Commits (on `feat/ai-optimization-from-downloads`)**:
 | Commit | Description |
@@ -240,6 +247,7 @@ Complete the foundational setup so `./setup.sh` produces a fully working environ
 | `a0b3eed` | Original native macOS menu bar app + GitHub Actions build pipeline |
 | `51740c5` | All 4 implementations with compile-verified Rust (80 files, 7,280 LOC) |
 | `81b1076` | Comparison report with quantitative metrics |
+| `935ec9c` | 521 tests + 10 code review fixes across all 4 implementations |
 
 **Research Docs**:
 | File | Content |
@@ -248,11 +256,19 @@ Complete the foundational setup so `./setup.sh` produces a fully working environ
 | `research/MENUBAR_IMPLEMENTATION_SPECS.md` | Detailed specs for all 4 implementations (1,195 lines) |
 | `research/MENUBAR_COMPARISON_REPORT.md` | Build metrics, architecture assessment, ranking |
 
-**Fixes Applied**:
+**Fixes Applied (Session 6)**:
 - Iced: Removed deprecated `tokio-process`, fixed `daemon()` API, `checkbox()` API, lifetime annotations
 - Tauri: Fixed `Image<'static>`, `tauri_plugin_store::Builder`, `Emitter` import, autostart init, RGBA icons
 - Swift: Replaced Combine `objectWillChange` with `withObservationTracking` for `@Observable` stores
 - SwiftBar: Plugin copied to SwiftBar's configured directory (`~/dev/swiftbar/`)
+
+**Fixes Applied (Session 7 — Code Review)**:
+- Iced: Removed unused `sysinfo` dep, tray poll 50ms→200ms (CPU), fatal `.expect()` on tray failure
+- Iced: Added 30s command timeouts to all 4 domain modules (mise, homebrew, orbstack, ports)
+- Tauri: Added 30s command timeout to `run_command()` helper (covers all CLI calls)
+- Tauri: Fixed fragile `exit_code` parsing — now only matches field after "error" status token
+- Tauri React: Added `useRef` in-flight guards to all 4 hooks (race condition fix)
+- SwiftBar: Fixed `pip install` → `mise use -g pipx:`, parallelized status collection (3-5x faster)
 
 **Launch Commands**:
 ```bash
@@ -471,6 +487,19 @@ ls -la tests/            # Test files
 ---
 
 ## Changelog
+
+### 2026-02-05 (Session 7 - P5 Tests & Code Review Fixes)
+- Added 521 tests across all 4 menu bar implementations (total project: 923 tests)
+  - 68 core parity tests, 155 SwiftBar, 91 Swift, 48 Iced, 42 Tauri + updated 1 test
+- Fixed 10 code review issues:
+  - 30s command timeouts in Iced (4 domain files) and Tauri (`run_command` helper)
+  - Tauri `exit_code` parsing bug (was reverse-scanning all fields, now matches only after "error")
+  - Tauri React race conditions (added `useRef` in-flight guards to 4 hooks)
+  - SwiftBar parallel status collection (6 background subshells, 3-5x faster)
+  - Iced: removed unused `sysinfo` dep, tray poll 50ms→200ms, fatal tray icon `.expect()`
+  - SwiftBar: `pip install` → `mise use -g pipx:`
+- Launched and verified all 4 apps running simultaneously on M2 Max
+- **Commit**: `935ec9c` (25 files, 3,434 LOC added)
 
 ### 2026-02-04 (Session 6 - P5 Menu Bar Exploration)
 - **STARTED**: P5 Sprint - DevEnvManager Menu Bar Exploration
