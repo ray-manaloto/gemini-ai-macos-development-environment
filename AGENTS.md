@@ -25,7 +25,7 @@ I want to...|Go to...|Key info
 Understand philosophy|CLAUDE.md|Tool hierarchy, patterns
 Install everything|setup.sh|Run once
 Add/modify tools|config/mise.toml|SOURCE OF TRUTH
-Run tests|tests/*.bats|948 tests, `bats tests/`
+Run tests|tests/*.bats|1002 tests, `bats tests/`
 Validate env|`mise run validate`|Health check
 Configure dotfiles|config/chezmoi/|Templates
 Configure prompt|config/starship.toml|Modules
@@ -220,7 +220,7 @@ Wrong|Why|Right
 
 ## TESTING
 
-### Test Files (948 total)
+### Test Files (1002 total)
 test_mise.bats|Mise backends, tasks
 test_tools.bats|CLI availability
 test_chezmoi.bats|Dotfile templates
@@ -231,6 +231,8 @@ test_skypilot.bats|Cloud agents
 test_unified_setup.bats|Platform tasks
 test_autofix.bats|Autofix system
 test_agent_readiness.bats|Agent setup
+test_skills.bats|Skills architecture (54)
+test_noninteractive_skills.bats|Skill symlinks (25)
 test_swiftbar.bats|Menu bar
 test_menubar_core.bats|Core parity (68)
 DevEnvManager-SwiftBar/tests/|SwiftBar (272)

@@ -219,12 +219,12 @@ check_opencode_config() {
         if command -v jq &>/dev/null && jq '.' "$user_config/oh-my-opencode.json" &>/dev/null; then
             log_pass "oh-my-opencode.json" "Valid JSON"
             
-            local has_agents has_categories
-            has_agents=$(jq -e '.agents' "$user_config/oh-my-opencode.json" 2>/dev/null && echo "yes" || echo "no")
-            has_categories=$(jq -e '.categories' "$user_config/oh-my-opencode.json" 2>/dev/null && echo "yes" || echo "no")
-            
-            [[ "$has_agents" == "yes" ]] && log_pass "oh-my-opencode agents" "Configured"
-            [[ "$has_categories" == "yes" ]] && log_pass "oh-my-opencode categories" "Configured"
+            if jq -e '.agents' "$user_config/oh-my-opencode.json" &>/dev/null; then
+                log_pass "oh-my-opencode agents" "Configured"
+            fi
+            if jq -e '.categories' "$user_config/oh-my-opencode.json" &>/dev/null; then
+                log_pass "oh-my-opencode categories" "Configured"
+            fi
         else
             log_fail "oh-my-opencode.json" "Invalid JSON"
         fi
@@ -317,6 +317,60 @@ check_project_readiness() {
     fi
 }
 
+check_skills() {
+    log_section "AI Agent Skills"
+    
+    if [[ -d ".agents/skills" ]]; then
+        local count
+        count=$(find .agents/skills -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l | tr -d ' ')
+        log_pass ".agents/skills/" "$count skills in canonical source"
+    else
+        log_fail ".agents/skills/" "Canonical skills directory missing" "mkdir -p .agents/skills"
+        return
+    fi
+    
+    local broken_claude=0
+    local broken_opencode=0
+    
+    if [[ -d ".claude/skills" ]]; then
+        for d in .claude/skills/*/; do
+            [[ -e "$d" ]] || continue
+            local name="${d%/}"
+            if [[ -L "$name" ]] && [[ ! -d "$name" ]]; then
+                ((++broken_claude))
+            fi
+        done
+        if [[ "$broken_claude" -eq 0 ]]; then
+            log_pass ".claude/skills/" "All symlinks resolve"
+        else
+            log_fail ".claude/skills/" "$broken_claude broken symlinks" "mise run skills:validate:fix"
+        fi
+    fi
+    
+    if [[ -d ".opencode/skills" ]]; then
+        for d in .opencode/skills/*/; do
+            [[ -e "$d" ]] || continue
+            local name="${d%/}"
+            if [[ -L "$name" ]] && [[ ! -d "$name" ]]; then
+                ((++broken_opencode))
+            fi
+        done
+        if [[ "$broken_opencode" -eq 0 ]]; then
+            log_pass ".opencode/skills/" "All symlinks resolve"
+        else
+            log_fail ".opencode/skills/" "$broken_opencode broken symlinks" "mise run skills:validate:fix"
+        fi
+    fi
+    
+    if [[ -d "$HOME/.claude/skills" ]]; then
+        local global_count
+        global_count=$(find "$HOME/.claude/skills" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l | tr -d ' ')
+        if [[ "$global_count" -gt 0 ]]; then
+            log_warn "global skills" "$global_count global skills found (should be project-level only)" "rm -rf ~/.claude/skills/*"
+        fi
+    fi
+}
+
 fix_common_issues() {
     log_section "Fixing Common Issues"
     
@@ -384,6 +438,7 @@ main() {
     check_mcp_config
     check_agent_configs
     check_project_readiness
+    check_skills
     
     print_summary
     

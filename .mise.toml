@@ -28,3 +28,46 @@ run = "pixi run python config/scripts/dashboard.py"
 [tasks.lint]
 description = "Lint shell scripts with shellcheck"
 run = "find {{config_root}} -name '*.sh' -not -path '*/node_modules/*' -not -path '*/.git/*' -not -path '*/.pixi/*' -exec shellcheck {} +"
+
+[tasks."skills:validate"]
+description = "Validate AI agent skills setup (symlinks, format, inventory)"
+run = """
+#!/bin/bash
+SCRIPT="{{config_root}}/config/scripts/validate-skills.sh"
+if [ -f "$SCRIPT" ]; then
+  bash "$SCRIPT"
+else
+  echo "ERROR: validate-skills.sh not found at $SCRIPT"
+  exit 1
+fi
+"""
+
+[tasks."skills:validate:json"]
+description = "Validate skills and output as JSON"
+run = """
+#!/bin/bash
+SCRIPT="{{config_root}}/config/scripts/validate-skills.sh"
+if [ -f "$SCRIPT" ]; then
+  bash "$SCRIPT" --json
+else
+  echo '{"error": "validate-skills.sh not found"}'
+  exit 1
+fi
+"""
+
+[tasks."skills:validate:fix"]
+description = "Fix broken skill symlinks and common issues"
+run = """
+#!/bin/bash
+SCRIPT="{{config_root}}/config/scripts/validate-skills.sh"
+if [ -f "$SCRIPT" ]; then
+  bash "$SCRIPT" --fix
+else
+  echo "ERROR: validate-skills.sh not found at $SCRIPT"
+  exit 1
+fi
+"""
+
+[tasks."skills:list"]
+description = "List all installed project skills"
+run = "bunx skills list"
