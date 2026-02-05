@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   installTool,
   listMiseTools,
@@ -19,14 +19,18 @@ export default function useMiseTools(refreshMs = 60000): UseMiseToolsResult {
   const [tools, setTools] = useState<MiseTool[]>([]);
   const [loading, setLoading] = useState(false);
   const [actionRunning, setActionRunning] = useState<string | undefined>(undefined);
+  const refreshInFlight = useRef(false);
 
   const refresh = useCallback(async () => {
+    if (refreshInFlight.current) return;
+    refreshInFlight.current = true;
     setLoading(true);
     try {
       const result = await listMiseTools();
       setTools(result);
     } finally {
       setLoading(false);
+      refreshInFlight.current = false;
     }
   }, []);
 

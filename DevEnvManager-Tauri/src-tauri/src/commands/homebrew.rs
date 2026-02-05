@@ -19,14 +19,27 @@ pub fn parse_brew_services(output: &str) -> Vec<BrewService> {
         }
 
         let name = parts[0].to_string();
-        let status = BrewServiceStatus::from_raw(parts[1]);
-        let user = parts.get(2).map(|value| value.to_string());
-        let file = parts.get(3).map(|value| value.to_string());
+        let status_str = parts[1];
+        let status = BrewServiceStatus::from_raw(status_str);
 
-        let exit_code = parts
-            .iter()
-            .rev()
-            .find_map(|value| value.parse::<i32>().ok());
+        // Only parse exit_code from the token after "error" status
+        let exit_code = if status_str == "error" {
+            parts.get(2).and_then(|value| value.parse::<i32>().ok())
+        } else {
+            None
+        };
+
+        let user = if status_str == "error" {
+            parts.get(3).map(|value| value.to_string())
+        } else {
+            parts.get(2).map(|value| value.to_string())
+        };
+
+        let file = if status_str == "error" {
+            parts.get(4).map(|value| value.to_string())
+        } else {
+            parts.get(3).map(|value| value.to_string())
+        };
 
         services.push(BrewService {
             name,

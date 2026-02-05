@@ -1,23 +1,31 @@
 use std::collections::BTreeMap;
+use std::time::Duration;
 
 use serde::Deserialize;
 use tokio::process::Command;
+use tokio::time::timeout;
 
 use crate::models::{Tool, ToolSource};
 
 const MISE_ENV: [(&str, &str); 2] = [("MISE_YES", "1"), ("MISE_QUIET", "0")];
 
 pub async fn list_tools() -> Vec<Tool> {
-    let output = Command::new("mise")
-        .args(["ls", "--json"])
-        .envs(MISE_ENV)
-        .output()
-        .await;
-
-    let output = match output {
-        Ok(output) => output,
-        Err(error) => {
+    let output = match timeout(
+        Duration::from_secs(30),
+        Command::new("mise")
+            .args(["ls", "--json"])
+            .envs(MISE_ENV)
+            .output(),
+    )
+    .await
+    {
+        Ok(Ok(output)) => output,
+        Ok(Err(error)) => {
             eprintln!("Failed to run mise ls: {error}");
+            return Vec::new();
+        }
+        Err(_) => {
+            eprintln!("mise ls timed out after 30s");
             return Vec::new();
         }
     };
@@ -53,12 +61,16 @@ pub async fn update_tool(name: String) {
 }
 
 async fn run_mise<const N: usize>(args: [&str; N]) -> Result<(), String> {
-    let output = Command::new("mise")
-        .args(args)
-        .envs(MISE_ENV)
-        .output()
-        .await
-        .map_err(|error| error.to_string())?;
+    let output = timeout(
+        Duration::from_secs(30),
+        Command::new("mise")
+            .args(args)
+            .envs(MISE_ENV)
+            .output(),
+    )
+    .await
+    .map_err(|_| "mise timed out after 30s".to_string())?
+    .map_err(|error| error.to_string())?;
 
     if output.status.success() {
         Ok(())

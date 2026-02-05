@@ -1,4 +1,7 @@
+use std::time::Duration;
+
 use tokio::process::Command;
+use tokio::time::timeout;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PortInfo {
@@ -9,15 +12,21 @@ pub struct PortInfo {
 }
 
 pub async fn list_ports() -> Vec<PortInfo> {
-    let output = Command::new("lsof")
-        .args(["-iTCP", "-sTCP:LISTEN", "-P", "-n"])
-        .output()
-        .await;
-
-    let output = match output {
-        Ok(output) => output,
-        Err(error) => {
+    let output = match timeout(
+        Duration::from_secs(30),
+        Command::new("lsof")
+            .args(["-iTCP", "-sTCP:LISTEN", "-P", "-n"])
+            .output(),
+    )
+    .await
+    {
+        Ok(Ok(output)) => output,
+        Ok(Err(error)) => {
             eprintln!("Failed to run lsof: {error}");
+            return Vec::new();
+        }
+        Err(_) => {
+            eprintln!("lsof timed out after 30s");
             return Vec::new();
         }
     };

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ActivePort, listActivePorts } from "../lib/tauri";
 
 type UsePortsResult = {
@@ -10,14 +10,18 @@ type UsePortsResult = {
 export default function usePorts(refreshMs = 60000): UsePortsResult {
   const [ports, setPorts] = useState<ActivePort[]>([]);
   const [loading, setLoading] = useState(false);
+  const refreshInFlight = useRef(false);
 
   const refresh = useCallback(async () => {
+    if (refreshInFlight.current) return;
+    refreshInFlight.current = true;
     setLoading(true);
     try {
       const result = await listActivePorts();
       setPorts(result);
     } finally {
       setLoading(false);
+      refreshInFlight.current = false;
     }
   }, []);
 

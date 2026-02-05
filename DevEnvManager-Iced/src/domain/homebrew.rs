@@ -1,17 +1,26 @@
+use std::time::Duration;
+
 use tokio::process::Command;
+use tokio::time::timeout;
 
 use crate::models::{Service, ServiceStatus};
 
 pub async fn list_services() -> Vec<Service> {
-    let output = Command::new("brew")
-        .args(["services", "list"])
-        .output()
-        .await;
-
-    let output = match output {
-        Ok(output) => output,
-        Err(error) => {
+    let output = match timeout(
+        Duration::from_secs(30),
+        Command::new("brew")
+            .args(["services", "list"])
+            .output(),
+    )
+    .await
+    {
+        Ok(Ok(output)) => output,
+        Ok(Err(error)) => {
             eprintln!("Failed to run brew services list: {error}");
+            return Vec::new();
+        }
+        Err(_) => {
+            eprintln!("brew services list timed out after 30s");
             return Vec::new();
         }
     };
@@ -45,11 +54,15 @@ pub async fn restart_service(name: String) {
 }
 
 async fn run_brew<const N: usize>(args: [&str; N]) -> Result<(), String> {
-    let output = Command::new("brew")
-        .args(args)
-        .output()
-        .await
-        .map_err(|error| error.to_string())?;
+    let output = timeout(
+        Duration::from_secs(30),
+        Command::new("brew")
+            .args(args)
+            .output(),
+    )
+    .await
+    .map_err(|_| "brew timed out after 30s".to_string())?
+    .map_err(|error| error.to_string())?;
 
     if output.status.success() {
         Ok(())

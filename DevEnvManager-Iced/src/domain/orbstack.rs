@@ -1,14 +1,24 @@
+use std::time::Duration;
+
 use tokio::process::Command;
+use tokio::time::timeout;
 
 use crate::models::{Container, ContainerState};
 
 pub async fn list_containers() -> Vec<Container> {
-    let output = Command::new("orb").args(["list"]).output().await;
-
-    let output = match output {
-        Ok(output) => output,
-        Err(error) => {
+    let output = match timeout(
+        Duration::from_secs(30),
+        Command::new("orb").args(["list"]).output(),
+    )
+    .await
+    {
+        Ok(Ok(output)) => output,
+        Ok(Err(error)) => {
             eprintln!("Failed to run orb list: {error}");
+            return Vec::new();
+        }
+        Err(_) => {
+            eprintln!("orb list timed out after 30s");
             return Vec::new();
         }
     };
@@ -36,11 +46,15 @@ pub async fn stop_container(name: String) {
 }
 
 async fn run_orb<const N: usize>(args: [&str; N]) -> Result<(), String> {
-    let output = Command::new("orb")
-        .args(args)
-        .output()
-        .await
-        .map_err(|error| error.to_string())?;
+    let output = timeout(
+        Duration::from_secs(30),
+        Command::new("orb")
+            .args(args)
+            .output(),
+    )
+    .await
+    .map_err(|_| "orb timed out after 30s".to_string())?
+    .map_err(|error| error.to_string())?;
 
     if output.status.success() {
         Ok(())

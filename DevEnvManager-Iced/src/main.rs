@@ -1,9 +1,8 @@
 use devenv_manager_iced::{app, tray};
 
 fn main() -> iced::Result {
-    if let Err(error) = tray::create_tray_icon() {
-        eprintln!("Failed to create tray icon: {error}");
-    }
+    tray::create_tray_icon()
+        .expect("Failed to create tray icon — cannot run without menu bar presence");
 
     iced::daemon(app::App::new, app::App::update, app::App::view)
         .title(app::App::title)

@@ -146,7 +146,7 @@ impl App {
 
     pub fn subscription(&self) -> Subscription<Message> {
         Subscription::batch([
-            iced::time::every(Duration::from_millis(50)).map(|_| Message::PollTray),
+            iced::time::every(Duration::from_millis(200)).map(|_| Message::PollTray),
             iced::time::every(Duration::from_secs(self.config.refresh_interval_secs))
                 .map(|_| Message::Tick),
         ])

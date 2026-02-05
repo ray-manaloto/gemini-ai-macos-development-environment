@@ -3,14 +3,18 @@ pub mod mise;
 pub mod orbstack;
 pub mod ports;
 
+use std::time::Duration;
 use tokio::process::Command;
+use tokio::time::timeout;
 
 pub async fn run_command(program: &str, args: &[&str]) -> Result<String, String> {
-    let output = Command::new(program)
-        .args(args)
-        .output()
-        .await
-        .map_err(|error| format!("Failed to run {program}: {error}"))?;
+    let output = timeout(
+        Duration::from_secs(30),
+        Command::new(program).args(args).output(),
+    )
+    .await
+    .map_err(|_| format!("{program} timed out after 30s"))?
+    .map_err(|error| format!("Failed to run {program}: {error}"))?;
 
     if !output.status.success() {
         let stderr = String::from_utf8(output.stderr)

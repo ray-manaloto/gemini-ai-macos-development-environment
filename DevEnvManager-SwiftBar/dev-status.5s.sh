@@ -172,15 +172,26 @@ get_autofix_status() {
 }
 
 # ==============================================================================
-# Status Collection
+# Status Collection (parallel for faster refresh)
 # ==============================================================================
 
-MISE_STATUS=$(get_mise_status)
-ORB_STATUS=$(get_orbstack_status)
-DEVPOD_COUNT=$(get_devpod_status)
-SKY_COUNT=$(get_skypilot_status)
-AGENT_READY=$(get_agent_readiness)
-AUTOFIX_STATUS=$(get_autofix_status)
+_tmpdir=$(mktemp -d)
+trap 'rm -rf "$_tmpdir"' EXIT
+
+get_mise_status     > "$_tmpdir/mise"     &
+get_orbstack_status > "$_tmpdir/orb"      &
+get_devpod_status   > "$_tmpdir/devpod"   &
+get_skypilot_status > "$_tmpdir/sky"      &
+get_agent_readiness > "$_tmpdir/agent"    &
+get_autofix_status  > "$_tmpdir/autofix"  &
+wait
+
+MISE_STATUS=$(cat "$_tmpdir/mise")
+ORB_STATUS=$(cat "$_tmpdir/orb")
+DEVPOD_COUNT=$(cat "$_tmpdir/devpod")
+SKY_COUNT=$(cat "$_tmpdir/sky")
+AGENT_READY=$(cat "$_tmpdir/agent")
+AUTOFIX_STATUS=$(cat "$_tmpdir/autofix")
 
 # ==============================================================================
 # Menu Bar Icon (Traffic Light System)
@@ -438,7 +449,7 @@ echo "---"
 
 if [[ "$SKY_COUNT" == "not_installed" ]]; then
     echo "⚪ SkyPilot: Not installed | color=$COLOR_GRAY"
-    echo "--📥 Install SkyPilot | bash=pip param1=install param2=skypilot terminal=true refresh=true"
+    echo "--📥 Install SkyPilot | bash=$MISE_CMD param1=use param2=-g param3=pipx:skypilot terminal=true refresh=true"
 else
     if [[ "$SKY_COUNT" == "0" ]]; then
         echo "⏹️ SkyPilot: No agents running"

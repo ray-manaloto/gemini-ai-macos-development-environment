@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   BrewService,
   listBrewServices,
@@ -21,14 +21,18 @@ export default function useBrewServices(refreshMs = 60000): UseBrewServicesResul
   const [services, setServices] = useState<BrewService[]>([]);
   const [loading, setLoading] = useState(false);
   const [actionRunning, setActionRunning] = useState<string | undefined>(undefined);
+  const refreshInFlight = useRef(false);
 
   const refresh = useCallback(async () => {
+    if (refreshInFlight.current) return;
+    refreshInFlight.current = true;
     setLoading(true);
     try {
       const result = await listBrewServices();
       setServices(result);
     } finally {
       setLoading(false);
+      refreshInFlight.current = false;
     }
   }, []);
 
