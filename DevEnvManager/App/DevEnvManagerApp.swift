@@ -4,55 +4,13 @@ import SwiftUI
 struct DevEnvManagerApp: App {
     @NSApplicationDelegateAdaptor var appDelegate: AppDelegate
     
-    @State private var toolsStore = ToolsStore()
-    @State private var servicesStore = ServicesStore()
-    @State private var containersStore = ContainersStore()
-    
     var body: some Scene {
-        MenuBarExtra {
-            MenuBarRootView()
-                .environment(toolsStore)
-                .environment(servicesStore)
-                .environment(containersStore)
-        } label: {
-            Label("DevEnv Manager", systemImage: menuBarIcon)
-                .labelStyle(.iconOnly)
-        }
-        .menuBarExtraStyle(.window)
-        .windowResizability(.contentSize)
-        
         Settings {
             AppSettingsView()
-                .environment(toolsStore)
-                .environment(servicesStore)
-                .environment(containersStore)
+                .environment(appDelegate.toolsStore)
+                .environment(appDelegate.servicesStore)
+                .environment(appDelegate.containersStore)
         }
-    }
-    
-    private var menuBarIcon: String {
-        if case .error = toolsStore.state {
-            return "exclamationmark.triangle.fill"
-        }
-        
-        if toolsStore.isLoading || servicesStore.isLoading || containersStore.isLoading {
-            return "arrow.triangle.2.circlepath"
-        }
-        
-        let hasRunningToolOps = toolsStore.toolOperations.values.contains { $0.status == .running }
-        let hasRunningServiceOps = servicesStore.serviceOperations.values.contains { $0.status == .running }
-        let hasRunningContainerOps = containersStore.containerOperations.values.contains { $0.status == .running }
-        if hasRunningToolOps || hasRunningServiceOps || hasRunningContainerOps {
-            return "gearshape.2"
-        }
-        
-        // Show filled icon if any services or containers are running
-        let runningServices = servicesStore.runningServices.count
-        let runningContainers = containersStore.totalRunning
-        if runningServices > 0 || runningContainers > 0 {
-            return "terminal.fill"
-        }
-        
-        return "terminal"
     }
 }
 

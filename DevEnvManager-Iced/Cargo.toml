@@ -1,0 +1,24 @@
+[package]
+name = "devenv-manager-iced"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+iced = { version = "0.14", features = ["tokio", "image"] }
+tray-icon = "0.21"
+muda = "0.16"
+image = { version = "0.25", default-features = false, features = ["png"] }
+tokio = { version = "1", features = ["full"] }
+sysinfo = "0.32"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+toml = "0.8"
+
+
+[dev-dependencies]
+insta = "1"
+
+[profile.release]
+opt-level = "z"
+lto = true
+strip = true

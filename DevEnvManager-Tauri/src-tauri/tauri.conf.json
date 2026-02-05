@@ -1,0 +1,38 @@
+{
+  "productName": "DevEnvManager",
+  "version": "0.1.0",
+  "identifier": "com.devenvmanager.tauri",
+  "build": {
+    "beforeDevCommand": "bun run dev",
+    "beforeBuildCommand": "bun run build",
+    "devUrl": "http://localhost:5173",
+    "frontendDist": "../dist"
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["dmg", "app"],
+    "icon": ["icons/icon.png"],
+    "macOS": {
+      "minimumSystemVersion": "14.0"
+    }
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "DevEnvManager",
+        "width": 400,
+        "height": 500,
+        "visible": false,
+        "decorations": false,
+        "transparent": true,
+        "skipTaskbar": true,
+        "alwaysOnTop": true,
+        "resizable": false
+      }
+    ],
+    "macOSPrivateApi": true,
+    "security": {
+      "csp": "default-src 'self'; style-src 'self' 'unsafe-inline'"
+    }
+  }
+}
