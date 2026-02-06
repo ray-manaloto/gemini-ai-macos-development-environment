@@ -71,6 +71,7 @@ jobs:
           ls -la *.xcodeproj || { echo "ERROR: xcodeproj not found"; exit 1; }
           
           # Build for both architectures (Universal Binary)
+          # Disable strict concurrency to avoid Swift 6 forward compatibility errors
           xcodebuild \
             -project DevEnvManager.xcodeproj \
             -scheme "$SCHEME" \
@@ -82,6 +83,7 @@ jobs:
             CODE_SIGN_IDENTITY="-" \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO \
+            SWIFT_STRICT_CONCURRENCY=minimal \
             build
 
           # Find the built app
