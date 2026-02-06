@@ -67,8 +67,12 @@ jobs:
         id: build
         working-directory: DevEnvManager
         run: |
+          # Verify project was generated
+          ls -la *.xcodeproj || { echo "ERROR: xcodeproj not found"; exit 1; }
+          
           # Build for both architectures (Universal Binary)
           xcodebuild \
+            -project DevEnvManager.xcodeproj \
             -scheme "$SCHEME" \
             -configuration "$CONFIGURATION" \
             -derivedDataPath build \

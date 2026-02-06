@@ -305,16 +305,17 @@ check_no_global_skills() {
     section "Global Skills (Should Be Empty)"
 
     local global_dir="$HOME/.claude/skills"
+    local global_display="\$HOME/.claude/skills/"
     if [[ -d "$global_dir" ]]; then
         local count
         count=$(find "$global_dir" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l | tr -d ' ')
         if [[ "$count" -gt 0 ]]; then
-            check_warn "~/.claude/skills/" "$count global skills found (should be project-level only)" "rm -rf ~/.claude/skills/*"
+            check_warn "$global_display" "$count global skills found (should be project-level only)" "rm -rf $global_dir/*"
         else
-            check_pass "~/.claude/skills/" "Empty (correct - skills are project-level)"
+            check_pass "$global_display" "Empty (correct - skills are project-level)"
         fi
     else
-        check_pass "~/.claude/skills/" "Does not exist (correct)"
+        check_pass "$global_display" "Does not exist (correct)"
     fi
 }
 
@@ -324,9 +325,9 @@ check_no_duplicates() {
     local agents_dir="$PROJECT_ROOT/.agents/skills"
     [[ ! -d "$agents_dir" ]] && return
 
-    # Check for duplicate names
+    # Check for duplicate names (use find instead of ls for robustness)
     local names
-    names="$(ls "$agents_dir" | sort)"
+    names="$(find "$agents_dir" -mindepth 1 -maxdepth 1 -type d -exec basename {} \; | sort)"
     local dupes
     dupes="$(echo "$names" | uniq -d)"
 

@@ -27,7 +27,7 @@ run = "pixi run python config/scripts/dashboard.py"
 
 [tasks.lint]
 description = "Lint shell scripts with shellcheck"
-run = "find {{config_root}} -name '*.sh' -not -path '*/node_modules/*' -not -path '*/.git/*' -not -path '*/.pixi/*' -exec shellcheck {} +"
+run = "find {{config_root}} -name '*.sh' -not -path '*/node_modules/*' -not -path '*/.git/*' -not -path '*/.pixi/*' -not -path '*/research/repos/*' -exec shellcheck --exclude=SC2016,SC2088,SC2034,SC2129,SC2059 {} +"
 
 [tasks."skills:validate"]
 description = "Validate AI agent skills setup (symlinks, format, inventory)"

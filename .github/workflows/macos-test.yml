@@ -45,6 +45,7 @@ jobs:
       - name: Trust mise configuration
         run: |
           mise trust config/mise.toml
+          mkdir -p ~/.config/mise
           cp config/mise.toml ~/.config/mise/config.toml
           mise trust ~/.config/mise/config.toml
 
