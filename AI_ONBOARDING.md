@@ -31,7 +31,7 @@ This is a reproducible macOS development environment using Mise as the central o
 | File | Purpose |
 |------|---------|
 | config/mise.toml | Tool versions, tasks, settings (SOURCE OF TRUTH) |
-| tests/*.bats | 108 BATS tests |
+| tests/*.bats | 254 BATS tests |
 | setup.sh | Bootstrap script |
 | AGENTS.md | Full project knowledge base |
 
@@ -198,7 +198,7 @@ Mise > Bun > Pixi > Uv
 - `mise run tools:status` - Show tools
 - `mise run tools:update` - Update all
 - `mise doctor` - Diagnostics
-- `bats tests/` - Run 254 tests
+- `bats tests/` - Run 402 tests
 
 ## Project Structure
 - config/mise.toml - Tool config (SOURCE OF TRUTH)

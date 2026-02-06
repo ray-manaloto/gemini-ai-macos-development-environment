@@ -1,0 +1,13 @@
+{
+  "identifier": "default",
+  "description": "Default permissions for DevEnvManager menu bar app.",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "shell:default",
+    "notification:default",
+    "store:default",
+    "autostart:default",
+    "positioner:default"
+  ]
+}

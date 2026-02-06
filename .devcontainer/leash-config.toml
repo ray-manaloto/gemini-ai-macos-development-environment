@@ -1,0 +1,81 @@
+# Leash Configuration for God-Tier macOS Development Environment
+# Copy to ~/.config/leash/config.toml on host machine
+#
+# Documentation: https://github.com/strongdm/leash/blob/main/docs/CONFIG.md
+
+# =============================================================================
+# Global Settings
+# =============================================================================
+
+[volumes]
+# Mount mise config and data (read-only) for tool availability
+claude = true
+codex = false
+"~/.config/mise" = "/root/.config/mise:ro"
+"~/.local/share/mise" = "/root/.local/share/mise:ro"
+
+# =============================================================================
+# Project-Specific Configuration
+# =============================================================================
+# Replace the path below with your actual project path
+
+[projects."/Users/YOUR_USERNAME/dev/github/ray-manaloto/gemini-ai-macos-development-environment"]
+# Enable Claude Code in sandbox
+claude = true
+
+# Use default coder image (includes claude-code, codex, gemini-cli, etc.)
+target_image = "public.ecr.aws/s5i7k8t3/strongdm/coder"
+
+# Project-specific volumes
+[projects."/Users/YOUR_USERNAME/dev/github/ray-manaloto/gemini-ai-macos-development-environment".volumes]
+# Mount mise tools for this project
+"./.devcontainer/sandbox-policies" = "/workspace/.policies:ro"
+
+# Environment variables (use 1Password references or mise secrets)
+[projects."/Users/YOUR_USERNAME/dev/github/ray-manaloto/gemini-ai-macos-development-environment".envvars]
+# Option 1: Direct value (NOT RECOMMENDED for production)
+# ANTHROPIC_API_KEY = "sk-ant-..."
+
+# Option 2: 1Password reference (RECOMMENDED)
+# ANTHROPIC_API_KEY = "op://Private/Anthropic/credential"
+
+# Option 3: Environment variable passthrough (set in host shell)
+# Keys are automatically detected from host environment
+
+# =============================================================================
+# Leash Daemon Settings
+# =============================================================================
+
+[leash]
+# Control UI port (http://localhost:18080)
+control_port = 18080
+
+# Default operation mode: "record", "shadow", or "enforce"
+# - record: All operations allowed, all events logged (learning phase)
+# - shadow: Policies evaluated but not enforced, logs "would_deny" (testing)
+# - enforce: Policies enforced, denied operations blocked (production)
+default_mode = "record"
+
+# Policy file (Cedar format)
+# default_policy = "~/.config/leash/default.cedar"
+
+# Telemetry (set to disable)
+# Set LEASH_DISABLE_TELEMETRY=1 in environment to disable
+
+[leash.envvars]
+# Global environment variables for all agents
+# API keys should be set here or passed from host
+
+# =============================================================================
+# Example: Multiple Projects
+# =============================================================================
+
+# [projects."/path/to/trusted-project"]
+# claude = true
+# default_mode = "enforce"
+# policy = "~/.config/leash/permissive.cedar"
+
+# [projects."/path/to/untrusted-code-review"]
+# claude = true
+# default_mode = "enforce"
+# policy = "~/.config/leash/restrictive.cedar"

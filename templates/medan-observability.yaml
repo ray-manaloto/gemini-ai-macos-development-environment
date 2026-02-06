@@ -1,0 +1,13 @@
+name: medan-observability
+
+resources:
+  cloud: aws
+  region: us-east-1
+  instance_type: t3.large
+  disk_size: 256
+
+setup: |
+  echo "Setting up medan-observability cluster"
+
+run: |
+  echo "Cluster ready on t3.large"

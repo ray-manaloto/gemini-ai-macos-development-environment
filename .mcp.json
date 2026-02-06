@@ -1,0 +1,50 @@
+{
+  "mcpServers": {
+    "mise": {
+      "command": "mise",
+      "args": ["mcp"],
+      "env": {
+        "MISE_EXPERIMENTAL": "1"
+      },
+      "metadata": {
+        "name": "Mise MCP Server",
+        "description": "Model Context Protocol server for Mise tool orchestration. Enables AI assistants to query installed tools, run tasks, and access configuration.",
+        "version": "1.0.0",
+        "capabilities": [
+          "query-tools",
+          "run-tasks",
+          "read-config",
+          "list-versions"
+        ]
+      }
+    },
+    "project": {
+      "command": "node",
+      "args": ["mcp-server.js"],
+      "env": {
+        "PROJECT_ROOT": ".",
+        "PORT": "3001",
+        "DEBUG": "false"
+      },
+      "metadata": {
+        "name": "Project MCP Server",
+        "description": "Project-specific MCP server for querying project structure, patterns, documentation, and code analysis. (Placeholder - implementation pending)",
+        "version": "0.1.0",
+        "status": "disabled",
+        "capabilities": [
+          "project-structure",
+          "patterns-discovery",
+          "documentation-search",
+          "code-analysis"
+        ]
+      }
+    }
+  },
+  "metadata": {
+    "project": "God-Tier macOS Development Environment",
+    "description": "MCP (Model Context Protocol) configuration for AI assistant integration",
+    "created": "2026-01-31",
+    "updated": "2026-01-31",
+    "documentation": "https://github.com/ray-manaloto/gemini-ai-macos-development-environment"
+  }
+}

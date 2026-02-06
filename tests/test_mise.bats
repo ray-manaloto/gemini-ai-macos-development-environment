@@ -42,12 +42,10 @@ setup() {
   [[ "$output" =~ "uv" ]]
 }
 
-@test "mise has npm configured as package manager" {
-  # Verify npm is configured as package manager (wrapper scripts use bun runtime)
-  # Architecture: mise installs via npm, wrapper scripts in ~/.local/bin run with bun
+@test "mise has bun configured as npm backend" {
   run mise settings get npm.package_manager
   [ "$status" -eq 0 ]
-  [ "$output" = "npm" ]
+  [ "$output" = "bun" ]
 }
 
 @test "mise has uv configured for python venvs" {
@@ -87,9 +85,66 @@ setup() {
 }
 
 @test "validate:tools detects no shadows on clean system" {
-  # This test assumes the system is clean after previous fixes
   run mise run validate:tools
-  # Exit 0 means no shadows, exit 1 means shadows found
-  # Either is valid - we just check it runs
   [[ "$status" -eq 0 || "$status" -eq 1 ]]
+}
+
+@test "auth:status task exists" {
+  run mise tasks
+  [ "$status" -eq 0 ]
+  [[ "$output" =~ "auth:status" ]]
+}
+
+@test "auth:gh task exists" {
+  run mise tasks
+  [ "$status" -eq 0 ]
+  [[ "$output" =~ "auth:gh" ]]
+}
+
+@test "auth:claude task exists" {
+  run mise tasks
+  [ "$status" -eq 0 ]
+  [[ "$output" =~ "auth:claude" ]]
+}
+
+@test "auth:codex task exists" {
+  run mise tasks
+  [ "$status" -eq 0 ]
+  [[ "$output" =~ "auth:codex" ]]
+}
+
+@test "auth:gemini task exists" {
+  run mise tasks
+  [ "$status" -eq 0 ]
+  [[ "$output" =~ "auth:gemini" ]]
+}
+
+@test "auth:opencode task exists" {
+  run mise tasks
+  [ "$status" -eq 0 ]
+  [[ "$output" =~ "auth:opencode" ]]
+}
+
+@test "auth:aws task exists" {
+  run mise tasks
+  [ "$status" -eq 0 ]
+  [[ "$output" =~ "auth:aws" ]]
+}
+
+@test "auth:1password task exists" {
+  run mise tasks
+  [ "$status" -eq 0 ]
+  [[ "$output" =~ "auth:1password" ]]
+}
+
+@test "auth:all task exists" {
+  run mise tasks
+  [ "$status" -eq 0 ]
+  [[ "$output" =~ "auth:all" ]]
+}
+
+@test "auth:status runs without error" {
+  run mise run auth:status
+  [ "$status" -eq 0 ]
+  [[ "$output" =~ "CLI Tool Authentication Status" ]]
 }

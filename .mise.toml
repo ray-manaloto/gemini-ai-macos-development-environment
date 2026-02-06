@@ -1,0 +1,73 @@
+# Project-specific mise configuration
+# Tasks here use {{config_root}} which resolves to THIS directory
+
+[settings]
+experimental = true
+
+[tasks.setup-mac]
+description = "Configure macOS defaults"
+run = "sh {{config_root}}/config/scripts/macos-defaults.sh"
+
+[tasks.setup-mcp]
+description = "Configure mise MCP"
+run = "sh {{config_root}}/config/scripts/setup-mcp.sh"
+
+[tasks.validate]
+description = "Validate environment health"
+run = "sh {{config_root}}/config/scripts/validate.sh"
+
+[tasks.help]
+description = "Show System Manual"
+run = "gum format --theme=pink < {{config_root}}/MANUAL.md"
+
+[tasks.dashboard]
+description = "Launch Unified TUI"
+dir = "{{config_root}}"
+run = "pixi run python config/scripts/dashboard.py"
+
+[tasks.lint]
+description = "Lint shell scripts with shellcheck"
+run = "find {{config_root}} -name '*.sh' -not -path '*/node_modules/*' -not -path '*/.git/*' -not -path '*/.pixi/*' -not -path '*/research/repos/*' -exec shellcheck --exclude=SC2016,SC2088,SC2034,SC2129,SC2059 {} +"
+
+[tasks."skills:validate"]
+description = "Validate AI agent skills setup (symlinks, format, inventory)"
+run = """
+#!/bin/bash
+SCRIPT="{{config_root}}/config/scripts/validate-skills.sh"
+if [ -f "$SCRIPT" ]; then
+  bash "$SCRIPT"
+else
+  echo "ERROR: validate-skills.sh not found at $SCRIPT"
+  exit 1
+fi
+"""
+
+[tasks."skills:validate:json"]
+description = "Validate skills and output as JSON"
+run = """
+#!/bin/bash
+SCRIPT="{{config_root}}/config/scripts/validate-skills.sh"
+if [ -f "$SCRIPT" ]; then
+  bash "$SCRIPT" --json
+else
+  echo '{"error": "validate-skills.sh not found"}'
+  exit 1
+fi
+"""
+
+[tasks."skills:validate:fix"]
+description = "Fix broken skill symlinks and common issues"
+run = """
+#!/bin/bash
+SCRIPT="{{config_root}}/config/scripts/validate-skills.sh"
+if [ -f "$SCRIPT" ]; then
+  bash "$SCRIPT" --fix
+else
+  echo "ERROR: validate-skills.sh not found at $SCRIPT"
+  exit 1
+fi
+"""
+
+[tasks."skills:list"]
+description = "List all installed project skills"
+run = "bunx skills list"

@@ -15,7 +15,7 @@ This document provides comprehensive context for AI agents working with this pro
 | **Hierarchy** | Mise > Bun > Pixi > Uv |
 | **Location** | User-space only (~/.local, ~/.config) |
 | **System Mods** | Zero sudo, zero Homebrew (except GUI apps) |
-| **Tests** | 63 BATS tests |
+| **Tests** | 254 BATS tests |
 | **Config** | config/mise.toml (SOURCE OF TRUTH) |
 
 ---
@@ -85,7 +85,7 @@ Fast pip replacement:
 | `config/starship.toml` | Shell prompt configuration |
 | `config/chezmoi/` | Dotfile templates |
 | `config/scripts/validate.sh` | Environment health check |
-| `tests/*.bats` | 63 BATS tests |
+| `tests/*.bats` | 254 BATS tests |
 | `setup.sh` | Bootstrap script |
 | `AGENTS.md` | Full project knowledge base |
 | `AI_ONBOARDING.md` | Copy-paste prompts for any LLM |
@@ -166,7 +166,7 @@ gemini-ai-macos-development-environment/
 │       ├── dashboard.py       # TUI dashboard (requires pixi)
 │       ├── macos-defaults.sh  # macOS system defaults
 │       └── setup-mcp.sh       # MCP configuration
-├── tests/                     # BATS test suite (63 tests)
+├── tests/                     # BATS test suite (254 tests)
 │   ├── test_mise.bats         # Mise installation, backends
 │   ├── test_tools.bats        # CLI tool availability
 │   ├── test_chezmoi.bats      # Dotfile template validation
@@ -248,7 +248,7 @@ Each AI platform has 10 commands for the OpenSpec workflow:
 
 ## TESTING
 
-### Test Files (63 tests total)
+### Test Files (254 tests total)
 
 | File | Coverage |
 |------|----------|

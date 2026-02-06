@@ -1,0 +1,110 @@
+# macOS Integration Tests
+# Validates the God-Tier macOS Development Environment on real Apple Silicon
+# See MACOS_TESTING.md for testing strategy documentation
+
+name: macOS Tests
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:  # Allow manual triggers
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-macos:
+    name: Test on macOS ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-14]  # Apple Silicon (M1)
+        # Uncomment to test on Intel as well:
+        # os: [macos-13, macos-14]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup config directory
+        run: |
+          mkdir -p ~/.config
+          ln -sfn $GITHUB_WORKSPACE ~/.config/dev-env
+
+      - name: Install mise
+        uses: jdx/mise-action@v2
+        with:
+          version: 2026.2.3
+          install: true
+
+      - name: Trust mise configuration
+        run: |
+          mise trust config/mise.toml
+          mkdir -p ~/.config/mise
+          cp config/mise.toml ~/.config/mise/config.toml
+          mise trust ~/.config/mise/config.toml
+
+      - name: Install tools via mise
+        run: |
+          eval "$(mise activate bash --shims)"
+          mise install --yes
+        env:
+          MISE_YES: "1"
+
+      - name: Install BATS
+        run: |
+          eval "$(mise activate bash --shims)"
+          mise use -g npm:bats
+
+      - name: Run BATS tests
+        run: |
+          eval "$(mise activate bash --shims)"
+          bats tests/ --formatter tap
+        env:
+          CI: "true"
+          MISE_EXPERIMENTAL: "1"
+
+      - name: Run MCP-specific tests
+        run: |
+          eval "$(mise activate bash --shims)"
+          bats tests/test_mcp.bats --formatter tap
+        env:
+          CI: "true"
+          MISE_EXPERIMENTAL: "1"
+
+      - name: Verify MCP command
+        run: |
+          eval "$(mise activate bash --shims)"
+          MISE_EXPERIMENTAL=1 mise mcp --help || echo "MCP help not available (expected in some versions)"
+        env:
+          MISE_EXPERIMENTAL: "1"
+
+      - name: Run validation script
+        run: |
+          eval "$(mise activate bash --shims)"
+          bash config/scripts/validate.sh
+
+      - name: Check mise doctor
+        run: |
+          eval "$(mise activate bash --shims)"
+          mise doctor
+
+      - name: Show environment info
+        if: always()
+        run: |
+          echo "=== macOS Version ==="
+          sw_vers
+          echo ""
+          echo "=== Architecture ==="
+          uname -m
+          echo ""
+          echo "=== Mise Version ==="
+          mise --version || echo "mise not in PATH"
+          echo ""
+          echo "=== Installed Tools ==="
+          mise ls || echo "Could not list tools"

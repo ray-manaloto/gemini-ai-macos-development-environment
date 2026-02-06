@@ -13,7 +13,7 @@ This file provides context and guidelines for AI assistants working with this re
 | **Project** | God-Tier macOS Development Environment |
 | **Hierarchy** | Mise > Bun > Pixi > Uv |
 | **Key Config** | `config/mise.toml` |
-| **Tests** | `bats tests/` (254 tests) |
+| **Tests** | `bats tests/` (402 tests) |
 | **Validate** | `mise run validate` |
 
 **Critical Rules:**
@@ -59,6 +59,120 @@ The entire stack lives in user-space (`~/.local`) with **zero system modificatio
 | 2 | **Bun** | JavaScript/TypeScript runtime, replaces npm |
 | 3 | **Pixi** | Conda-forge packages, binary isolation |
 | 4 | **Uv** | Fast pip replacement (10x faster) |
+
+---
+
+## Mise: The Orchestrator
+
+**Mise is the foundation of this environment.** All tools, versions, and tasks are managed through Mise.
+
+### What Mise Does
+
+1. **Tool Version Management** - Manages 20+ tools (bun, node, python, go, rust, etc.)
+2. **Auto-Activation** - Automatically activates tools when you `cd` into directories
+3. **Task Runner** - Provides 35+ custom tasks (`mise run <task>`)
+4. **Environment Management** - Sets environment variables per directory
+5. **MCP Integration** - Exposes tool state to AI assistants via Model Context Protocol
+
+### Auto-Activation Behavior
+
+**When you `cd` into this project:**
+```bash
+cd ~/dev/github/ray-manaloto/gemini-ai-macos-development-environment
+```
+
+Mise automatically:
+1. Detects `config/mise.toml`
+2. Activates tool versions (bun@1.3.8, node@25.5.0, python@3.14.2)
+3. Prepends tool paths to PATH
+4. Sets environment variables from `[env]` section
+5. Runs hooks (if defined)
+
+**When you `cd` out:**
+```bash
+cd ~
+```
+
+Mise automatically:
+1. Removes tool paths from PATH
+2. Restores original environment
+3. Deactivates project-specific tools
+
+### Querying Mise State
+
+| Command | Purpose | Example Output |
+|---------|---------|----------------|
+| `mise ls` | List installed tools | `bun 1.3.8`, `node 25.5.0` |
+| `mise current` | Show active versions | Shows versions in current directory |
+| `mise which <tool>` | Show tool path | `~/.local/share/mise/installs/bun/1.3.8/bin/bun` |
+| `mise env` | Show environment | All env vars set by Mise |
+| `mise doctor` | Check health | Comprehensive diagnostics |
+| `mise tasks ls` | List tasks | 35+ available tasks |
+
+### Configuration
+
+**Source of Truth**: `config/mise.toml` (~960 lines)
+
+**Key Settings**:
+```toml
+[settings]
+experimental = true              # Required for MCP
+not_found_auto_install = true   # Auto-install missing tools
+
+[settings.npm]
+package_manager = "npm"          # npm backend uses npm (NOT Bun)
+
+[settings.python]
+uv_venv_auto = true             # Auto-create uv venvs
+
+[tools]
+bun = "latest"                  # JavaScript runtime
+node = "latest"                 # Node.js runtime
+python = "latest"               # Python runtime
+# ... 20+ more tools
+
+[tasks."task-name"]
+description = "Description"
+run = "#!/bin/bash\n# Task script"
+```
+
+### Important: npm vs Bun
+
+**Configuration is CORRECT**:
+- `npm.package_manager = "npm"` - npm backend uses npm to install npm packages as tools
+- `bun = "latest"` - Bun is installed as a JavaScript runtime
+- When you run `bun install` in projects, you're using Bun directly
+- When Mise installs npm packages as tools (e.g., `npm:gemini-cli`), it uses npm
+
+This is the recommended configuration for maximum compatibility.
+
+### For AI Agents
+
+**Before suggesting tool installations, check Mise state:**
+```bash
+mise ls | grep <tool>
+```
+
+**Use Mise tasks instead of raw commands:**
+```bash
+# Good
+mise run validate
+
+# Bad
+python config/scripts/validate.sh
+```
+
+**Respect tool hierarchy:**
+```bash
+# Good
+mise use -g npm:typescript
+
+# Bad
+npm install -g typescript
+```
+
+**For comprehensive AI/LLM integration guide, see:**
+`.sisyphus/drafts/mise-ai-integration.md` (complete guide with examples)
 
 ---
 
@@ -262,18 +376,39 @@ mise run agent:down
 ```
 gemini-ai-macos-development-environment/
 ├── config/
-│   ├── main.pkl           # Pkl configuration (generates TOML)
-│   └── scripts/           # Task scripts
+│   ├── mise.toml          # SOURCE OF TRUTH
+│   ├── main.pkl           # Pkl → generates TOML
+│   ├── starship.toml      # Shell prompt config
+│   ├── chezmoi/           # Dotfile templates
+│   └── scripts/           # validate.sh, dashboard.py
+├── DevEnvManager/         # Spec B: Native Swift menu bar app (requires Xcode)
+│   ├── App/               # AppDelegate (NSStatusItem + NSPopover)
+│   ├── Domain/            # Business logic (Mise, Homebrew, OrbStack)
+│   ├── Presentation/      # UI layer
+│   └── project.yml        # XcodeGen configuration
+├── DevEnvManager-SwiftBar/  # Spec A: Enhanced SwiftBar plugin (bash)
+│   ├── dev-status.5s.sh   # 503-line bash plugin
+│   └── tests/             # BATS tests (10 tests)
+├── DevEnvManager-Iced/    # Spec C: Rust iced + tray-icon (5.4 MB binary)
+│   ├── src/               # app.rs, tray.rs, config.rs, domain/, views/
+│   ├── Cargo.toml         # iced 0.14, tray-icon 0.21
+│   └── target/release/    # Pre-built binary
+├── DevEnvManager-Tauri/   # Spec D: Tauri 2 + React
+│   ├── src-tauri/src/     # lib.rs, tray.rs, commands/
+│   ├── src/               # React frontend (App, components, hooks)
+│   └── package.json       # bun + react + tauri CLI
 ├── templates/
 │   └── agent.yaml         # SkyPilot agent template
-├── research/
-│   ├── CHATGPT_DEEP_RESEARCH.md    # ChatGPT research report
-│   ├── DEEP_RESEARCH_FINDINGS.md   # NotebookLM findings
-│   ├── GAPS_ANALYSIS.md            # Gap analysis
-│   └── ...                         # Additional research
+├── research/              # 15+ research docs
+│   ├── DEVENVMANAGER_TRAY_RESEARCH.md   # Notch overflow analysis
+│   ├── MENUBAR_IMPLEMENTATION_SPECS.md  # 4-way specs (1,195 lines)
+│   ├── MENUBAR_COMPARISON_REPORT.md     # Metrics + ranking
+│   └── ...                              # Additional research
+├── tests/                 # 402 BATS tests
 ├── .github/
 │   └── workflows/
-│       └── validate.yml   # CI validation
+│       ├── validate.yml               # CI validation
+│       └── build-devenvmanager.yml    # DevEnvManager builds
 ├── setup.sh               # Bootstrap script
 ├── pixi.toml              # Pixi dependencies
 ├── README.md              # User documentation
@@ -343,6 +478,39 @@ mise run tools:fix-shadows --force
 
 ---
 
+## DevEnvManager — Menu Bar Implementations (P5)
+
+**Problem**: The original DevEnvManager.app's tray icon gets hidden behind the MacBook Pro notch (X=781, notch starts ~X=772).
+
+**Solution**: Built 4 parallel implementations to compare frameworks.
+
+| Spec | Directory | Framework | Status |
+|------|-----------|-----------|--------|
+| A | `DevEnvManager-SwiftBar/` | SwiftBar bash plugin | Complete |
+| B | `DevEnvManager/` (modified) | Native Swift NSStatusItem | Complete (needs Xcode.app) |
+| C | `DevEnvManager-Iced/` | Rust iced + tray-icon | Complete (5.4 MB binary) |
+| D | `DevEnvManager-Tauri/` | Tauri 2 + React | Complete |
+
+**Launch Commands**:
+```bash
+# SwiftBar (needs SwiftBar.app from brew)
+open /Applications/SwiftBar.app
+
+# Iced (pure Rust binary, ready to run)
+./DevEnvManager-Iced/target/release/devenv-manager-iced &
+
+# Tauri 2 (Rust + React dev server)
+cd DevEnvManager-Tauri && bun tauri dev
+
+# Swift (requires Xcode.app, not just CLT)
+# cd DevEnvManager && xcodegen generate && xcodebuild build
+```
+
+**Ranking**: B (Swift) > C (Iced) > D (Tauri) > A (SwiftBar)
+**Research**: `research/MENUBAR_COMPARISON_REPORT.md`, `research/MENUBAR_IMPLEMENTATION_SPECS.md`
+
+---
+
 ## Research Documentation
 
 The `research/` directory contains deep research findings:
@@ -354,6 +522,9 @@ The `research/` directory contains deep research findings:
 | `GAPS_ANALYSIS.md` | Gap analysis and recommendations |
 | `MISE_MCP_SETUP.md` | MCP integration guide |
 | `AUTOMATION_DOCUMENTATION.md` | Automation patterns |
+| `DEVENVMANAGER_TRAY_RESEARCH.md` | Notch overflow analysis, framework comparison |
+| `MENUBAR_IMPLEMENTATION_SPECS.md` | 4-way implementation specs (1,195 lines) |
+| `MENUBAR_COMPARISON_REPORT.md` | Build metrics, architecture, ranking |
 
 ---
 
@@ -378,4 +549,4 @@ Track mise ecosystem releases:
 
 ---
 
-*Last updated: January 2026*
+*Last updated: February 2026*

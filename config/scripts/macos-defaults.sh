@@ -129,13 +129,17 @@ log_success "Screenshot shadow disabled"
 # ============================================================================
 log_step "Configuring Safari..."
 
-# Enable Safari's Developer menu
-defaults write com.apple.Safari IncludeDevelopMenu -bool true
-defaults write com.apple.Safari WebKitDeveloperExtrasEnabledPreferenceKey -bool true
-defaults write com.apple.Safari "com.apple.Safari.ContentPageGroupIdentifier.WebKit2DeveloperExtrasEnabled" -bool true
-log_success "Safari Developer menu enabled"
+# Safari is sandboxed since macOS Mojave - settings may require manual configuration
+# Try non-sandboxed global setting first, then sandboxed domain
+if defaults write com.apple.Safari IncludeDevelopMenu -bool true 2>/dev/null; then
+  defaults write com.apple.Safari WebKitDeveloperExtrasEnabledPreferenceKey -bool true 2>/dev/null || true
+  defaults write com.apple.Safari "com.apple.Safari.ContentPageGroupIdentifier.WebKit2DeveloperExtrasEnabled" -bool true 2>/dev/null || true
+  log_success "Safari Developer menu enabled"
+else
+  log_warn "Safari settings skipped (sandboxed - enable Developer menu manually in Safari > Settings > Advanced)"
+fi
 
-# Add a context menu item for showing the Web Inspector in web views
+# Global WebKit setting (works without sandbox restrictions)
 defaults write NSGlobalDomain WebKitDeveloperExtras -bool true
 log_success "Web Inspector enabled in web views"
 

@@ -22,5 +22,11 @@ jobs:
         with:
           config_file: config/mise.toml
 
+      - name: Install shellcheck
+        run: brew install shellcheck
+
+      - name: Lint shell scripts
+        run: mise run lint
+
       - name: Run Validation Script
         run: bash config/scripts/validate.sh

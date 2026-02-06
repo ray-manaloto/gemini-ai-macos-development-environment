@@ -1,0 +1,311 @@
+/* Cloud Status Section */
+.cloud-section {
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.cloud-section-title {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  margin-bottom: 12px;
+  padding: 0 16px;
+}
+
+.cloud-loading {
+  text-align: center;
+  padding: 24px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.cloud-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  padding: 0 16px;
+}
+
+/* Cloud Card */
+.cloud-card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.cloud-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.cloud-card:hover::before {
+  opacity: 0.6;
+}
+
+.cloud-card.status-connected {
+  border-color: rgba(76, 217, 100, 0.3);
+}
+
+.cloud-card.status-disconnected {
+  border-color: rgba(245, 200, 76, 0.3);
+}
+
+.cloud-card.status-notinstalled {
+  border-color: rgba(255, 107, 107, 0.3);
+}
+
+/* Cloud Header */
+.cloud-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cloud-icon {
+  font-size: 28px;
+  line-height: 1;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3));
+}
+
+.cloud-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cloud-name {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+
+.cloud-detail {
+  font-size: 11px;
+  font-family: "SF Mono", "Monaco", "Courier New", monospace;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+/* Cloud Status */
+.cloud-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cloud-status-indicator {
+  font-size: 12px;
+  line-height: 1;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.cloud-status-text {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+
+.cloud-region {
+  font-size: 10px;
+  color: var(--muted);
+  padding: 4px 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 6px;
+  font-family: "SF Mono", "Monaco", "Courier New", monospace;
+}
+
+.cloud-message {
+  font-size: 10px;
+  color: var(--muted);
+  line-height: 1.4;
+  padding: 6px 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 6px;
+  border-left: 2px solid var(--warning);
+}
+
+/* Cloud Actions */
+.cloud-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: auto;
+}
+
+.cloud-action-button {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.cloud-action-button.primary {
+  background: rgba(90, 200, 250, 0.1);
+  color: var(--accent);
+  border-color: rgba(90, 200, 250, 0.3);
+}
+
+.cloud-action-button.primary:hover:not(:disabled) {
+  background: rgba(90, 200, 250, 0.2);
+  border-color: rgba(90, 200, 250, 0.6);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(90, 200, 250, 0.2);
+}
+
+.cloud-action-button.danger {
+  background: rgba(255, 107, 107, 0.1);
+  color: var(--danger);
+  border-color: rgba(255, 107, 107, 0.3);
+}
+
+.cloud-action-button.danger:hover:not(:disabled) {
+  background: rgba(255, 107, 107, 0.2);
+  border-color: rgba(255, 107, 107, 0.6);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.2);
+}
+
+.cloud-action-button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.cloud-action-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.cloud-action-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cloud-action-button .spinner {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: currentColor;
+  animation: spin 0.8s linear infinite;
+}
+
+/* Cloud Tab Styles */
+.cloud-tab-section {
+  margin-bottom: 16px;
+}
+
+.cloud-count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 8px;
+  background: rgba(90, 200, 250, 0.2);
+  border: 1px solid rgba(90, 200, 250, 0.4);
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.cloud-cluster-row {
+  background: linear-gradient(135deg, rgba(90, 200, 250, 0.05), rgba(90, 200, 250, 0.02));
+  border-left: 3px solid rgba(90, 200, 250, 0.4);
+}
+
+.cluster-status-icon {
+  font-size: 12px;
+  margin-right: 6px;
+}
+
+.cluster-status-badge {
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 4px;
+  font-family: "SF Mono", "Monaco", "Courier New", monospace;
+}
+
+.cluster-status-badge strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* AWS Info Grid */
+.aws-info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.aws-info-item {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.aws-info-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.aws-info-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  font-family: "SF Mono", "Monaco", "Courier New", monospace;
+}
+
+/* Animations */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

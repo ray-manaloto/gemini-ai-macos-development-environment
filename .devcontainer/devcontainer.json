@@ -1,31 +1,24 @@
 {
-  // ==========================================================================
-  // God-Tier macOS Development Environment - DevContainer Configuration
-  // For use with DevPod, VS Code Remote Containers, or GitHub Codespaces
-  // Uses mise DevContainer feature for automatic tool installation
-  // ==========================================================================
-  
   "name": "God-Tier Dev Environment",
-  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-22.04",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
   
-  // Features to install
+  "runArgs": [
+    "--security-opt=no-new-privileges:true",
+    "--cap-drop=ALL",
+    "--cap-add=NET_BIND_SERVICE",
+    "--pids-limit=500"
+  ],
+  
   "features": {
-    // Mise - reads config/mise.toml automatically
     "ghcr.io/devcontainers-extra/features/mise:1": {
       "version": "latest",
       "installTools": true
     },
-    
-    // Git with latest version
     "ghcr.io/devcontainers/features/git:1": {
       "version": "latest",
       "ppa": true
     },
-    
-    // GitHub CLI
     "ghcr.io/devcontainers/features/github-cli:1": {},
-    
-    // Common utilities
     "ghcr.io/devcontainers/features/common-utils:2": {
       "installZsh": true,
       "configureZshAsDefaultShell": true,
@@ -34,43 +27,56 @@
     }
   },
   
-  // Container settings - trust workspace config
   "containerEnv": {
     "MISE_TRUSTED_CONFIG_PATHS": "/workspaces",
+    "MISE_YES": "1",
+    "MISE_EXPERIMENTAL": "1",
     "MISE_INSTALL_PATH": "/home/vscode/.local/bin/mise",
     "PATH": "/home/vscode/.local/share/mise/shims:/home/vscode/.local/bin:${containerEnv:PATH}"
   },
   
-  // Run after container is created - uses unified setup task
-  "postCreateCommand": {
-    "copy-mise-config": "mkdir -p ~/.config/mise && cp config/mise.toml ~/.config/mise/config.toml",
-    "setup": "mise run setup:container"
+  "remoteEnv": {
+    "ANTHROPIC_API_KEY": "${localEnv:ANTHROPIC_API_KEY}",
+    "OPENAI_API_KEY": "${localEnv:OPENAI_API_KEY}",
+    "GOOGLE_API_KEY": "${localEnv:GOOGLE_API_KEY}",
+    "GITHUB_TOKEN": "${localEnv:GITHUB_TOKEN}",
+    "GEMINI_API_KEY": "${localEnv:GEMINI_API_KEY}",
+    "GROQ_API_KEY": "${localEnv:GROQ_API_KEY}",
+    "LEASH_DISABLE_TELEMETRY": "1"
   },
   
-  // Run when attaching to container
-  "postAttachCommand": "mise doctor",
+  "onCreateCommand": "cp config/mise.toml ~/.config/mise/config.toml && mise trust ~/.config/mise/config.toml && mise trust .mise.toml 2>/dev/null || true",
+  "postCreateCommand": "mise run setup:container",
+  "postAttachCommand": ".devcontainer/scripts/post-attach.sh",
   
-  // Forward ports (for development servers)
   "forwardPorts": [
-    3000,  // React/Next.js
-    5000,  // Flask
-    8000,  // Django/FastAPI
-    8080,  // General HTTP
-    8888   // Jupyter
+    3000,
+    5000,
+    8000,
+    8080,
+    8888,
+    18080
   ],
   
-  // VS Code specific settings
+  "portsAttributes": {
+    "3000": { "label": "React/Next.js", "onAutoForward": "notify" },
+    "5000": { "label": "Flask", "onAutoForward": "notify" },
+    "8000": { "label": "Django/FastAPI", "onAutoForward": "notify" },
+    "8080": { "label": "General HTTP", "onAutoForward": "silent" },
+    "8888": { "label": "Jupyter", "onAutoForward": "notify" },
+    "18080": { "label": "Leash Control UI", "onAutoForward": "silent" }
+  },
+  
   "customizations": {
     "vscode": {
       "settings": {
         "terminal.integrated.defaultProfile.linux": "zsh",
         "terminal.integrated.profiles.linux": {
-          "zsh": {
-            "path": "/bin/zsh"
-          }
+          "zsh": { "path": "/bin/zsh" }
         },
         "python.defaultInterpreterPath": "/home/vscode/.local/share/mise/installs/python/latest/bin/python",
-        "editor.formatOnSave": true
+        "editor.formatOnSave": true,
+        "files.autoSave": "afterDelay"
       },
       "extensions": [
         "esbenp.prettier-vscode",
@@ -87,21 +93,18 @@
     }
   },
   
-  // Mount settings
   "mounts": [
-    // Persist mise data between rebuilds
     "source=${localWorkspaceFolderBasename}-mise-data,target=/home/vscode/.local/share/mise,type=volume",
-    // Persist mise config
-    "source=${localWorkspaceFolderBasename}-mise-config,target=/home/vscode/.config/mise,type=volume"
+    "source=${localWorkspaceFolderBasename}-mise-config,target=/home/vscode/.config/mise,type=volume",
+    "source=${localWorkspaceFolderBasename}-shell-history,target=/commandhistory,type=volume",
+    "type=tmpfs,destination=/tmp,tmpfs-size=512M,tmpfs-mode=1777"
   ],
   
-  // Run as non-root user
   "remoteUser": "vscode",
-  
-  // Privileged mode (needed for some tools)
+  "containerUser": "vscode",
+  "updateRemoteUserUID": true,
   "privileged": false,
   
-  // Host requirements
   "hostRequirements": {
     "cpus": 2,
     "memory": "4gb",

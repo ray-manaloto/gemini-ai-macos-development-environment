@@ -8,7 +8,9 @@ not_found_auto_install = true
 status = { missing_tools = "if_other_versions_installed" }
 
 [settings.npm]
-package_manager = "npm"
+# Bun backend: 3x faster installs. Requires node for version resolution.
+# https://mise.jdx.dev/dev-tools/backends/npm.html
+package_manager = "bun"
 
 [settings.python]
 uv_venv_auto = true
@@ -18,28 +20,55 @@ uv_venv_auto = true
 
 # --- Core Runtimes ---
 bun = "latest"
+node = "latest"
+python = "latest"
+go = "latest"
+rust = "latest"
 pixi = "latest"
 uv = "latest"
 chezmoi = "latest"
 usage = "latest"
 pkl = "latest"
-node = "latest"
 
 # --- Modern Rust-Based Utilities ---
 starship = "latest"
 ripgrep = "latest"
 fd = "latest"
 zoxide = "latest"
+bat = "latest"
+eza = "latest"
+fzf = "latest"
+delta = "latest"
+lsd = "latest"
+hyperfine = "latest"
+glow = "latest"
+atuin = "latest"
 "github:ast-grep/ast-grep" = "latest"
+
+# --- Security & Encryption ---
+"aqua:FiloSottile/age" = "latest"
+
+# --- Data Processing ---
+jq = "latest"
+yq = "latest"
+
+# --- Code Quality ---
+shellcheck = "latest"
+hadolint = "latest"
+"pipx:pre-commit" = "latest"
 
 # --- AI-Assisted Code Search ---
 "pipx:mgrep" = "latest"
 
 # --- Infrastructure ---
 "1password-cli" = "latest"
+awscli = { version = "latest", symlink_bins = "true" }
 
 # --- Development Daemon Manager ---
 pitchfork = "latest"
+
+# --- Container Tools ---
+"aqua:loft-sh/devpod" = "latest"
 
 # --- CLI Tools ---
 github-cli = "latest"
@@ -48,9 +77,14 @@ github-cli = "latest"
 "npm:bats" = "latest"
 "ubi:charmbracelet/gum" = "latest"
 
-# --- AI Agents (npm packages, run with bun via exec_override) ---
+# --- AI Agents ---
 "npm:@google/gemini-cli" = "latest"
 "npm:@ralph-orchestrator/ralph-cli" = "latest"
+"npm:@anthropic-ai/claude-code" = "latest"
+"npm:@openai/codex" = "latest"
+"npm:opencode-ai" = "latest"
+"npm:@mermaid-js/mermaid-cli" = "latest"
+"npm:jscpd" = "latest"
 
 [tasks.dashboard]
 description = "Launch Unified TUI"
@@ -60,6 +94,10 @@ run = "pixi run python config/scripts/dashboard.py"
 [tasks.validate]
 description = "Validate environment health"
 run = "sh {{config_root}}/config/scripts/validate.sh"
+
+[tasks.lint]
+description = "Lint shell scripts with shellcheck"
+run = "find . -name '*.sh' -not -path '*/node_modules/*' -not -path '*/.git/*' -not -path '*/.pixi/*' -not -path '*/research/repos/*' -exec shellcheck --exclude=SC2016,SC2088,SC2034,SC2129,SC2059 {} +"
 
 [tasks.help]
 description = "Show System Manual"
@@ -391,6 +429,394 @@ description = "Configure mise MCP"
 run = "sh {{config_root}}/config/scripts/setup-mcp.sh"
 
 # =============================================================================
+# SwiftBar Menu Bar Tasks
+# =============================================================================
+
+[tasks."menubar:install"]
+description = "Install SwiftBar and configure plugin"
+run = """
+echo "=== SwiftBar Menu Bar Installation ==="
+echo ""
+
+# Check if SwiftBar is installed
+if [ -d "/Applications/SwiftBar.app" ]; then
+  echo "✅ SwiftBar is already installed"
+else
+  echo "📥 Installing SwiftBar via Homebrew..."
+  if command -v brew &> /dev/null; then
+    brew install --cask swiftbar
+    echo "✅ SwiftBar installed"
+  else
+    echo "❌ Homebrew not found. Install SwiftBar manually:"
+    echo "   https://swiftbar.app"
+    exit 1
+  fi
+fi
+
+# Configure plugin directory
+PLUGIN_DIR="{{config_root}}/config/scripts"
+echo ""
+echo "📂 Configuring SwiftBar plugin directory..."
+defaults write com.ameba.SwiftBar PluginDirectory "$PLUGIN_DIR"
+echo "✅ Plugin directory set to: $PLUGIN_DIR"
+
+# Make plugin executable
+chmod +x "$PLUGIN_DIR/dev-status.1m.sh"
+echo "✅ Plugin made executable"
+
+# Launch SwiftBar
+echo ""
+echo "🚀 Launching SwiftBar..."
+open -a SwiftBar
+
+echo ""
+echo "✨ SwiftBar setup complete!"
+echo "   Look for the status icon in your menu bar"
+"""
+
+[tasks."menubar:uninstall"]
+description = "Remove SwiftBar configuration"
+run = """
+echo "=== SwiftBar Removal ==="
+defaults delete com.ameba.SwiftBar PluginDirectory 2>/dev/null || true
+echo "✅ SwiftBar configuration removed"
+echo ""
+echo "To fully uninstall SwiftBar:"
+echo "  brew uninstall --cask swiftbar"
+"""
+
+[tasks."menubar:status"]
+description = "Show SwiftBar status"
+run = """
+echo "=== SwiftBar Status ==="
+echo ""
+
+if [ -d "/Applications/SwiftBar.app" ]; then
+  echo "✅ SwiftBar: Installed"
+  
+  # Check if running
+  if pgrep -x "SwiftBar" > /dev/null; then
+    echo "✅ SwiftBar: Running"
+  else
+    echo "⚪ SwiftBar: Not running"
+  fi
+  
+  # Show plugin directory
+  PLUGIN_DIR=$(defaults read com.ameba.SwiftBar PluginDirectory 2>/dev/null || echo "Not configured")
+  echo "📂 Plugin directory: $PLUGIN_DIR"
+  
+  # List plugins
+  if [ -d "$PLUGIN_DIR" ]; then
+    echo ""
+    echo "📋 Plugins found:"
+    ls -la "$PLUGIN_DIR"/*.sh 2>/dev/null | awk '{print "   " $NF}'
+  fi
+else
+  echo "❌ SwiftBar: Not installed"
+  echo ""
+  echo "Install with: mise run menubar:install"
+fi
+"""
+
+[tasks."menubar:refresh"]
+description = "Refresh SwiftBar plugins"
+run = """
+echo "🔄 Refreshing SwiftBar..."
+osascript -e 'tell application "SwiftBar" to refreshAllPlugins'
+echo "✅ All plugins refreshed"
+"""
+
+[tasks."menubar:open"]
+description = "Open SwiftBar app"
+run = """
+if [ -d "/Applications/SwiftBar.app" ]; then
+  open -a SwiftBar
+  echo "✅ SwiftBar opened"
+else
+  echo "❌ SwiftBar not installed"
+  echo "Install with: mise run menubar:install"
+fi
+"""
+
+[tasks."menubar:edit"]
+description = "Edit the dev-status plugin"
+run = """
+PLUGIN="{{config_root}}/config/scripts/dev-status.1m.sh"
+if [ -f "$PLUGIN" ]; then
+  ${EDITOR:-open} "$PLUGIN"
+else
+  echo "❌ Plugin not found: $PLUGIN"
+fi
+"""
+
+# =============================================================================
+# DevEnvManager Native App Tasks
+# =============================================================================
+
+[tasks."devenv-app:install"]
+description = "Install DevEnvManager.app (downloads prebuilt release)"
+run = """
+#!/bin/bash
+set -euo pipefail
+
+echo "=== DevEnvManager Installation ==="
+echo ""
+
+REPO="ray-manaloto/gemini-ai-macos-development-environment"
+APP_NAME="DevEnvManager.app"
+INSTALL_DIR="$HOME/Applications"
+DOWNLOAD_DIR="${TMPDIR:-/tmp}/devenvmanager-install"
+
+# Check if already installed
+if [ -d "$INSTALL_DIR/$APP_NAME" ]; then
+  echo "⚠️  DevEnvManager is already installed at: $INSTALL_DIR/$APP_NAME"
+  echo ""
+  read -p "Do you want to reinstall? (y/N) " -n 1 -r
+  echo ""
+  if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    echo "Installation cancelled."
+    exit 0
+  fi
+  echo "Removing existing installation..."
+  rm -rf "$INSTALL_DIR/$APP_NAME"
+fi
+
+# Get latest release
+echo "📥 Fetching latest release from GitHub..."
+RELEASE_URL=$(gh api repos/$REPO/releases/latest --jq '.assets[] | select(.name | endswith(".zip")) | .browser_download_url' 2>/dev/null || echo "")
+
+if [ -z "$RELEASE_URL" ]; then
+  echo "❌ No release found. The app may need to be built first."
+  echo ""
+  echo "Options:"
+  echo "  1. Build from source: mise run devenv-app:build"
+  echo "  2. Wait for CI to create a release"
+  echo ""
+  echo "For contributors, see: DevEnvManager/README.md"
+  exit 1
+fi
+
+# Download and extract
+mkdir -p "$DOWNLOAD_DIR"
+cd "$DOWNLOAD_DIR"
+
+echo "📥 Downloading: $(basename $RELEASE_URL)"
+curl -fsSL -o devenvmanager.zip "$RELEASE_URL"
+
+echo "📦 Extracting..."
+unzip -q -o devenvmanager.zip
+
+# Install
+mkdir -p "$INSTALL_DIR"
+mv "$APP_NAME" "$INSTALL_DIR/"
+
+# Cleanup
+rm -rf "$DOWNLOAD_DIR"
+
+echo ""
+echo "✅ DevEnvManager installed to: $INSTALL_DIR/$APP_NAME"
+echo ""
+echo "🚀 Launching DevEnvManager..."
+open "$INSTALL_DIR/$APP_NAME"
+echo ""
+echo "The app icon should appear in your menu bar."
+echo "Run 'mise run devenv-app:status' to check."
+"""
+
+[tasks."devenv-app:build"]
+description = "Build DevEnvManager from source (requires Xcode.app)"
+run = """
+#!/bin/bash
+set -euo pipefail
+
+echo "=== DevEnvManager Build ==="
+echo ""
+
+# Check for Xcode
+if ! xcode-select -p | grep -q "Xcode.app"; then
+  echo "❌ Full Xcode.app is required to build DevEnvManager."
+  echo ""
+  echo "Current developer path: $(xcode-select -p)"
+  echo ""
+  echo "To install Xcode:"
+  echo "  1. Download from Mac App Store: https://apps.apple.com/us/app/xcode/id497799835"
+  echo "  2. After install, run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer"
+  echo ""
+  echo "Alternative: Install prebuilt app with: mise run devenv-app:install"
+  exit 1
+fi
+
+# Check for XcodeGen
+if ! command -v xcodegen &> /dev/null; then
+  echo "📥 Installing XcodeGen..."
+  mise use -g "ubi:yonaskolb/XcodeGen"
+  mise reshim
+fi
+
+cd "{{config_root}}/DevEnvManager"
+
+# Generate Xcode project
+echo "📝 Generating Xcode project..."
+xcodegen generate
+
+# Build
+echo "🔨 Building DevEnvManager..."
+xcodebuild -scheme DevEnvManager -configuration Release -derivedDataPath build clean build
+
+# Find the built app
+APP_PATH="build/Build/Products/Release/DevEnvManager.app"
+if [ ! -d "$APP_PATH" ]; then
+  echo "❌ Build failed - app not found at: $APP_PATH"
+  exit 1
+fi
+
+# Install to ~/Applications
+INSTALL_DIR="$HOME/Applications"
+mkdir -p "$INSTALL_DIR"
+
+if [ -d "$INSTALL_DIR/DevEnvManager.app" ]; then
+  echo "⚠️  Replacing existing installation..."
+  rm -rf "$INSTALL_DIR/DevEnvManager.app"
+fi
+
+cp -R "$APP_PATH" "$INSTALL_DIR/"
+
+echo ""
+echo "✅ DevEnvManager built and installed to: $INSTALL_DIR/DevEnvManager.app"
+echo ""
+echo "🚀 Launching DevEnvManager..."
+open "$INSTALL_DIR/DevEnvManager.app"
+"""
+
+[tasks."devenv-app:status"]
+description = "Show DevEnvManager status"
+run = """
+echo "=== DevEnvManager Status ==="
+echo ""
+
+INSTALL_DIR="$HOME/Applications"
+APP_PATH="$INSTALL_DIR/DevEnvManager.app"
+
+if [ -d "$APP_PATH" ]; then
+  echo "✅ Installed: $APP_PATH"
+  
+  # Get version from Info.plist
+  VERSION=$(defaults read "$APP_PATH/Contents/Info.plist" CFBundleShortVersionString 2>/dev/null || echo "unknown")
+  echo "   Version: $VERSION"
+  
+  # Check if running
+  if pgrep -x "DevEnvManager" > /dev/null; then
+    PID=$(pgrep -x "DevEnvManager")
+    echo "✅ Running (PID: $PID)"
+  else
+    echo "⚪ Not running"
+  fi
+else
+  echo "❌ Not installed"
+  echo ""
+  echo "Install with: mise run devenv-app:install"
+fi
+"""
+
+[tasks."devenv-app:open"]
+description = "Open DevEnvManager app"
+run = """
+INSTALL_DIR="$HOME/Applications"
+APP_PATH="$INSTALL_DIR/DevEnvManager.app"
+
+if [ -d "$APP_PATH" ]; then
+  open "$APP_PATH"
+  echo "✅ DevEnvManager opened"
+else
+  echo "❌ DevEnvManager not installed"
+  echo "Install with: mise run devenv-app:install"
+fi
+"""
+
+[tasks."devenv-app:quit"]
+description = "Quit DevEnvManager app"
+run = """
+if pgrep -x "DevEnvManager" > /dev/null; then
+  osascript -e 'tell application "DevEnvManager" to quit'
+  echo "✅ DevEnvManager quit"
+else
+  echo "⚪ DevEnvManager is not running"
+fi
+"""
+
+[tasks."devenv-app:restart"]
+description = "Restart DevEnvManager app"
+run = """
+INSTALL_DIR="$HOME/Applications"
+APP_PATH="$INSTALL_DIR/DevEnvManager.app"
+
+if [ ! -d "$APP_PATH" ]; then
+  echo "❌ DevEnvManager not installed"
+  echo "Install with: mise run devenv-app:install"
+  exit 1
+fi
+
+echo "Restarting DevEnvManager..."
+if pgrep -x "DevEnvManager" > /dev/null; then
+  osascript -e 'tell application "DevEnvManager" to quit'
+  sleep 1
+fi
+open "$APP_PATH"
+echo "✅ DevEnvManager restarted"
+"""
+
+[tasks."devenv-app:uninstall"]
+description = "Uninstall DevEnvManager app"
+run = """
+echo "=== DevEnvManager Uninstall ==="
+echo ""
+
+INSTALL_DIR="$HOME/Applications"
+APP_PATH="$INSTALL_DIR/DevEnvManager.app"
+
+if [ ! -d "$APP_PATH" ]; then
+  echo "⚪ DevEnvManager is not installed"
+  exit 0
+fi
+
+# Quit if running
+if pgrep -x "DevEnvManager" > /dev/null; then
+  echo "Quitting DevEnvManager..."
+  osascript -e 'tell application "DevEnvManager" to quit' 2>/dev/null || true
+  sleep 1
+fi
+
+# Remove app
+rm -rf "$APP_PATH"
+echo "✅ DevEnvManager.app removed"
+
+# Remove preferences
+PREFS="$HOME/Library/Preferences/dev.devenvmanager.plist"
+if [ -f "$PREFS" ]; then
+  rm -f "$PREFS"
+  echo "✅ Preferences removed"
+fi
+
+# Remove cache
+CACHE="$HOME/Library/Caches/dev.devenvmanager"
+if [ -d "$CACHE" ]; then
+  rm -rf "$CACHE"
+  echo "✅ Cache removed"
+fi
+
+echo ""
+echo "DevEnvManager has been uninstalled."
+"""
+
+[tasks."devenv-app:logs"]
+description = "View DevEnvManager logs"
+run = """
+echo "=== DevEnvManager Logs ==="
+echo ""
+log show --predicate 'process == "DevEnvManager"' --last 5m --style compact 2>/dev/null || echo "No recent logs found"
+"""
+
+# =============================================================================
 # Tool Management Tasks
 # =============================================================================
 
@@ -468,6 +894,388 @@ echo "=== Environment Check ==="
 echo "PATH contains shims: $(echo $PATH | grep -q 'mise/shims' && echo 'YES' || echo 'NO')"
 echo "Bun available: $(which bun 2>/dev/null && echo 'YES' || echo 'NO')"
 echo "Uv available: $(which uv 2>/dev/null && echo 'YES' || echo 'NO')"
+"""
+
+# =============================================================================
+# Authentication Tasks
+# =============================================================================
+
+[tasks."auth:status"]
+description = "Show authentication status for all CLI tools"
+run = """
+echo "=== CLI Tool Authentication Status ==="
+echo ""
+
+# GitHub CLI
+echo "GitHub CLI (gh):"
+if command -v gh &> /dev/null; then
+  if gh auth status 2>&1 | grep -q "Logged in"; then
+    USER=$(gh api user --jq '.login' 2>/dev/null || echo "unknown")
+    echo "  ✓ Authenticated as: $USER"
+  else
+    echo "  ✗ Not authenticated"
+    echo "    Run: mise run auth:gh"
+  fi
+else
+  echo "  - Not installed"
+fi
+echo ""
+
+# Claude Code
+echo "Claude Code (claude):"
+if command -v claude &> /dev/null; then
+  if [ -n "$ANTHROPIC_API_KEY" ]; then
+    echo "  ✓ ANTHROPIC_API_KEY set (env)"
+  elif claude config get api_key 2>/dev/null | grep -q "sk-ant-"; then
+    echo "  ✓ Authenticated (stored token)"
+  else
+    echo "  ✗ Not authenticated"
+    echo "    Run: mise run auth:claude"
+  fi
+else
+  echo "  - Not installed"
+fi
+echo ""
+
+# OpenAI Codex
+echo "OpenAI Codex (codex):"
+if command -v codex &> /dev/null; then
+  if [ -n "$OPENAI_API_KEY" ]; then
+    echo "  ✓ OPENAI_API_KEY set (env)"
+  elif [ -f "$HOME/.codex/config.json" ] && grep -q "api_key" "$HOME/.codex/config.json" 2>/dev/null; then
+    echo "  ✓ Authenticated (stored token)"
+  else
+    echo "  ✗ Not authenticated"
+    echo "    Run: mise run auth:codex"
+  fi
+else
+  echo "  - Not installed"
+fi
+echo ""
+
+# Gemini CLI
+echo "Gemini CLI (gemini):"
+if command -v gemini &> /dev/null; then
+  if [ -n "$GEMINI_API_KEY" ] || [ -n "$GOOGLE_API_KEY" ]; then
+    echo "  ✓ API key set (env)"
+  else
+    echo "  ✗ Not authenticated"
+    echo "    Run: mise run auth:gemini"
+  fi
+else
+  echo "  - Not installed"
+fi
+echo ""
+
+# OpenCode
+echo "OpenCode (opencode):"
+if command -v opencode &> /dev/null; then
+  if [ -n "$ANTHROPIC_API_KEY" ] || [ -n "$OPENAI_API_KEY" ] || [ -n "$GOOGLE_API_KEY" ]; then
+    echo "  ✓ Provider API key set (env)"
+  elif [ -f "$HOME/.config/opencode/config.json" ]; then
+    echo "  ✓ Authenticated (stored config)"
+  else
+    echo "  ✗ Not authenticated"
+    echo "    Run: mise run auth:opencode"
+  fi
+else
+  echo "  - Not installed"
+fi
+echo ""
+
+# AWS CLI
+echo "AWS CLI (aws):"
+AWS_CMD=""
+if command -v aws &> /dev/null; then
+  AWS_CMD="aws"
+elif [ -f "$HOME/.local/share/mise/shims/aws" ]; then
+  AWS_PATH=$(find "$HOME/.local/share/mise/installs/awscli" -name "aws" -type f 2>/dev/null | head -1)
+  if [ -n "$AWS_PATH" ]; then
+    AWS_CMD="$AWS_PATH"
+  fi
+fi
+
+if [ -n "$AWS_CMD" ]; then
+  # Redirect all output to avoid "Unable to locate credentials" message
+  if $AWS_CMD sts get-caller-identity >/dev/null 2>&1; then
+    ACCOUNT=$($AWS_CMD sts get-caller-identity --query 'Account' --output text 2>/dev/null)
+    echo "  ✓ Authenticated (Account: $ACCOUNT)"
+  else
+    echo "  ✗ Not authenticated"
+    echo "    Run: mise run auth:aws"
+  fi
+else
+  echo "  - Not installed"
+fi
+echo ""
+
+# 1Password CLI
+echo "1Password CLI (op):"
+if command -v op &> /dev/null; then
+  if op account list 2>/dev/null | grep -q "."; then
+    echo "  ✓ Account configured"
+  else
+    echo "  ✗ Not configured"
+    echo "    Run: mise run auth:1password"
+  fi
+else
+  echo "  - Not installed"
+fi
+echo ""
+
+echo "---"
+echo "Run 'mise run auth:all' to configure all tools interactively."
+echo "See SECRETS.md for detailed setup instructions."
+"""
+
+[tasks."auth:gh"]
+description = "Authenticate GitHub CLI"
+run = """
+echo "=== GitHub CLI Authentication ==="
+echo ""
+
+if ! command -v gh &> /dev/null; then
+  echo "GitHub CLI not installed. Installing..."
+  mise install github-cli
+  mise reshim
+fi
+
+if [ -n "$GITHUB_TOKEN" ]; then
+  echo "GITHUB_TOKEN environment variable is set."
+  echo "GitHub CLI will use this token automatically."
+  echo ""
+  echo "To use interactive login instead, unset GITHUB_TOKEN first."
+  exit 0
+fi
+
+echo "Starting interactive authentication..."
+echo "This will open a browser to complete OAuth flow."
+echo ""
+gh auth login
+"""
+
+[tasks."auth:claude"]
+description = "Authenticate Claude Code CLI"
+run = """
+echo "=== Claude Code Authentication ==="
+echo ""
+
+if ! command -v claude &> /dev/null; then
+  echo "Claude Code not installed. Installing..."
+  mise install "npm:@anthropic-ai/claude-code"
+  mise reshim
+fi
+
+if [ -n "$ANTHROPIC_API_KEY" ]; then
+  echo "ANTHROPIC_API_KEY environment variable is set."
+  echo "Claude Code will use this key automatically."
+  echo ""
+  echo "To configure a different key, run: claude setup-token"
+  exit 0
+fi
+
+echo "Option 1: Set environment variable (recommended for automation)"
+echo "  export ANTHROPIC_API_KEY='sk-ant-...'"
+echo "  # Or add to mise.toml [env] section"
+echo ""
+echo "Option 2: Interactive setup"
+claude setup-token
+"""
+
+[tasks."auth:codex"]
+description = "Authenticate OpenAI Codex CLI"
+run = """
+echo "=== OpenAI Codex Authentication ==="
+echo ""
+
+if ! command -v codex &> /dev/null; then
+  echo "Codex not installed. Installing..."
+  mise install "npm:@openai/codex"
+  mise reshim
+fi
+
+if [ -n "$OPENAI_API_KEY" ]; then
+  echo "OPENAI_API_KEY environment variable is set."
+  echo "Codex will use this key automatically."
+  echo ""
+  echo "To use interactive login instead, unset OPENAI_API_KEY first."
+  exit 0
+fi
+
+echo "Starting interactive authentication..."
+codex login
+"""
+
+[tasks."auth:gemini"]
+description = "Authenticate Gemini CLI"
+run = """
+echo "=== Gemini CLI Authentication ==="
+echo ""
+
+if ! command -v gemini &> /dev/null; then
+  echo "Gemini CLI not installed. Installing..."
+  mise install "npm:@google/gemini-cli"
+  mise reshim
+fi
+
+if [ -n "$GEMINI_API_KEY" ]; then
+  echo "GEMINI_API_KEY environment variable is set."
+  echo "Gemini CLI will use this key automatically."
+  exit 0
+fi
+
+if [ -n "$GOOGLE_API_KEY" ]; then
+  echo "GOOGLE_API_KEY environment variable is set."
+  echo "Gemini CLI will use this key automatically."
+  exit 0
+fi
+
+echo "Gemini CLI requires an API key from Google AI Studio."
+echo ""
+echo "1. Get your API key from: https://aistudio.google.com/apikey"
+echo "2. Set it using one of these methods:"
+echo ""
+echo "   Option A: Environment variable"
+echo "   export GEMINI_API_KEY='your-api-key'"
+echo ""
+echo "   Option B: Mise secrets (recommended)"
+echo "   mise secrets set GEMINI_API_KEY='your-api-key'"
+echo ""
+echo "   Option C: 1Password integration"
+echo "   Add to mise.toml [env]: GEMINI_API_KEY = \"op://Private/Google AI/api_key\""
+echo ""
+"""
+
+[tasks."auth:opencode"]
+description = "Authenticate OpenCode CLI"
+run = """
+echo "=== OpenCode Authentication ==="
+echo ""
+
+if ! command -v opencode &> /dev/null; then
+  echo "OpenCode not installed. Installing..."
+  mise install "npm:opencode-ai"
+  mise reshim
+fi
+
+# Check for any provider key
+HAS_KEY=0
+[ -n "$ANTHROPIC_API_KEY" ] && HAS_KEY=1 && echo "✓ ANTHROPIC_API_KEY is set"
+[ -n "$OPENAI_API_KEY" ] && HAS_KEY=1 && echo "✓ OPENAI_API_KEY is set"
+[ -n "$GOOGLE_API_KEY" ] && HAS_KEY=1 && echo "✓ GOOGLE_API_KEY is set"
+[ -n "$GEMINI_API_KEY" ] && HAS_KEY=1 && echo "✓ GEMINI_API_KEY is set"
+
+if [ "$HAS_KEY" = "1" ]; then
+  echo ""
+  echo "OpenCode will use the available provider API key(s)."
+  exit 0
+fi
+
+echo "OpenCode supports multiple providers. Set one or more API keys:"
+echo ""
+echo "  Anthropic:  export ANTHROPIC_API_KEY='sk-ant-...'"
+echo "  OpenAI:     export OPENAI_API_KEY='sk-proj-...'"
+echo "  Google:     export GOOGLE_API_KEY='...'"
+echo ""
+echo "Or run interactive setup:"
+opencode auth
+"""
+
+[tasks."auth:aws"]
+description = "Configure AWS CLI credentials"
+run = """
+echo "=== AWS CLI Authentication ==="
+echo ""
+
+AWS_CMD=""
+if command -v aws &> /dev/null; then
+  AWS_CMD="aws"
+elif [ -f "$HOME/.local/share/mise/shims/aws" ]; then
+  AWS_PATH=$(find "$HOME/.local/share/mise/installs/awscli" -name "aws" -type f 2>/dev/null | head -1)
+  if [ -n "$AWS_PATH" ]; then
+    AWS_CMD="$AWS_PATH"
+  fi
+fi
+
+if [ -z "$AWS_CMD" ]; then
+  echo "AWS CLI not installed. Installing..."
+  mise install awscli
+  mise reshim
+  AWS_CMD="aws"
+fi
+
+if [ -n "$AWS_ACCESS_KEY_ID" ] && [ -n "$AWS_SECRET_ACCESS_KEY" ]; then
+  echo "AWS credentials are set via environment variables."
+  $AWS_CMD sts get-caller-identity
+  exit 0
+fi
+
+echo "Starting interactive AWS configuration..."
+echo ""
+$AWS_CMD configure
+"""
+
+[tasks."auth:1password"]
+description = "Configure 1Password CLI"
+run = """
+echo "=== 1Password CLI Authentication ==="
+echo ""
+
+if ! command -v op &> /dev/null; then
+  echo "1Password CLI not installed. Installing..."
+  mise install 1password-cli
+  mise reshim
+fi
+
+echo "1Password CLI Setup"
+echo ""
+echo "If you have 1Password desktop app:"
+echo "  1. Enable 'Integrate with 1Password CLI' in Settings > Developer"
+echo "  2. The CLI will use the app for authentication"
+echo ""
+echo "For standalone setup:"
+op account add
+"""
+
+[tasks."auth:all"]
+description = "Run all authentication setup (interactive)"
+run = """
+echo "=== Full Authentication Setup ==="
+echo "This will guide you through authenticating all CLI tools."
+echo ""
+
+# Check what's installed
+TOOLS=""
+command -v gh &> /dev/null && TOOLS="$TOOLS gh"
+command -v claude &> /dev/null && TOOLS="$TOOLS claude"
+command -v codex &> /dev/null && TOOLS="$TOOLS codex"
+command -v gemini &> /dev/null && TOOLS="$TOOLS gemini"
+command -v opencode &> /dev/null && TOOLS="$TOOLS opencode"
+command -v aws &> /dev/null && TOOLS="$TOOLS aws"
+command -v op &> /dev/null && TOOLS="$TOOLS op"
+
+if [ -z "$TOOLS" ]; then
+  echo "No CLI tools installed yet. Run 'mise install' first."
+  exit 1
+fi
+
+echo "Installed tools to configure:$TOOLS"
+echo ""
+echo "Running auth:status first to show current state..."
+echo ""
+mise run auth:status
+echo ""
+echo "---"
+echo "To configure individual tools, run:"
+echo "  mise run auth:gh       # GitHub CLI"
+echo "  mise run auth:claude   # Claude Code"
+echo "  mise run auth:codex    # OpenAI Codex"
+echo "  mise run auth:gemini   # Gemini CLI"
+echo "  mise run auth:opencode # OpenCode"
+echo "  mise run auth:aws      # AWS CLI"
+echo "  mise run auth:1password # 1Password CLI"
+echo ""
+echo "For detailed instructions, see SECRETS.md"
 """
 
 [tasks."validate:tools"]
@@ -643,6 +1451,12 @@ fi
 """
 
 # =============================================================================
+# Skills Validation Tasks
+# =============================================================================
+
+
+
+# =============================================================================
 # Platform Setup Tasks (Unified Setup)
 # =============================================================================
 
@@ -650,11 +1464,9 @@ fi
 description = "Common setup for all platforms"
 run = """
 echo "=== Common Setup ==="
-# Install all mise tools
 mise install
 mise reshim
 
-# Setup shell activation (idempotent)
 SHELL_RC="${HOME}/.zshrc"
 if [ -f "${HOME}/.bashrc" ] && [ ! -f "${HOME}/.zshrc" ]; then
   SHELL_RC="${HOME}/.bashrc"
@@ -663,6 +1475,12 @@ fi
 if ! grep -q 'mise activate' "$SHELL_RC" 2>/dev/null; then
   echo 'eval "$(mise activate zsh)"' >> "$SHELL_RC"
   echo "Added mise activation to $SHELL_RC"
+fi
+
+if [ -f "{{config_root}}/config/scripts/autofix.sh" ]; then
+  echo ""
+  echo "=== Running Autofix ==="
+  bash "{{config_root}}/config/scripts/autofix.sh" fix || true
 fi
 
 echo "Common setup complete."
@@ -953,4 +1771,784 @@ description = "Restart environment"
 depends = ["env:stop", "env:start"]
 run = """
 echo "Environment restarted."
+"""
+
+# =============================================================================
+# DevContainer Lifecycle Tasks
+# =============================================================================
+
+[tasks."devcontainer:status"]
+description = "Show DevContainer status"
+run = """
+echo "=== DevContainer Status ==="
+
+echo ""
+echo "Docker Containers:"
+if command -v docker &> /dev/null; then
+  docker ps -a --filter 'name=devcontainer' --filter 'name=vsc-' --format 'table {% raw %}{{.Names}}{% endraw %}\t{% raw %}{{.Status}}{% endraw %}\t{% raw %}{{.Ports}}{% endraw %}' 2>/dev/null || echo "No devcontainers found"
+else
+  echo "Docker not installed"
+fi
+
+echo ""
+echo "DevPod Workspaces:"
+if command -v devpod &> /dev/null; then
+  devpod list 2>/dev/null || echo "No DevPod workspaces"
+else
+  echo "DevPod not installed. Install with: mise install"
+fi
+
+echo ""
+echo "VS Code Remote Containers:"
+if command -v code &> /dev/null; then
+  code --list-extensions 2>/dev/null | grep -i devcontainer && echo "DevContainer extension installed" || echo "DevContainer extension not found"
+else
+  echo "VS Code CLI not available"
+fi
+"""
+
+[tasks."devcontainer:up"]
+description = "Start DevContainer (uses DevPod by default, PROVIDER=docker for Docker CLI)"
+run = """
+PROVIDER="${PROVIDER:-devpod}"
+WORKSPACE="${WORKSPACE:-.}"
+
+echo "=== Starting DevContainer ==="
+
+if [ "$PROVIDER" = "devpod" ]; then
+  if ! command -v devpod &> /dev/null; then
+    echo "DevPod not installed. Installing..."
+    mise install devpod
+    mise reshim
+  fi
+  echo "Starting with DevPod..."
+  devpod up "$WORKSPACE"
+elif [ "$PROVIDER" = "docker" ]; then
+  if ! command -v docker &> /dev/null; then
+    echo "ERROR: Docker not installed"
+    exit 1
+  fi
+  
+  RUNNING=$(docker ps -q --filter 'name=god-tier-devcontainer' 2>/dev/null)
+  STOPPED=$(docker ps -aq --filter 'name=god-tier-devcontainer' --filter 'status=exited' 2>/dev/null)
+  
+  if [ -n "$RUNNING" ]; then
+    echo "Container already running."
+    echo "Use 'mise run devcontainer:ssh' to connect."
+  elif [ -n "$STOPPED" ]; then
+    echo "Starting existing container..."
+    docker start god-tier-devcontainer
+    echo "Container started. Use 'mise run devcontainer:ssh' to connect."
+  else
+    echo "Building and creating new container..."
+    docker build -t god-tier-dev -f .devcontainer/Dockerfile .
+    docker run -d --name god-tier-devcontainer \
+      -v "$(pwd):/workspaces/project" \
+      -v god-tier-mise-data:/home/vscode/.local/share/mise \
+      -v god-tier-mise-config:/home/vscode/.config/mise \
+      -w /workspaces/project \
+      god-tier-dev \
+      sleep infinity
+    echo "Container created and started. Use 'mise run devcontainer:ssh' to connect."
+  fi
+else
+  echo "Unknown provider: $PROVIDER"
+  echo "Use PROVIDER=devpod (default) or PROVIDER=docker"
+  exit 1
+fi
+"""
+
+[tasks."devcontainer:down"]
+description = "Stop DevContainer (PROVIDER=devpod|docker)"
+run = """
+PROVIDER="${PROVIDER:-devpod}"
+WORKSPACE="${WORKSPACE:-.}"
+
+echo "=== Stopping DevContainer ==="
+
+if [ "$PROVIDER" = "devpod" ]; then
+  if command -v devpod &> /dev/null; then
+    devpod stop "$WORKSPACE" 2>/dev/null || echo "No DevPod workspace to stop"
+  else
+    echo "DevPod not installed"
+  fi
+elif [ "$PROVIDER" = "docker" ]; then
+  CONTAINER=$(docker ps -q --filter 'name=god-tier-devcontainer' 2>/dev/null)
+  if [ -n "$CONTAINER" ]; then
+    docker stop "$CONTAINER"
+    echo "Container stopped."
+  else
+    echo "No running container found."
+  fi
+fi
+
+echo ""
+echo "DevContainer stopped. Use 'mise run devcontainer:up' to restart."
+"""
+
+[tasks."devcontainer:ssh"]
+description = "SSH into DevContainer (requires TTY)"
+run = """
+PROVIDER="${PROVIDER:-docker}"
+WORKSPACE="${WORKSPACE:-.}"
+
+# Check for TTY availability
+if [ ! -t 0 ]; then
+  echo "ERROR: This command requires an interactive terminal (TTY)."
+  echo "Use 'mise run devcontainer:exec \"<command>\"' for non-interactive execution."
+  exit 1
+fi
+
+echo "=== Connecting to DevContainer ==="
+
+if [ "$PROVIDER" = "devpod" ]; then
+  if command -v devpod &> /dev/null; then
+    devpod ssh "$WORKSPACE"
+  else
+    echo "DevPod not installed"
+    exit 1
+  fi
+elif [ "$PROVIDER" = "docker" ]; then
+  CONTAINER=$(docker ps -q --filter 'name=god-tier-devcontainer' 2>/dev/null | head -1)
+  if [ -z "$CONTAINER" ]; then
+    CONTAINER=$(docker ps -q --filter 'name=devcontainer' 2>/dev/null | head -1)
+  fi
+  if [ -z "$CONTAINER" ]; then
+    CONTAINER=$(docker ps -q --filter 'name=vsc-' 2>/dev/null | head -1)
+  fi
+  
+  if [ -n "$CONTAINER" ]; then
+    docker exec -it "$CONTAINER" zsh || docker exec -it "$CONTAINER" bash
+  else
+    echo "No running devcontainer found."
+    echo "Start one with: mise run devcontainer:up PROVIDER=docker"
+    exit 1
+  fi
+fi
+"""
+
+[tasks."devcontainer:build"]
+description = "Build DevContainer image"
+run = """
+echo "=== Building DevContainer Image ==="
+if ! command -v docker &> /dev/null; then
+  echo "ERROR: Docker not installed"
+  exit 1
+fi
+
+docker build -t god-tier-dev -f .devcontainer/Dockerfile .
+echo ""
+echo "Image built: god-tier-dev"
+echo "Run 'mise run devcontainer:up PROVIDER=docker' to start."
+"""
+
+[tasks."devcontainer:rebuild"]
+description = "Rebuild DevContainer without cache"
+run = """
+echo "=== Rebuilding DevContainer (no cache) ==="
+if ! command -v docker &> /dev/null; then
+  echo "ERROR: Docker not installed"
+  exit 1
+fi
+
+docker build --no-cache -t god-tier-dev -f .devcontainer/Dockerfile .
+echo ""
+echo "Image rebuilt: god-tier-dev"
+"""
+
+[tasks."devcontainer:logs"]
+description = "View DevContainer logs"
+run = """
+PROVIDER="${PROVIDER:-docker}"
+
+echo "=== DevContainer Logs ==="
+
+if [ "$PROVIDER" = "devpod" ]; then
+  if command -v devpod &> /dev/null; then
+    devpod logs . 2>/dev/null || echo "No DevPod logs available"
+  else
+    echo "DevPod not installed"
+  fi
+else
+  CONTAINER=$(docker ps -q --filter 'name=god-tier-devcontainer' 2>/dev/null | head -1)
+  if [ -z "$CONTAINER" ]; then
+    CONTAINER=$(docker ps -aq --filter 'name=devcontainer' 2>/dev/null | head -1)
+  fi
+  if [ -z "$CONTAINER" ]; then
+    CONTAINER=$(docker ps -aq --filter 'name=vsc-' 2>/dev/null | head -1)
+  fi
+  
+  if [ -n "$CONTAINER" ]; then
+    docker logs "$CONTAINER" 2>&1 | tail -100
+  else
+    echo "No devcontainer found."
+  fi
+fi
+"""
+
+[tasks."devcontainer:exec"]
+description = "Execute command in DevContainer (usage: mise run devcontainer:exec '<cmd>')"
+run = '''
+sh -c '
+PROVIDER="${PROVIDER:-docker}"
+
+if [ -z "$1" ]; then
+  echo "Usage: mise run devcontainer:exec \"<command>\""
+  echo "Example: mise run devcontainer:exec \"mise doctor\""
+  exit 1
+fi
+
+if [ "$PROVIDER" = "devpod" ]; then
+  if command -v devpod &> /dev/null; then
+    devpod ssh . --command "$*"
+  else
+    echo "DevPod not installed"
+    exit 1
+  fi
+else
+  CONTAINER=$(docker ps -q --filter "name=god-tier-devcontainer" 2>/dev/null | head -1)
+  if [ -z "$CONTAINER" ]; then
+    CONTAINER=$(docker ps -q --filter "name=devcontainer" 2>/dev/null | head -1)
+  fi
+  if [ -z "$CONTAINER" ]; then
+    CONTAINER=$(docker ps -q --filter "name=vsc-" 2>/dev/null | head -1)
+  fi
+
+  if [ -n "$CONTAINER" ]; then
+    docker exec "$CONTAINER" sh -c "$*"
+  else
+    echo "No running devcontainer found."
+    exit 1
+  fi
+fi
+' --
+'''
+
+[tasks."devcontainer:restart"]
+description = "Restart DevContainer (PROVIDER=devpod|docker)"
+run = """
+PROVIDER="${PROVIDER:-docker}"
+
+echo "=== Restarting DevContainer ==="
+
+# Stop first
+if [ "$PROVIDER" = "docker" ]; then
+  CONTAINER=$(docker ps -q --filter 'name=god-tier-devcontainer' 2>/dev/null)
+  if [ -n "$CONTAINER" ]; then
+    echo "Stopping container..."
+    docker stop "$CONTAINER" > /dev/null
+  fi
+  
+  # Start
+  echo "Starting container..."
+  docker start god-tier-devcontainer > /dev/null 2>&1 || {
+    echo "No container to restart. Use 'mise run devcontainer:up' first."
+    exit 1
+  }
+elif [ "$PROVIDER" = "devpod" ]; then
+  devpod stop . 2>/dev/null || true
+  devpod up .
+fi
+
+echo "DevContainer restarted."
+"""
+
+[tasks."devcontainer:delete"]
+description = "Delete DevContainer and volumes (PROVIDER=devpod|docker)"
+run = """
+PROVIDER="${PROVIDER:-devpod}"
+WORKSPACE="${WORKSPACE:-.}"
+
+echo "=== Deleting DevContainer ==="
+
+if [ "$PROVIDER" = "devpod" ]; then
+  if command -v devpod &> /dev/null; then
+    devpod delete "$WORKSPACE" 2>/dev/null || echo "No DevPod workspace to delete"
+  else
+    echo "DevPod not installed"
+  fi
+elif [ "$PROVIDER" = "docker" ]; then
+  CONTAINER=$(docker ps -aq --filter 'name=god-tier-devcontainer' 2>/dev/null)
+  if [ -n "$CONTAINER" ]; then
+    docker rm -f "$CONTAINER"
+    echo "Container removed."
+  fi
+  
+  echo "Removing volumes..."
+  docker volume rm god-tier-mise-data 2>/dev/null || true
+  docker volume rm god-tier-mise-config 2>/dev/null || true
+  echo "Volumes removed."
+fi
+
+echo ""
+echo "DevContainer deleted."
+"""
+
+# =============================================================================
+# Proxy Configuration Tasks (Corporate Networks)
+# =============================================================================
+
+[tasks."proxy:status"]
+description = "Show current proxy configuration"
+run = """
+echo "=== Proxy Configuration Status ==="
+echo ""
+
+echo "Environment Variables:"
+echo "  HTTP_PROXY:  ${HTTP_PROXY:-<not set>}"
+echo "  HTTPS_PROXY: ${HTTPS_PROXY:-<not set>}"
+echo "  NO_PROXY:    ${NO_PROXY:-<not set>}"
+echo "  http_proxy:  ${http_proxy:-<not set>}"
+echo "  https_proxy: ${https_proxy:-<not set>}"
+echo ""
+
+echo "Git Proxy:"
+GIT_HTTP_PROXY=$(git config --global --get http.proxy 2>/dev/null || echo "<not set>")
+GIT_HTTPS_PROXY=$(git config --global --get https.proxy 2>/dev/null || echo "<not set>")
+echo "  http.proxy:  $GIT_HTTP_PROXY"
+echo "  https.proxy: $GIT_HTTPS_PROXY"
+echo ""
+
+echo "npm/Bun Proxy:"
+if command -v npm &> /dev/null; then
+  NPM_PROXY=$(npm config get proxy 2>/dev/null || echo "<not set>")
+  NPM_HTTPS_PROXY=$(npm config get https-proxy 2>/dev/null || echo "<not set>")
+  echo "  proxy:       $NPM_PROXY"
+  echo "  https-proxy: $NPM_HTTPS_PROXY"
+else
+  echo "  npm not available (using bun)"
+fi
+echo ""
+
+echo "Connectivity Test:"
+if [ -n "$HTTP_PROXY" ] || [ -n "$HTTPS_PROXY" ]; then
+  echo "  Testing via proxy..."
+  if curl -s --max-time 5 https://api.github.com > /dev/null 2>&1; then
+    echo "  ✓ GitHub API reachable"
+  else
+    echo "  ✗ GitHub API unreachable - check proxy settings"
+  fi
+else
+  echo "  No proxy configured - testing direct connection..."
+  if curl -s --max-time 5 https://api.github.com > /dev/null 2>&1; then
+    echo "  ✓ GitHub API reachable (direct)"
+  else
+    echo "  ✗ GitHub API unreachable - may need proxy"
+  fi
+fi
+echo ""
+echo "For configuration: mise run proxy:setup"
+echo "For documentation: see PROXY.md"
+"""
+
+[tasks."proxy:setup"]
+description = "Interactive proxy configuration"
+run = """
+echo "=== Proxy Configuration Setup ==="
+echo ""
+echo "This will configure proxy settings for:"
+echo "  - Environment variables (HTTP_PROXY, HTTPS_PROXY, NO_PROXY)"
+echo "  - Git (http.proxy, https.proxy)"
+echo "  - npm/Bun"
+echo ""
+
+read -p "Enter proxy URL (e.g., http://proxy.company.com:8080): " PROXY_URL
+
+if [ -z "$PROXY_URL" ]; then
+  echo "No proxy URL provided. Exiting."
+  exit 0
+fi
+
+read -p "Enter NO_PROXY hosts (default: localhost,127.0.0.1,.local): " NO_PROXY_HOSTS
+NO_PROXY_HOSTS="${NO_PROXY_HOSTS:-localhost,127.0.0.1,.local}"
+
+echo ""
+echo "Configuring proxy..."
+
+echo "Setting Git proxy..."
+git config --global http.proxy "$PROXY_URL"
+git config --global https.proxy "$PROXY_URL"
+
+if command -v npm &> /dev/null; then
+  echo "Setting npm proxy..."
+  npm config set proxy "$PROXY_URL"
+  npm config set https-proxy "$PROXY_URL"
+fi
+
+echo ""
+echo "=== Manual Steps Required ==="
+echo ""
+echo "Add these to your shell profile (~/.zshrc or ~/.bashrc):"
+echo ""
+echo "  export HTTP_PROXY=\"$PROXY_URL\""
+echo "  export HTTPS_PROXY=\"$PROXY_URL\""
+echo "  export NO_PROXY=\"$NO_PROXY_HOSTS\""
+echo "  export http_proxy=\"$PROXY_URL\""
+echo "  export https_proxy=\"$PROXY_URL\""
+echo "  export no_proxy=\"$NO_PROXY_HOSTS\""
+echo ""
+echo "Or add to .env file and source it."
+echo ""
+echo "Proxy configuration complete. Run 'mise run proxy:status' to verify."
+"""
+
+[tasks."proxy:clear"]
+description = "Clear all proxy configuration"
+run = """
+echo "=== Clearing Proxy Configuration ==="
+echo ""
+
+echo "Clearing Git proxy..."
+git config --global --unset http.proxy 2>/dev/null || true
+git config --global --unset https.proxy 2>/dev/null || true
+
+if command -v npm &> /dev/null; then
+  echo "Clearing npm proxy..."
+  npm config delete proxy 2>/dev/null || true
+  npm config delete https-proxy 2>/dev/null || true
+fi
+
+echo ""
+echo "Git and npm proxy settings cleared."
+echo ""
+echo "To clear environment variables, remove from shell profile:"
+echo "  unset HTTP_PROXY HTTPS_PROXY NO_PROXY http_proxy https_proxy no_proxy"
+echo ""
+echo "Proxy configuration cleared. Run 'mise run proxy:status' to verify."
+"""
+
+[tasks."proxy:test"]
+description = "Test proxy connectivity"
+run = """
+echo "=== Proxy Connectivity Test ==="
+echo ""
+
+ENDPOINTS=(
+  "https://api.github.com|GitHub API"
+  "https://registry.npmjs.org|npm Registry"
+  "https://pypi.org|PyPI"
+  "https://raw.githubusercontent.com|GitHub Raw"
+)
+
+for endpoint in "${ENDPOINTS[@]}"; do
+  URL="${endpoint%%|*}"
+  NAME="${endpoint##*|}"
+  printf "Testing %-20s " "$NAME..."
+  if curl -s --max-time 10 "$URL" > /dev/null 2>&1; then
+    echo "✓ OK"
+  else
+    echo "✗ FAILED"
+  fi
+done
+
+echo ""
+if [ -n "$HTTP_PROXY" ] || [ -n "$HTTPS_PROXY" ]; then
+  echo "Tests ran through proxy: ${HTTPS_PROXY:-$HTTP_PROXY}"
+else
+  echo "Tests ran with direct connection (no proxy configured)"
+fi
+"""
+
+# =============================================================================
+# Autofix Tasks - Detect and remediate tool installation issues
+# =============================================================================
+
+[tasks."autofix:status"]
+description = "Show environment issues without fixing (dry-run)"
+run = """
+#!/bin/bash
+SCRIPT="{{config_root}}/config/scripts/autofix.sh"
+if [ -f "$SCRIPT" ]; then
+  bash "$SCRIPT" status
+else
+  echo "ERROR: autofix.sh not found at $SCRIPT"
+  exit 1
+fi
+"""
+
+[tasks."autofix:fix"]
+description = "Fix environment issues with backup"
+run = """
+#!/bin/bash
+SCRIPT="{{config_root}}/config/scripts/autofix.sh"
+if [ -f "$SCRIPT" ]; then
+  bash "$SCRIPT" fix
+else
+  echo "ERROR: autofix.sh not found at $SCRIPT"
+  exit 1
+fi
+"""
+
+[tasks."autofix:json"]
+description = "Output environment issues as JSON (for integration)"
+run = """
+#!/bin/bash
+SCRIPT="{{config_root}}/config/scripts/autofix.sh"
+if [ -f "$SCRIPT" ]; then
+  bash "$SCRIPT" --json
+else
+  echo '{"error": "autofix.sh not found"}'
+  exit 1
+fi
+"""
+
+# =============================================================================
+# Launchd Tasks - macOS daemon management for autofix
+# =============================================================================
+
+[tasks."launchd:install"]
+description = "Install autofix launchd agent (macOS only)"
+run = """
+#!/bin/bash
+set -euo pipefail
+
+if [ "$(uname)" != "Darwin" ]; then
+  echo "ERROR: launchd is only available on macOS"
+  exit 1
+fi
+
+PLIST_SRC="{{config_root}}/config/launchd/com.godtier.autofix.plist"
+PLIST_DST="$HOME/Library/LaunchAgents/com.godtier.autofix.plist"
+LOG_DIR="$HOME/Library/Logs"
+
+if [ ! -f "$PLIST_SRC" ]; then
+  echo "ERROR: Plist not found at $PLIST_SRC"
+  exit 1
+fi
+
+echo "=== Installing Autofix Launchd Agent ==="
+
+# Unload existing if present
+if launchctl list | grep -q "com.godtier.autofix"; then
+  echo "Unloading existing agent..."
+  launchctl unload "$PLIST_DST" 2>/dev/null || true
+fi
+
+# Create LaunchAgents directory if needed
+mkdir -p "$HOME/Library/LaunchAgents"
+mkdir -p "$LOG_DIR"
+
+# Copy plist (substituting paths)
+CONFIG_ROOT="{{config_root}}"
+sed -e "s|{{CONFIG_ROOT}}|$CONFIG_ROOT|g" \
+    -e "s|{{HOME}}|$HOME|g" \
+    "$PLIST_SRC" > "$PLIST_DST"
+
+# Load the agent
+launchctl load "$PLIST_DST"
+
+echo "✅ Autofix agent installed and loaded"
+echo ""
+echo "The agent will:"
+echo "  - Run autofix on login"
+echo "  - Run autofix daily at 9 AM"
+echo "  - Log to $LOG_DIR/godtier-autofix.log"
+echo ""
+echo "Use 'mise run launchd:status' to check status"
+"""
+
+[tasks."launchd:uninstall"]
+description = "Uninstall autofix launchd agent (macOS only)"
+run = """
+#!/bin/bash
+set -euo pipefail
+
+if [ "$(uname)" != "Darwin" ]; then
+  echo "ERROR: launchd is only available on macOS"
+  exit 1
+fi
+
+PLIST_DST="$HOME/Library/LaunchAgents/com.godtier.autofix.plist"
+
+echo "=== Uninstalling Autofix Launchd Agent ==="
+
+if launchctl list | grep -q "com.godtier.autofix"; then
+  echo "Unloading agent..."
+  launchctl unload "$PLIST_DST" 2>/dev/null || true
+fi
+
+if [ -f "$PLIST_DST" ]; then
+  rm "$PLIST_DST"
+  echo "Removed plist file"
+fi
+
+echo "✅ Autofix agent uninstalled"
+"""
+
+[tasks."launchd:status"]
+description = "Show autofix launchd agent status (macOS only)"
+run = """
+#!/bin/bash
+
+if [ "$(uname)" != "Darwin" ]; then
+  echo "ERROR: launchd is only available on macOS"
+  exit 1
+fi
+
+PLIST_DST="$HOME/Library/LaunchAgents/com.godtier.autofix.plist"
+LOG_FILE="$HOME/Library/Logs/godtier-autofix.log"
+
+echo "=== Autofix Launchd Agent Status ==="
+echo ""
+
+# Check if plist exists
+if [ -f "$PLIST_DST" ]; then
+  echo "✓ Plist installed: $PLIST_DST"
+else
+  echo "✗ Plist not installed"
+  echo ""
+  echo "Run 'mise run launchd:install' to install"
+  exit 0
+fi
+
+# Check if loaded
+echo ""
+if launchctl list | grep -q "com.godtier.autofix"; then
+  echo "✓ Agent is loaded"
+  launchctl list | grep "com.godtier.autofix"
+else
+  echo "✗ Agent not loaded"
+  echo ""
+  echo "Run: launchctl load $PLIST_DST"
+fi
+
+# Show recent logs
+echo ""
+if [ -f "$LOG_FILE" ]; then
+  echo "=== Recent Logs (last 10 lines) ==="
+  tail -10 "$LOG_FILE"
+else
+  echo "No log file yet (agent hasn't run)"
+fi
+"""
+
+[tasks."launchd:run"]
+description = "Manually trigger the launchd autofix agent (macOS only)"
+run = """
+#!/bin/bash
+
+if [ "$(uname)" != "Darwin" ]; then
+  echo "ERROR: launchd is only available on macOS"
+  exit 1
+fi
+
+if ! launchctl list | grep -q "com.godtier.autofix"; then
+  echo "ERROR: Agent not installed. Run 'mise run launchd:install' first."
+  exit 1
+fi
+
+echo "Triggering autofix agent..."
+launchctl start com.godtier.autofix
+echo "Done. Check 'mise run launchd:status' for results."
+"""
+
+# =============================================================================
+# Agent Readiness Tasks - AI/LLM setup validation
+# =============================================================================
+
+[tasks."agent:ready"]
+description = "Check AI/LLM agent setup readiness"
+run = """
+#!/bin/bash
+SCRIPT="{{config_root}}/config/scripts/agent-readiness.sh"
+if [ -f "$SCRIPT" ]; then
+  bash "$SCRIPT" status
+else
+  echo "ERROR: agent-readiness.sh not found at $SCRIPT"
+  exit 1
+fi
+"""
+
+[tasks."agent:ready:status"]
+description = "Show AI/LLM agent readiness status"
+run = """
+#!/bin/bash
+SCRIPT="{{config_root}}/config/scripts/agent-readiness.sh"
+if [ -f "$SCRIPT" ]; then
+  bash "$SCRIPT" status
+else
+  echo "ERROR: agent-readiness.sh not found"
+  exit 1
+fi
+"""
+
+[tasks."agent:ready:fix"]
+description = "Fix common AI/LLM agent setup issues"
+run = """
+#!/bin/bash
+SCRIPT="{{config_root}}/config/scripts/agent-readiness.sh"
+if [ -f "$SCRIPT" ]; then
+  bash "$SCRIPT" fix
+else
+  echo "ERROR: agent-readiness.sh not found"
+  exit 1
+fi
+"""
+
+[tasks."agent:ready:json"]
+description = "Output AI/LLM agent readiness as JSON"
+run = """
+#!/bin/bash
+SCRIPT="{{config_root}}/config/scripts/agent-readiness.sh"
+if [ -f "$SCRIPT" ]; then
+  bash "$SCRIPT" --json
+else
+  echo '{"error": "agent-readiness.sh not found"}'
+  exit 1
+fi
+"""
+
+[tasks."agent:ready:quiet"]
+description = "Check agent readiness (only output if issues found)"
+run = """
+#!/bin/bash
+SCRIPT="{{config_root}}/config/scripts/agent-readiness.sh"
+if [ -f "$SCRIPT" ]; then
+  bash "$SCRIPT" --quiet
+else
+  exit 1
+fi
+"""
+
+# =============================================================================
+# Research & Ecosystem Monitoring Tasks
+# =============================================================================
+
+[tasks."research:mise"]
+description = "Check mise ecosystem for updates (releases, discussions)"
+run = """
+#!/bin/bash
+echo "━━━ Mise Latest Release ━━━"
+gh release view --repo jdx/mise 2>/dev/null || echo "Run: gh auth login"
+echo ""
+echo "━━━ Recent Discussions (Top 5) ━━━"
+gh api repos/jdx/mise/discussions --jq '.[0:5] | .[] | "- [#" + (.number|tostring) + "] " + .title' 2>/dev/null || echo "GitHub API unavailable"
+echo ""
+echo "━━━ mise-tui Updates ━━━"
+gh release list --repo LeoHSRodrigues/mise-tui --limit 3 2>/dev/null || echo "No releases found"
+"""
+
+[tasks."research:versions"]
+description = "Query mise-versions.jdx.dev API for tool stats"
+run = """
+#!/bin/bash
+echo "━━━ mise-versions.jdx.dev Stats ━━━"
+curl -s 'https://mise-versions.jdx.dev/api/tools?limit=1' | jq '{
+  total_tools: .total_count,
+  backends: .backendCounts
+}' 2>/dev/null || echo "API unavailable"
+echo ""
+echo "━━━ Top 10 Downloads (30 days) ━━━"
+curl -s 'https://mise-versions.jdx.dev/api/tools' | jq -r '.downloads | to_entries | sort_by(-.value) | .[0:10] | .[] | "\\(.key): \\(.value)"' 2>/dev/null || echo "API unavailable"
+"""
+
+[tasks."research:ecosystem"]
+description = "Full mise ecosystem research summary"
+depends = ["research:mise", "research:versions"]
+run = """
+#!/bin/bash
+echo ""
+echo "━━━ Research Complete ━━━"
+echo "Documentation: research/MISE_ECOSYSTEM_RESEARCH.md"
+echo "Last iteration: 4 (February 2026)"
 """

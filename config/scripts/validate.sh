@@ -26,17 +26,17 @@ FAIL=0
 
 check_pass() {
     echo -e "${GREEN}✅ PASS${NC}: $1"
-    ((PASS++))
+    (( ++PASS ))
 }
 
 check_warn() {
     echo -e "${YELLOW}⚠️  WARN${NC}: $1"
-    ((WARN++))
+    (( ++WARN ))
 }
 
 check_fail() {
     echo -e "${RED}❌ FAIL${NC}: $1"
-    ((FAIL++))
+    (( ++FAIL ))
 }
 
 check_info() {

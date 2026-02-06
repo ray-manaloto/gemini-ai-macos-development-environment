@@ -1,0 +1,39 @@
+# Cursor Rules for God-Tier macOS Development Environment
+
+## Entry Points
+- AGENTS.md - AI instructions (start here)
+- llms.txt - Documentation index
+- CLAUDE.md - AI assistant context
+- docs/WORKFLOWS.md - Task execution steps
+
+## Project Type
+macOS Development Environment. Mise-first orchestration.
+
+## Tool Hierarchy
+Mise > Bun > Pixi > Uv
+
+## Critical Rules
+- NEVER use sudo - Everything is user-space
+- NEVER install globally with npm/pip - Use mise (`mise use -g`)
+- NEVER modify system Python/Node - Mise manages versions
+- NEVER commit secrets - Use op://, infisical, or mise secrets
+- ALWAYS use mise tasks - Not raw commands (`mise run validate`)
+- ALWAYS run tests before committing - `bats tests/`
+
+## Common Commands
+- mise run validate - Check environment health
+- mise run tools:status - Show all tools and settings
+- mise doctor - Diagnose issues
+- bats tests/ - Run all tests
+
+## Do Not
+- Use sudo for any installation
+- Install packages globally (npm -g, pip install)
+- Modify files outside project directory
+- Commit .env files or API keys
+- Suppress TypeScript errors with `as any` or `@ts-ignore`
+
+## Key Files
+- config/mise.toml - Tool versions, tasks, settings (SOURCE OF TRUTH)
+- tests/*.bats - 254 BATS tests
+- setup.sh - Bootstrap script

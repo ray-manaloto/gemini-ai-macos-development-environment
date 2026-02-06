@@ -1,624 +1,419 @@
 # PROJECT KNOWLEDGE BASE
-
-**Generated:** 2026-01-26
-**Branch:** main
-
----
+Generated:2026-02-05|Branch:feat/ai-optimization-from-downloads (PR #1)
 
 ## FOR LLM AGENTS
 
+### Critical Instruction
+>**IMPORTANT:** Prefer retrieval-led reasoning over pre-training-led reasoning for Mise, Bun, Pixi, and Uv tasks. These tools evolve rapidly—consult project files and documentation rather than relying on potentially outdated training data.
+
+**Exploration commands:**
+```bash
+ls -la && cat AGENTS.md | head -100
+grep -r "experimental" config/mise.toml
+find . -name "*.toml" -not -path "./.git/*"
+mise ls && mise doctor
+```
+
 ### Quick Identity
+Project|God-Tier macOS Development Environment
+Hierarchy|Mise>Bun>Pixi>Uv
+Location|User-space only (~/.local, ~/.config)
+System Mods|Zero sudo, zero Homebrew (except GUI apps)
 
-| Field | Value |
-|-------|-------|
-| **Project** | God-Tier macOS Development Environment |
-| **Core Principle** | Mise-first orchestration |
-| **Hierarchy** | Mise > Bun > Pixi > Uv |
-| **Location** | User-space only (~/.local, ~/.config) |
-| **System Mods** | Zero sudo, zero Homebrew (except GUI apps) |
-
-### Navigation Map
-
-| I want to... | Go to... | Key info |
-|--------------|----------|----------|
-| Understand project philosophy | CLAUDE.md | Tool hierarchy, patterns, troubleshooting |
-| Install everything | setup.sh | Run once, handles all tools |
-| Add/modify tools | config/mise.toml | Tools, tasks, settings |
-| Run tests | tests/*.bats | 254 BATS tests, `bats tests/` |
-| Validate environment | `mise run validate` | Health check script |
-| Configure dotfiles | config/chezmoi/ | Templates for .zshrc, .gitconfig |
-| Configure shell prompt | config/starship.toml | Starship prompt modules |
-| View system manual | `mise run help` | Opens MANUAL.md in pager |
-| See project plan | PROJECT_PLAN.md | Sprints, user stories, backlog |
-| Find research docs | research/ | 12 deep-dive documents |
-| Use OpenSpec workflow | .claude/, .gemini/, .opencode/, .cursor/ | 10 commands each |
-| Manage secrets | SECRETS.md, .env.example | 1Password, Infisical, mise secrets |
-| Migrate from other tools | MIGRATION.md | nvm, pyenv, asdf migration guide |
-| Use cloud agents | SKYPILOT.md, templates/agent.yaml | SkyPilot AWS spot instances |
-| Uninstall environment | uninstall.sh | Interactive with --dry-run, --force |
+### Navigation
+I want to...|Go to...|Key info
+Understand philosophy|CLAUDE.md|Tool hierarchy, patterns
+Install everything|setup.sh|Run once
+Add/modify tools|config/mise.toml|SOURCE OF TRUTH
+Run tests|tests/*.bats|1002 tests, `bats tests/`
+Validate env|`mise run validate`|Health check
+Configure dotfiles|config/chezmoi/|Templates
+Configure prompt|config/starship.toml|Modules
+View manual|`mise run help`|MANUAL.md
+Project plan|PROJECT_PLAN.md|Sprints, backlog
+Research docs|research/|15+ documents
+OpenSpec|.claude/,.gemini/,.Claude/,.cursor/|10 commands each
+Secrets|SECRETS.md|1Password, Infisical
+Migration|MIGRATION.md|nvm, pyenv, asdf
+Cloud agents|SKYPILOT.md|AWS spot instances
+Proxy|PROXY.md|Corporate setup
+Team onboard|TEAM_ONBOARDING.md|CI/CD, FAQ
+Future tools|FUTURE_TOOLS.md|atuin, age, direnv
+macOS testing|MACOS_TESTING.md|Tart, Lume, Actions
+Uninstall|uninstall.sh|--dry-run, --force
 
 ### Critical Rules (NEVER BREAK)
-
-1. **NEVER use sudo** - Everything is user-space
-2. **NEVER install globally with npm/pip** - Use mise (`mise use -g`)
-3. **NEVER modify system Python/Node** - Mise manages versions
-4. **NEVER commit secrets** - Use op://, infisical, or mise secrets
-5. **NEVER suppress type errors** - No `as any`, `@ts-ignore`
-6. **ALWAYS use mise tasks** - Not raw commands (`mise run validate`)
-7. **ALWAYS run tests before committing** - `bats tests/`
-8. **ALWAYS check mise doctor after issues** - `mise doctor`
-9. **PREFER existing patterns** - Check existing code first
-10. **ASK if uncertain about scope** - Don't assume
-11. **ALWAYS install CLI tools via mise** - Never `curl | sh`, `npm -g`, or direct downloads
-    - Install: `mise use -g <tool>@latest`
-    - Check: `mise which <tool>` should point to mise installs
-    - Fix: `mise run validate:tools` to detect shadows
-
----
-
-## OVERVIEW
-
-A reproducible macOS development environment using Mise as the central orchestrator. The strict tool hierarchy ensures predictable package resolution:
-
-```
-MISE (Orchestrator)
-├── Bun (JavaScript/TypeScript) - replaces Node/npm
-├── Pixi (Binary packages) - conda-forge ecosystem
-└── Uv (Python packages) - 10x faster than pip
-```
-
-All tools install to `~/.local` with zero system modifications.
-
----
-
-## STRUCTURE
-
-```
-gemini-ai-macos-development-environment/
-├── config/
-│   ├── mise.toml              # Tool versions, tasks, settings (SOURCE OF TRUTH)
-│   ├── main.pkl               # Pkl config (generates TOML)
-│   ├── starship.toml          # Shell prompt configuration
-│   ├── chezmoi/               # Dotfile templates
-│   │   ├── dot_zshrc.tmpl     # Zsh config template
-│   │   ├── dot_gitconfig.tmpl # Git config template
-│   │   └── .chezmoi.toml.tmpl # Chezmoi config
-│   └── scripts/               # Utility scripts
-│       ├── validate.sh        # Environment health check
-│       ├── dashboard.py       # TUI dashboard (requires pixi)
-│       ├── macos-defaults.sh  # macOS system defaults
-│       └── setup-mcp.sh       # MCP configuration
-├── tests/                     # BATS test suite (254 tests)
-│   ├── test_mise.bats         # Mise installation, backends
-│   ├── test_tools.bats        # CLI tool availability
-│   ├── test_chezmoi.bats      # Dotfile template validation
-│   ├── test_starship.bats     # Prompt configuration
-│   ├── test_integration.bats  # End-to-end tests
-│   ├── test_ide_configs.bats  # IDE/editor configuration tests
-│   └── test_skypilot.bats     # SkyPilot cloud agent tests
-├── research/                  # 12 research documents
-│   ├── CHATGPT_DEEP_RESEARCH.md
-│   ├── GAPS_ANALYSIS.md
-│   └── MISE_MCP_SETUP.md
-├── openspec/                  # Specifications
-│   ├── specs/                 # Active specs
-│   │   └── tool-management/   # Tool requirements
-│   └── changes/archive/       # Archived changes
-├── templates/
-│   └── agent.yaml             # SkyPilot AWS agent
-├── .claude/                   # Claude Code config (10 commands, 25 skills, 24 agents)
-├── .gemini/                   # Gemini CLI config (10 commands, 10 skills)
-├── .opencode/                 # OpenCode config (10 commands, 25 skills, 24 agents)
-├── .cursor/                   # Cursor config (10 commands)
-├── .vscode/                   # VS Code settings, extensions
-├── .zed/                      # Zed editor settings
-├── .devcontainer/             # DevContainer for DevPod/Codespaces
-├── setup.sh                   # Bootstrap script (run once)
-├── uninstall.sh               # Interactive uninstall with backup
-├── pixi.toml                  # Pixi project dependencies
-├── .env.example               # Environment variables template
-├── README.md                  # User documentation
-├── CLAUDE.md                  # AI assistant context
-├── AGENTS.md                  # This file
-├── PROJECT_PLAN.md            # Agile project plan
-├── MANUAL.md                  # System manual
-├── SECRETS.md                 # Secrets management guide
-├── MIGRATION.md               # Migration from nvm/pyenv/asdf
-└── SKYPILOT.md                # Cloud agent documentation
-```
-
----
-
-## WHERE TO LOOK
-
-| Task | Location | Notes |
-|------|----------|-------|
-| Add new tool | config/mise.toml `[tools]` | Use `mise use -g <tool>` |
-| Add npm package | config/mise.toml | `"npm:<package>" = "latest"` |
-| Add pip package | config/mise.toml | `"pipx:<package>" = "latest"` |
-| Add mise task | config/mise.toml `[tasks]` | Follow existing patterns |
-| Fix environment | config/scripts/validate.sh | Health check |
-| Debug issues | `mise doctor` | Comprehensive diagnostics |
-| Add test | tests/test_*.bats | One test per feature |
-| Add dotfile | config/chezmoi/ | Use .tmpl extension |
-| Configure prompt | config/starship.toml | Module-based config |
-| Read specs | openspec/specs/ | Gherkin-style requirements |
-| Find research | research/*.md | Background documentation |
+1. NEVER use sudo - User-space only
+2. NEVER npm/pip install globally - Use `mise use -g`
+3. NEVER modify system Python/Node - Mise manages
+4. NEVER commit secrets - Use op://, infisical, mise secrets
+5. NEVER suppress type errors - No `as any`, `@ts-ignore`
+6. ALWAYS use mise tasks - `mise run <task>`
+7. ALWAYS test before commit - `bats tests/`
+8. ALWAYS `mise doctor` after issues
+9. PREFER existing patterns
+10. ASK if uncertain
+11. ALWAYS install CLI via mise - Never `curl|sh`, `npm -g`
+   Install:`mise use -g <tool>@latest`|Check:`mise which <tool>`|Fix:`mise run autofix:fix`
 
 ---
 
 ## TOOL HIERARCHY
+```
+MISE (Orchestrator)
+├── Bun (JS/TS) - replaces Node/npm, 3x faster
+├── Pixi (Binary) - conda-forge, FFmpeg/CUDA
+└── Uv (Python) - 10x faster than pip
+```
+All tools→~/.local, zero system mods.
 
-### Level 1: Mise (Orchestrator)
-
-Mise manages ALL tools through a unified interface:
-
+### Key Settings
 ```toml
 [settings]
 experimental = true
 not_found_auto_install = true
-
 [settings.npm]
 bun = true
 package_manager = "bun"
-
 [settings.python]
 uv_venv_auto = true
 ```
 
-### Level 2: Bun (JavaScript/TypeScript)
+---
 
-Replaces Node.js and npm. Mise redirects automatically:
-- `npm install` → `bun install`
-- `node script.js` → `bun script.js`
-- 3x faster package installation
-
-### Level 3: Pixi (Binary Packages)
-
-For conda-forge packages that need binary dependencies:
-- FFmpeg, CUDA, scientific Python
-- Isolated from system libraries
-- Lockfile-based (`pixi.lock`)
-
-### Level 4: Uv (Python Packages)
-
-Fast pip replacement:
-- 10x faster package resolution
-- Deterministic lockfiles
-- Mise redirects: `pip install` → `uv pip install`
+## STRUCTURE
+```
+gemini-ai-macos-development-environment/
+├── config/
+│   ├── mise.toml          # SOURCE OF TRUTH
+│   ├── main.pkl           # Pkl→TOML
+│   ├── starship.toml      # Prompt
+│   ├── chezmoi/           # Dotfiles
+│   └── scripts/           # validate.sh, dashboard.py
+├── DevEnvManager/         # Spec B: Native Swift menu bar app (requires Xcode)
+│   ├── App/               # AppDelegate (NSStatusItem + NSPopover)
+│   ├── Domain/            # Business logic (Mise, Homebrew, OrbStack)
+│   ├── Presentation/      # UI layer
+│   └── project.yml        # XcodeGen configuration
+├── DevEnvManager-SwiftBar/  # Spec A: Enhanced SwiftBar plugin (bash)
+│   ├── dev-status.5s.sh   # 503-line bash plugin
+│   └── tests/             # BATS tests (10 tests)
+├── DevEnvManager-Iced/    # Spec C: Rust iced + tray-icon (5.4 MB binary)
+│   ├── src/               # app.rs, tray.rs, config.rs, domain/, views/
+│   ├── Cargo.toml         # iced 0.14, tray-icon 0.21
+│   └── target/release/    # Pre-built binary
+├── DevEnvManager-Tauri/   # Spec D: Tauri 2 + React
+│   ├── src-tauri/src/     # lib.rs, tray.rs, commands/
+│   ├── src/               # React frontend (App, components, hooks)
+│   └── package.json       # bun + react + tauri CLI
+├── tests/                 # 402 BATS tests
+├── research/              # 15+ research docs
+│   ├── DEVENVMANAGER_TRAY_RESEARCH.md   # Notch overflow analysis
+│   ├── MENUBAR_IMPLEMENTATION_SPECS.md  # 4-way specs (1,195 lines)
+│   └── MENUBAR_COMPARISON_REPORT.md     # Metrics + ranking
+├── openspec/              # Specs, changes
+├── templates/agent.yaml   # SkyPilot AWS
+├── .claude/,.gemini/,.Claude/,.cursor/  # AI configs
+├── .vscode/,.zed/,.devcontainer/         # IDE configs
+├── setup.sh               # Bootstrap
+├── uninstall.sh           # Cleanup
+└── *.md                   # Docs
+```
 
 ---
 
-## DEVELOPMENT COMMANDS
+## COMMANDS
 
-### Mise Tasks
+### Core Tasks
+mise run dashboard|TUI manager
+mise run validate|Health check
+mise run help|Manual
+mise run setup:auto|Platform detect + setup
+mise run validate:rules|Anti-pattern check
 
-| Command | Description |
-|---------|-------------|
-| `mise run dashboard` | Launch TUI manager |
-| `mise run validate` | Check environment health |
-| `mise run help` | Show system manual |
-| `mise run agent:check` | Verify AWS credentials |
-| `mise run agent:up` | Launch AWS cloud agent |
-| `mise run agent:down` | Terminate cloud agent |
-| `mise run agent:status` | Show cloud agent status |
-| `mise run agent:stop` | Stop agent (preserves instance) - Note: Spot instances cannot be stopped |
-| `mise run agent:start` | Start stopped agent - Note: Spot instances cannot be stopped/restarted |
-| `mise run agent:restart` | Restart cloud agent - Note: Spot instances cannot be stopped |
-| `mise run agent:ssh` | SSH into cloud agent |
-| `mise run agent:logs` | View cloud agent logs |
-| `mise run agent:exec` | Execute command on agent |
-| `mise run setup-mac` | Configure macOS defaults |
-| `mise run setup-mcp` | Configure mise MCP for Claude |
-| `mise run setup-extensions` | Install GitHub Copilot extension |
-| `mise run setup:auto` | Auto-detect platform, run appropriate setup |
-| `mise run setup:macos` | macOS-specific setup |
-| `mise run setup:container` | Container/DevPod setup |
-| `mise run setup:linux` | Linux (non-container) setup |
-| `mise run validate:rules` | Check for anti-patterns and rule violations |
+### Tool Management
+mise run tools:status|All tools/settings
+mise run tools:install|Install all
+mise run tools:update|Update all
+mise run tools:doctor|Full health
 
-### Tool Management Tasks
+### Autofix
+mise run autofix:status|Show issues
+mise run autofix:fix|Fix with backup
+mise run autofix:json|CI output
+mise run launchd:install|macOS agent
 
-| Command | Description |
-|---------|-------------|
-| `mise run tools:status` | Show all tools and settings |
-| `mise run tools:install` | Install all configured tools |
-| `mise run tools:update` | Update all tools to latest |
-| `mise run tools:uninstall -- <tool>` | Uninstall specific tool |
-| `mise run tools:reinstall -- <tool>` | Reinstall specific tool |
-| `mise run tools:doctor` | Full environment health check |
+### Agent Readiness
+mise run agent:ready|Check setup
+mise run agent:ready:fix|Fix issues
 
-### Testing
+### Cloud Agent (SkyPilot)
+mise run agent:check|AWS credentials
+mise run agent:up|Launch
+mise run agent:down|Terminate
+mise run agent:ssh|Connect
+mise run agent:logs|View logs
 
+### Auth
+mise run auth:status|All CLI auth
+mise run auth:gh|GitHub
+mise run auth:claude|Claude
+mise run auth:aws|AWS
+
+### DevContainer
+mise run devcontainer:up|Start
+mise run devcontainer:down|Stop
+mise run devcontainer:ssh|Connect
+
+### Menu Bar (SwiftBar)
+mise run menubar:install|Install plugin
+mise run menubar:status|Check status
+
+### DevEnvManager (Native App)
+mise run devenv-app:install|Download from GitHub Release
+mise run devenv-app:build|Build from source (requires Xcode)
+mise run devenv-app:status|Check installation/running status
+mise run devenv-app:open|Open the app
+mise run devenv-app:quit|Quit the app
+mise run devenv-app:restart|Restart the app
+mise run devenv-app:uninstall|Remove app and data
+mise run devenv-app:logs|View system logs
+
+### DevEnvManager Implementations (P5 - Menu Bar Exploration)
 ```bash
-bats tests/                    # Run all 254 tests
-bats tests/test_mise.bats      # Run specific test file
-mise run validate              # Quick health check
-mise doctor                    # Mise diagnostics
+# A: SwiftBar (needs SwiftBar.app from brew)
+open /Applications/SwiftBar.app
+
+# C: Iced (pure Rust binary, ready to run)
+./DevEnvManager-Iced/target/release/devenv-manager-iced &
+
+# D: Tauri 2 (Rust + React - RECOMMENDED for development)
+cd DevEnvManager-Tauri && bun tauri dev
+
+# B: Swift (requires Xcode.app, not CLT)
+# cd DevEnvManager && xcodegen generate && xcodebuild build
+```
+Ranking: B (Swift) > C (Iced) > D (Tauri) > A (SwiftBar)
+Details: research/MENUBAR_COMPARISON_REPORT.md
+
+### DevEnvManager-Tauri Features (Current)
+| Section | Available Actions |
+|---------|-------------------|
+| **Quick Actions** | Validate, Doctor, Update All, Dashboard |
+| **Package Managers** | Status, Update, Doctor (Mise only) |
+| **Homebrew Services** | Start, Stop, Restart |
+| **OrbStack Containers** | Start, Stop, Restart, Shell, Logs |
+| **Active Ports** | List, Kill |
+| **SkyPilot Cloud** | Launch, Stop, SSH, Logs |
+| **AWS** | Status, Configure |
+
+Key files: `DevEnvManager-Tauri/src/components/`, `DevEnvManager-Tauri/src-tauri/src/commands/`
+
+---
+
+## TOOL INSTALLATION
+
+### Correct
+```bash
+mise use -g <tool>              # CLI binary
+mise use -g "npm:<pkg>"         # npm package (→Bun)
+mise use -g "pipx:<pkg>"        # Python CLI (→uv)
+mise use -g "ubi:<owner/repo>"  # GitHub release
+mise use -g "cargo:<pkg>"       # Rust package
+```
+
+### WRONG (never do)
+Wrong|Why|Right
+`curl -fsSL...\|sh`|Shadows mise|`mise use -g <tool>`
+`npm install -g`|Bypasses mise|`mise use -g "npm:<pkg>"`
+`pip install`|System pollution|`mise use -g "pipx:<pkg>"`
+`brew install <cli>`|Wrong manager|`mise use -g <tool>`
+
+---
+
+## TESTING
+
+### Test Files (1002 total)
+test_mise.bats|Mise backends, tasks
+test_tools.bats|CLI availability
+test_chezmoi.bats|Dotfile templates
+test_starship.bats|Prompt config
+test_integration.bats|E2E structure
+test_ide_configs.bats|VS Code, Zed
+test_skypilot.bats|Cloud agents
+test_unified_setup.bats|Platform tasks
+test_autofix.bats|Autofix system
+test_agent_readiness.bats|Agent setup
+test_skills.bats|Skills architecture (54)
+test_noninteractive_skills.bats|Skill symlinks (25)
+test_swiftbar.bats|Menu bar
+test_menubar_core.bats|Core parity (68)
+DevEnvManager-SwiftBar/tests/|SwiftBar (272)
+DevEnvManager/Tests/|Swift validation (91)
+DevEnvManager-Iced/tests/|Iced Rust (48)
+DevEnvManager-Tauri/src-tauri/tests/|Tauri Rust (42)
+
+### Running
+```bash
+eval "$(mise activate bash --shims)"
+bats tests/              # All core tests
+bats tests/test_mise.bats  # Specific
+bats tests/test_menubar_core.bats  # Menu bar parity
+bats DevEnvManager-SwiftBar/tests/  # SwiftBar (272)
+bats DevEnvManager/Tests/  # Swift (91)
+cd DevEnvManager-Iced && cargo test  # Iced (48)
+cd DevEnvManager-Tauri/src-tauri && cargo test  # Tauri (42)
 ```
 
 ---
 
 ## CONVENTIONS
 
-### Tool Installation
-
-```bash
-mise use -g <tool>             # Install globally via mise
-mise use -g "npm:<package>"    # npm package (via Bun)
-mise use -g "pipx:<package>"   # pip package (via uv)
-mise use -g "ubi:<owner/repo>" # GitHub release binary
-mise use -g "cargo:<package>"  # Rust package
-```
-
 ### File Patterns
+Config|TOML (mise.toml, starship.toml)
+Templates|.tmpl suffix (dot_zshrc.tmpl)
+Tests|test_*.bats in tests/
+Scripts|.sh bash, .py Python
+Docs|.md in root or research/
 
-| Pattern | Convention |
-|---------|------------|
-| Config files | TOML preferred (mise.toml, starship.toml) |
-| Templates | `.tmpl` suffix (dot_zshrc.tmpl) |
-| Tests | `test_*.bats` in tests/ |
-| Scripts | `.sh` for bash, `.py` for Python |
-| Documentation | `.md` in root or research/ |
-
-### Code Style
-
-- Shell scripts: POSIX-compatible when possible
-- Python: Follow existing patterns in scripts/
-- TOML: Use comments for sections, keep related items together
-- Markdown: Follow existing heading structure
-
----
-
-## ANTI-PATTERNS
-
-| Category | Forbidden | Why |
-|----------|-----------|-----|
-| Package Management | `npm install -g`, `pip install` | Use mise, not direct installs |
-| System Modification | `sudo`, `/usr/local/` | User-space only |
-| Type Safety | `as any`, `@ts-ignore` | Fix the types properly |
-| Error Handling | Empty catch blocks | Always handle errors |
-| Testing | Deleting failing tests | Fix the code, not the tests |
-| Secrets | Committing .env, API keys | Use op://, infisical, or mise secrets |
-| Homebrew | `brew install` for CLI tools | mise manages CLI tools |
+### Anti-Patterns
+Package Mgmt|`npm -g`, `pip install`→Use mise
+System Mod|`sudo`, `/usr/local/`→User-space
+Type Safety|`as any`, `@ts-ignore`→Fix types
+Errors|Empty catch blocks→Handle errors
+Tests|Delete failing tests→Fix code
+Secrets|Commit .env, keys→Use op://
+Homebrew|`brew install` CLI→mise
 
 ---
 
-## TOOL INSTALLATION
-
-### How to Install CLI Tools
-
-| Method | Use For | Example |
-|--------|---------|---------|
-| `mise use -g <tool>` | CLI binaries | `mise use -g opencode@latest` |
-| `mise use -g "npm:<pkg>"` | npm packages | `mise use -g "npm:typescript"` |
-| `mise use -g "pipx:<pkg>"` | Python CLIs | `mise use -g "pipx:poetry"` |
-| `mise use -g "ubi:<repo>"` | GitHub releases | `mise use -g "ubi:charmbracelet/gum"` |
-
-### Common Mistakes (AI Agents: AVOID These)
-
-| Wrong Way | Why It's Bad | Right Way |
-|-----------|--------------|-----------|
-| `curl -fsSL ... \| sh` | Installs to ~/.local/bin, shadows mise | `mise use -g <tool>` |
-| `npm install -g <pkg>` | Bypasses mise, version conflicts | `mise use -g "npm:<pkg>"` |
-| `pip install <pkg>` | System Python pollution | `mise use -g "pipx:<pkg>"` |
-
-### Detecting Shadow Issues
-
-```bash
-mise run validate:tools    # Check for shadowing
-mise which <tool>          # Should show mise path
-which -a <tool>            # Shows all locations
-```
-
----
-
-## TESTING
-
-### Test Files (254 tests total)
-
-| File | Coverage |
-|------|----------|
-| test_mise.bats | Mise installation, backends, tasks |
-| test_tools.bats | All CLI tool availability |
-| test_chezmoi.bats | Dotfile template validation |
-| test_starship.bats | Prompt configuration |
-| test_integration.bats | End-to-end project structure |
-| test_ide_configs.bats | VS Code, Zed, DevContainer, uninstall.sh |
-| test_skypilot.bats | SkyPilot, AWS configuration, agent tasks |
-| test_unified_setup.bats | Platform tasks, config_root, DevContainer |
-| test_env_status.bats | env:status task output validation |
-| test_noninteractive_skills.bats | OpenCode skill validation |
-| test_setup.bats | Bootstrap script validation, spec compliance |
-
-### Running Tests
-
-```bash
-# Ensure mise is activated
-eval "$(mise activate bash --shims)"
-
-# Run all tests
-bats tests/
-
-# Run specific file
-bats tests/test_mise.bats
-```
-
-### Writing New Tests
-
-When adding tests, follow these conventions:
-
-```bash
-#!/usr/bin/env bats
-# test_<feature>.bats - Description of test file
-# Run with: bats tests/test_<feature>.bats
-
-# Setup runs before each test
-setup() {
-  if ! command -v <required_tool> &> /dev/null; then
-    skip "<required_tool> not installed"
-  fi
-}
-
-# Use section comments for organization
-# =============================================================================
-# Section Name
-# =============================================================================
-
-@test "descriptive test name in present tense" {
-  run <command>
-  [ "$status" -eq 0 ]
-  [[ "$output" =~ "expected pattern" ]]
-}
-```
-
-**BATS Conventions:**
-| Convention | Example |
-|------------|---------|
-| File naming | `test_<feature>.bats` |
-| Test naming | Present tense, descriptive (`"mise has bun installed"`) |
-| Skip condition | Use `skip "reason"` in setup() |
-| Status check | `[ "$status" -eq 0 ]` |
-| Output check | `[[ "$output" =~ "pattern" ]]` |
-| File exists | `[ -f "path/to/file" ]` |
-| Dir exists | `[ -d "path/to/dir" ]` |
-| Executable | `[ -x "path/to/script" ]` |
-| Has content | `[ -s "path/to/file" ]` (non-empty) |
-
----
-
-## CONFIGURATION
-
-### Config Flow
-
+## CONFIG FLOW
 ```
 config/main.pkl (Pkl source)
     ↓ pkl eval -f toml
-config/mise.toml (Generated TOML)
+config/mise.toml (Generated)
     ↓ cp to ~/.config/mise/
-~/.config/mise/config.toml (Active config)
-```
-
-### Key Settings
-
-```toml
-[settings]
-experimental = true
-not_found_auto_install = true
-
-[settings.npm]
-bun = true                    # npm → bun
-package_manager = "bun"
-
-[settings.python]
-uv_venv_auto = true           # pip → uv
+~/.config/mise/config.toml (Active)
 ```
 
 ---
 
 ## AI AGENT COMMANDS
 
-### Available Platforms
+### Platforms
+Platform|Location|Prefix
+Claude|.claude/commands/opsx/|`/opsx:`
+Gemini|.gemini/commands/opsx/|`@opsx:`
+Claude Code|.Claude/command/|`/opsx-`
+Cursor|.cursor/commands/opsx/|`/opsx:`
 
-| Platform | Config Location | Command Prefix |
-|----------|-----------------|----------------|
-| Claude | .claude/commands/opsx/ | `/opsx:` |
-| Gemini | .gemini/commands/opsx/ | `@opsx:` |
-| OpenCode | .opencode/command/ | `/opsx-` |
-| Cursor | .cursor/commands/opsx/ | `/opsx:` |
-
-### OpenSpec Workflow Commands
-
-Each platform has 10 commands for the OpenSpec workflow:
-
-| Command | Purpose |
-|---------|---------|
-| explore | Think and investigate without making changes |
-| new | Create a new OpenSpec change |
-| ff | Fast-forward to tasks (skip proposal/design) |
-| apply | Apply change to codebase |
-| continue | Continue working on existing change |
-| verify | Verify change completeness |
-| archive | Archive completed change |
-| bulk-archive | Archive multiple changes |
-| sync | Sync specs with changes |
-| onboard | Onboard new OpenSpec project |
+### OpenSpec Commands (10 each)
+explore|Think/investigate
+new|Create change
+ff|Fast-forward to tasks
+apply|Implement
+continue|Resume work
+verify|Check completeness
+archive|Archive done
+bulk-archive|Archive multiple
+sync|Sync specs
+onboard|Setup project
 
 ---
 
 ## OPENSPEC WORKFLOW
-
-### Creating a Change
-
 ```bash
-openspec new change "feature-name" --description "Description"
+openspec new change "name" --description "..."
 ```
-
-### Change Structure
-
 ```
-openspec/changes/<change-name>/
-├── .openspec.yaml     # Change metadata
-├── proposal.md        # WHY: Problem and solution
-├── design.md          # HOW: Architecture
-├── specs/             # WHAT: Requirements with scenarios
-│   └── capability/
-│       └── spec.md
-└── tasks.md           # Backlog items
-```
-
-### Validation
-
-```bash
-openspec status --change <name>    # Check artifact completion
-openspec validate <name>           # Validate format
-openspec archive <name>            # Archive when complete
+openspec/changes/<name>/
+├── .openspec.yaml     # Metadata
+├── proposal.md        # WHY
+├── design.md          # HOW
+├── specs/             # WHAT (scenarios)
+└── tasks.md           # Backlog
 ```
 
 ---
 
-## SECRETS MANAGEMENT
-
-### Options
-
-1. **1Password** (Recommended)
-   ```toml
-   [env]
-   ANTHROPIC_API_KEY = "op://Private/Anthropic/credential"
-   ```
-
-2. **Infisical**
-   ```bash
-   infisical run -- ./script.sh
-   ```
-
-3. **Mise Native**
-   ```bash
-   mise secrets set ANTHROPIC_API_KEY=sk-ant-...
-   ```
+## SECRETS
+1Password (Recommended):`ANTHROPIC_API_KEY = "op://Private/Anthropic/credential"`
+Infisical:`infisical run -- ./script.sh`
+Mise Native:`mise secrets set KEY=value`
 
 ---
 
-## FOR HUMANS
-
-### Quick Start
-
+## QUICK START
 ```bash
-# Clone and setup
 cd ~/dev/github/ray-manaloto/gemini-ai-macos-development-environment
 ./setup.sh
-
-# Restart terminal, then verify
-mise doctor
-bats tests/
+# Restart terminal
+mise doctor && bats tests/
 ```
 
-### Daily Usage
-
+### Daily
 ```bash
-# Update tools
-mise run tools:update
-
-# Check health
-mise run validate
-
-# View manual
-mise run help
+mise run tools:update    # Update
+mise run validate        # Health
+mise run help            # Manual
 ```
 
-### Troubleshooting
-
-| Issue | Solution |
-|-------|----------|
-| Command not found | `eval "$(mise activate zsh)"` then `mise reshim` |
-| Wrong version | `mise ls` then `mise trust` |
-| Config not loading | Copy config: `cp config/mise.toml ~/.config/mise/config.toml` |
+### Troubleshoot
+Command not found|`eval "$(mise activate zsh)"` + `mise reshim`
+Wrong version|`mise ls` + `mise trust`
+Config not loading|`cp config/mise.toml ~/.config/mise/config.toml`
 
 ---
 
-## EXTERNAL SKILLS & AGENTS
+## PROJECT SKILLS (AI Agent Capabilities)
 
-This project includes external skills and agents from [samhvw8/dotfiles](https://github.com/samhvw8/dotfiles) for enhanced AI-assisted development.
+Skills are project-level only (`.claude/skills/`, `.opencode/skills/`, `.agents/skills/`).
+Managed via `bunx skills add/remove/list`. Never install globally.
 
-### Skills (25 total)
+### Custom Project Skills (5)
+Skill|Domain|Triggers
+mise-expert|Mise config, tasks, backends|mise.toml, tool install, mise settings
+bats-testing|BATS test patterns, assertions|test writing, test failures, .bats files
+shell-scripting|Bash scripts, SwiftBar plugin|.sh files, setup.sh, shell functions
+rust-dev|Iced + Tauri Rust backends|.rs files, Cargo.toml, cargo commands
+menu-bar-dev|All 4 menu bar implementations|NSStatusItem, tray, DevEnvManager
 
-Located in `.opencode/skills-external/` and `.claude/skills-external/`:
+### Installed Skills (7, from trusted sources)
+Source|Skill|Purpose
+anthropics/skills|skill-creator|Create/update skills
+anthropics/skills|mcp-builder|Build MCP servers
+anthropics/skills|webapp-testing|Playwright web testing
+obra/superpowers|systematic-debugging|Bug investigation workflow
+obra/superpowers|test-driven-development|Red-green-refactor TDD
+obra/superpowers|verification-before-completion|Evidence before assertions
+vercel-labs/agent-skills|web-design-guidelines|UI/UX review
 
-| Category | Skills |
-|----------|--------|
-| **Core/Meta** | `0-claude`, `0-planning`, `0-prompt-architect`, `0-research`, `0-sequential-thinking` |
-| **Development** | `backend-development`, `frontend-development`, `databases`, `code-quality`, `git-workflow` |
-| **Infrastructure** | `infra-engineer`, `mise-expert` |
-| **Specialized** | `3d-graphics`, `ai-tools`, `browser-history`, `canvas-design`, `chrome-devtools`, `docs-discovery`, `media-processing`, `mobile-development`, `nextjs-turborepo`, `payment-integration`, `problem-solving`, `repomix`, `shopify` |
+### Workflow Skills (14, OpenSpec + Dev)
+openspec-*|10 skills for OpenSpec change workflow (explore, new, apply, verify, archive, etc.)
+analyze|Non-interactive code analysis (structure, deps, patterns)
+investigate|Non-interactive issue investigation (root cause, evidence)
+tdd|Non-interactive TDD red-green-refactor
+refactor|Non-interactive code refactoring
 
-**Key Skill: `mise-expert`** - Directly relevant for this project. Provides expertise on:
-- Tool & runtime management (node, python, go, ruby, rust)
-- Project setup & onboarding with mise.toml
-- Task runner & build systems
-- Environment management
-- CI/CD integration
-
-### Agents (24 total)
-
-Located in `.opencode/agents-external/` and `.claude/agents-external/`:
-
-| Category | Agents |
-|----------|--------|
-| **Architecture** | `system-architect`, `react-next-architect`, `svelte-kit-architect`, `devops-architect` |
-| **Code Quality** | `code-reviewer`, `refactoring-expert`, `quality-engineer`, `security-engineer` |
-| **Development** | `python-expert`, `database-admin` |
-| **Research/Planning** | `researcher`, `planner`, `requirements-analyst`, `brainstormer`, `scout` |
-| **Documentation** | `docs-manager`, `copywriter`, `journal-writer` |
-| **Testing** | `tester`, `debugger` |
-| **Other** | `ui-ux-designer`, `project-manager`, `learning-guide`, `mcp-manager` |
-
-### Project Configuration
-
-The project-level config is at `.opencode/oh-my-opencode.json`:
-
-```json
-{
-  "agents": {
-    "explorer": { "model": "anthropic/claude-sonnet-4-20250514" },
-    "reviewer": { "model": "anthropic/claude-sonnet-4-20250514" }
-  },
-  "categories": {
-    "visual-engineering": { "model": "anthropic/claude-sonnet-4-20250514" },
-    "ultrabrain": { "model": "anthropic/claude-opus-4-5-20250514" },
-    "quick": { "model": "anthropic/claude-sonnet-4-20250514" }
-  }
-}
+### Skills Architecture
 ```
-
-### Source Attribution
-
-Skills and agents sourced from [samhvw8/dotfiles](https://github.com/samhvw8/dotfiles), which provides:
-- Delegation Protocol (Task vs Skill distinction, DGE Loop)
-- Model Routing with Gemini proxy
-- MCP Integration (context7, chrome-mcp-server)
-- Session management hooks
+.agents/skills/    ← Universal source (26 skills, managed by bunx)
+  ├── symlink → .claude/skills/     (26 total: all symlinked)
+  └── symlink → .opencode/skills/   (26 total: all symlinked)
+```
+AGENTS.md = horizontal knowledge (always loaded). Skills = vertical action workflows (loaded on trigger).
 
 ---
 
-## NOTES
-
-### Design Decisions
-
-1. **Mise over asdf** - Rust-based (10x faster), native backends
-2. **Bun over Node** - 3x faster installs, native TypeScript
-3. **Uv over pip** - 10x faster resolution, deterministic
-4. **BATS for testing** - Native bash, no dependencies
-5. **Chezmoi over stow** - Better templating, encryption
+## DESIGN DECISIONS
+1. Mise over asdf - Rust (10x faster), native backends
+2. Bun over Node - 3x faster, native TS
+3. Uv over pip - 10x faster, deterministic
+4. BATS for tests - Native bash
+5. Chezmoi over stow - Templates, encryption
 
 ### Dependencies
-
-- macOS 14+ (Sonoma)
-- Xcode Command Line Tools
-- ~10GB disk space
+macOS 14+ (Sonoma)|Xcode CLT|~10GB disk
 
 ### Resources
-
-- [Mise Documentation](https://mise.jdx.dev/)
-- [Bun Documentation](https://bun.sh/)
-- [Uv Documentation](https://docs.astral.sh/uv/)
-- [Pixi Documentation](https://pixi.sh/)
+[Mise](https://mise.jdx.dev/)|[Bun](https://bun.sh/)|[Uv](https://docs.astral.sh/uv/)|[Pixi](https://pixi.sh/)
