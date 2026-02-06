@@ -5,11 +5,15 @@ use tauri::{AppHandle, Emitter, Manager};
 use tauri_plugin_positioner::{Position, WindowExt};
 
 fn load_tray_icon() -> tauri::Result<Image<'static>> {
-    let icon_bytes = include_bytes!("../icons/icon.png");
+    // Use the new distinctive tray icon (terminal prompt with chevron)
+    // This is a macOS template icon (black on transparent) that will
+    // automatically invert for light/dark mode
+    let icon_bytes = include_bytes!("../icons/tray-icon.png");
     match Image::from_bytes(icon_bytes) {
         Ok(icon) => Ok(icon),
         Err(_) => {
-            let size = 16u32;
+            // Fallback: create a simple placeholder
+            let size = 22u32;
             let rgba = vec![255u8; (size * size * 4) as usize];
             Ok(Image::new_owned(rgba, size, size))
         }

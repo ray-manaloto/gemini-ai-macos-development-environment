@@ -2,7 +2,7 @@ import ActionButton from "./ActionButton";
 import usePorts from "../hooks/usePorts";
 
 export default function PortsList() {
-  const { ports, loading, refresh } = usePorts();
+  const { ports, loading, actionRunning, refresh, killPort } = usePorts();
 
   return (
     <div className="panel">
@@ -25,6 +25,14 @@ export default function PortsList() {
                 </div>
               </div>
               <div className="port-protocol">{port.protocol}</div>
+              <div className="list-actions">
+                <ActionButton
+                  label="Kill"
+                  onClick={() => killPort(port.pid)}
+                  loading={actionRunning === port.pid}
+                  variant="danger"
+                />
+              </div>
             </div>
           ))
         )}

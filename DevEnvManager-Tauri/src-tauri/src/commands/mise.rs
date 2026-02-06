@@ -68,3 +68,23 @@ pub async fn update_tool(name: String) -> Result<String, String> {
 pub async fn mise_doctor() -> Result<String, String> {
     run_command("mise", &["doctor"]).await
 }
+
+#[tauri::command]
+pub async fn run_mise_validate() -> Result<String, String> {
+    run_command("mise", &["run", "validate"]).await
+}
+
+#[tauri::command]
+pub async fn run_mise_doctor() -> Result<String, String> {
+    run_command("mise", &["run", "tools:doctor"]).await
+}
+
+#[tauri::command]
+pub async fn run_mise_update_all() -> Result<String, String> {
+    run_command("mise", &["run", "tools:update"]).await
+}
+
+#[tauri::command]
+pub async fn run_mise_dashboard() -> Result<String, String> {
+    run_command("mise", &["run", "dashboard"]).await
+}

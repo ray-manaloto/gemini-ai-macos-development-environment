@@ -187,7 +187,7 @@ open /Applications/SwiftBar.app
 # C: Iced (pure Rust binary, ready to run)
 ./DevEnvManager-Iced/target/release/devenv-manager-iced &
 
-# D: Tauri 2 (Rust + React dev server)
+# D: Tauri 2 (Rust + React - RECOMMENDED for development)
 cd DevEnvManager-Tauri && bun tauri dev
 
 # B: Swift (requires Xcode.app, not CLT)
@@ -195,6 +195,19 @@ cd DevEnvManager-Tauri && bun tauri dev
 ```
 Ranking: B (Swift) > C (Iced) > D (Tauri) > A (SwiftBar)
 Details: research/MENUBAR_COMPARISON_REPORT.md
+
+### DevEnvManager-Tauri Features (Current)
+| Section | Available Actions |
+|---------|-------------------|
+| **Quick Actions** | Validate, Doctor, Update All, Dashboard |
+| **Package Managers** | Status, Update, Doctor (Mise only) |
+| **Homebrew Services** | Start, Stop, Restart |
+| **OrbStack Containers** | Start, Stop, Restart, Shell, Logs |
+| **Active Ports** | List, Kill |
+| **SkyPilot Cloud** | Launch, Stop, SSH, Logs |
+| **AWS** | Status, Configure |
+
+Key files: `DevEnvManager-Tauri/src/components/`, `DevEnvManager-Tauri/src-tauri/src/commands/`
 
 ---
 

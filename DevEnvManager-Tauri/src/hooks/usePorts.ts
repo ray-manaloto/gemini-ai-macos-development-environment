@@ -1,15 +1,18 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ActivePort, listActivePorts } from "../lib/tauri";
+import { ActivePort, listActivePorts, killPort as killPortApi } from "../lib/tauri";
 
 type UsePortsResult = {
   ports: ActivePort[];
   loading: boolean;
+  actionRunning?: number;
   refresh: () => Promise<void>;
+  killPort: (pid: number) => Promise<void>;
 };
 
 export default function usePorts(refreshMs = 60000): UsePortsResult {
   const [ports, setPorts] = useState<ActivePort[]>([]);
   const [loading, setLoading] = useState(false);
+  const [actionRunning, setActionRunning] = useState<number | undefined>(undefined);
   const refreshInFlight = useRef(false);
 
   const refresh = useCallback(async () => {
@@ -25,6 +28,18 @@ export default function usePorts(refreshMs = 60000): UsePortsResult {
     }
   }, []);
 
+  const killPort = useCallback(async (pid: number) => {
+    setActionRunning(pid);
+    try {
+      await killPortApi(pid);
+      await refresh();
+    } catch (error) {
+      console.error(`Failed to kill process ${pid}:`, error);
+    } finally {
+      setActionRunning(undefined);
+    }
+  }, [refresh]);
+
   useEffect(() => {
     refresh();
     const interval = setInterval(() => {
@@ -33,5 +48,5 @@ export default function usePorts(refreshMs = 60000): UsePortsResult {
     return () => clearInterval(interval);
   }, [refresh, refreshMs]);
 
-  return { ports, loading, refresh };
+  return { ports, loading, actionRunning, refresh, killPort };
 }

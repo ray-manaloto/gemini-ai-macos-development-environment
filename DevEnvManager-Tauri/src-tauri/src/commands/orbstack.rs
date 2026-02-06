@@ -44,3 +44,20 @@ pub async fn start_container(name: String) -> Result<String, String> {
 pub async fn stop_container(name: String) -> Result<String, String> {
     run_command("orb", &["stop", &name]).await
 }
+
+#[tauri::command]
+pub async fn restart_container(name: String) -> Result<String, String> {
+    // OrbStack doesn't have native restart, so stop then start
+    run_command("orb", &["stop", &name]).await?;
+    run_command("orb", &["start", &name]).await
+}
+
+#[tauri::command]
+pub async fn shell_container(name: String) -> Result<String, String> {
+    run_command("open", &["-a", "Terminal", &format!("orb shell {name}")]).await
+}
+
+#[tauri::command]
+pub async fn logs_container(name: String) -> Result<String, String> {
+    run_command("orb", &["logs", "--tail", "100", &name]).await
+}

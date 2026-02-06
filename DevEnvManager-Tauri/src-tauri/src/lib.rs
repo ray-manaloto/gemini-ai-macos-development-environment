@@ -32,6 +32,10 @@ pub fn run() {
             commands::mise::install_tool,
             commands::mise::update_tool,
             commands::mise::mise_doctor,
+            commands::mise::run_mise_validate,
+            commands::mise::run_mise_doctor,
+            commands::mise::run_mise_update_all,
+            commands::mise::run_mise_dashboard,
             commands::homebrew::list_brew_services,
             commands::homebrew::start_service,
             commands::homebrew::stop_service,
@@ -39,7 +43,21 @@ pub fn run() {
             commands::orbstack::list_containers,
             commands::orbstack::start_container,
             commands::orbstack::stop_container,
-            commands::ports::list_active_ports
+            commands::orbstack::restart_container,
+            commands::orbstack::shell_container,
+            commands::orbstack::logs_container,
+            commands::ports::list_active_ports,
+            commands::ports::kill_port,
+            commands::package_managers::get_package_managers_status,
+            commands::package_managers::update_package_manager,
+            commands::cloud::get_skypilot_status,
+            commands::cloud::get_aws_status,
+            commands::cloud::launch_skypilot_agent,
+            commands::cloud::stop_skypilot_agents,
+            commands::cloud::list_skypilot_clusters,
+            commands::cloud::stop_skypilot_cluster,
+            commands::cloud::ssh_skypilot_cluster,
+            commands::cloud::get_skypilot_logs
         ]);
 
     if let Err(error) = app.run(tauri::generate_context!()) {

@@ -1,16 +1,22 @@
 import { useState } from "react";
+import StatusHeader from "./StatusHeader";
+import QuickActionsBar from "./QuickActionsBar";
+import PackageManagersStatus from "./PackageManagersStatus";
+import CloudStatus from "./CloudStatus";
 import ToolsList from "./ToolsList";
 import ServicesList from "./ServicesList";
 import ContainersList from "./ContainersList";
 import PortsList from "./PortsList";
+import CloudTab from "./CloudTab";
 
-type TabKey = "tools" | "services" | "containers" | "ports";
+type TabKey = "tools" | "services" | "containers" | "ports" | "cloud";
 
 const tabs: { key: TabKey; label: string }[] = [
   { key: "tools", label: "Tools" },
   { key: "services", label: "Services" },
   { key: "containers", label: "Containers" },
-  { key: "ports", label: "Ports" }
+  { key: "ports", label: "Ports" },
+  { key: "cloud", label: "Cloud" }
 ];
 
 export default function MenuBarPopup() {
@@ -25,6 +31,10 @@ export default function MenuBarPopup() {
           <p>Quick status and actions</p>
         </div>
       </header>
+      <StatusHeader />
+      <QuickActionsBar />
+      <PackageManagersStatus />
+      <CloudStatus />
       <nav className="menubar-tabs">
         {tabs.map((tab) => (
           <button
@@ -42,6 +52,7 @@ export default function MenuBarPopup() {
         {activeTab === "services" && <ServicesList />}
         {activeTab === "containers" && <ContainersList />}
         {activeTab === "ports" && <PortsList />}
+        {activeTab === "cloud" && <CloudTab />}
       </section>
     </div>
   );

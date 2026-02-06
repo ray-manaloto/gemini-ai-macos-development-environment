@@ -1,6 +1,8 @@
+pub mod cloud;
 pub mod homebrew;
 pub mod mise;
 pub mod orbstack;
+pub mod package_managers;
 pub mod ports;
 
 use std::time::Duration;

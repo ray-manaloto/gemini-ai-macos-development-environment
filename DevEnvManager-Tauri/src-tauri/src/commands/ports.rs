@@ -70,3 +70,8 @@ pub async fn list_active_ports() -> Result<Vec<ActivePort>, String> {
     let output = run_command("lsof", &["-iTCP", "-sTCP:LISTEN", "-P", "-n"]).await?;
     Ok(parse_ports(&output))
 }
+
+#[tauri::command]
+pub async fn kill_port(pid: i32) -> Result<String, String> {
+    run_command("kill", &["-9", &pid.to_string()]).await
+}
