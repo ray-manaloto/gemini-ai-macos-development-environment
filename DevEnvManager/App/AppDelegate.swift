@@ -2,6 +2,7 @@ import AppKit
 import SwiftUI
 import Combine
 
+@MainActor
 class AppDelegate: NSObject, NSApplicationDelegate {
     var statusItem: NSStatusItem?
     var popover: NSPopover?
@@ -110,7 +111,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         observeStoreChanges()
     }
     
-    /// Re-registers on each change because withObservationTracking fires once per registration.
     private func observeStoreChanges() {
         withObservationTracking {
             _ = toolsStore.state
