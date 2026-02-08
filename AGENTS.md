@@ -143,6 +143,24 @@ mise run autofix:fix|Fix with backup
 mise run autofix:json|CI output
 mise run launchd:install|macOS agent
 
+### Skills Validation
+mise run skills:list|List all project skills
+mise run skills:validate|Validate symlinks, format, inventory
+mise run skills:validate:fix|Auto-fix broken symlinks
+mise run skills:validate:json|JSON output for CI
+
+### Git Hooks (Pre-commit)
+Automatic validation on every commit:
+- Secrets detection (blocks if found)
+- TOML syntax validation
+- Shell script linting (shellcheck)
+- TypeScript type checking
+- Rust cargo check
+- Anti-pattern detection (sudo, npm -g, @ts-ignore)
+
+Location: `.git/hooks/pre-commit`
+Skip: `git commit --no-verify` (use sparingly)
+
 ### Agent Readiness
 mise run agent:ready|Check setup
 mise run agent:ready:fix|Fix issues
