@@ -436,7 +436,7 @@ Location|Purpose
 ---
 
 ## Recent Learnings
-- (Add new learnings here. Include date, issue, and applied fix.)
+- 2026-02-08 - Vercel Labs audit coverage gap: Batch/repo-level interpretation missed skills that were easier to detect via direct org-wide `filename:SKILL.md` search. Applied fix: switched to SKILL.md-first discovery (`gh api search/code`), installed uncovered skills (`json-render-*`, `find-skills`, `d3k`, `autoship`, `ralph-gpu`, `frontend-design`, `ucp`, `cra-to-next-migration`), and documented alias/example handling in `research/VERCEL_LABS_ASSET_AUDIT_2026-02-08.md`.
 
 ---
 
