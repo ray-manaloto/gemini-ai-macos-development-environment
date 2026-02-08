@@ -67,6 +67,29 @@ done
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
+# --- Optional telemetry integration ---
+TELEMETRY_SCRIPT="$SCRIPT_DIR/telemetry.sh"
+TELEMETRY_ENABLED=false
+if [[ -f "$TELEMETRY_SCRIPT" ]]; then
+    # shellcheck source=/dev/null
+    source "$TELEMETRY_SCRIPT"
+    TELEMETRY_ENABLED=true
+fi
+
+emit_skills_telemetry() {
+    local event_name="$1"
+    local event_status="$2"
+    local payload="${3:-null}"
+
+    if ! jq -e . >/dev/null 2>&1 <<<"$payload"; then
+        payload="null"
+    fi
+
+    if [[ "$TELEMETRY_ENABLED" == true ]]; then
+        emit_telemetry "$event_name" "$event_status" "$payload"
+    fi
+}
+
 # --- Helpers ---
 json_escape() {
     local str="$1"
@@ -445,6 +468,15 @@ print_summary() {
 # =============================================================================
 
 main() {
+    local mode="validate"
+    local start_payload summary_payload
+    $JSON_OUTPUT && mode="validate_json"
+    $FIX_MODE && mode="validate_fix"
+
+    start_payload="$(jq -cn --arg mode "$mode" '{mode: $mode}')"
+
+    emit_skills_telemetry "skills.validate" "started" "$start_payload"
+
     if ! $JSON_OUTPUT && ! $QUIET_MODE; then
         printf '%b' "${BLUE}=== AI Agent Skills Validation ===${NC}\n"
         printf "Project: %s\n" "$PROJECT_ROOT"
@@ -460,7 +492,20 @@ main() {
 
     print_summary
 
-    [[ $FAIL -gt 0 ]] && exit 1
+    summary_payload="$(jq -cn \
+        --arg mode "$mode" \
+        --argjson pass "$PASS" \
+        --argjson warn "$WARN" \
+        --argjson fail "$FAIL" \
+        --argjson total "$TOTAL" \
+        '{mode: $mode, pass: $pass, warn: $warn, fail: $fail, total: $total}')"
+
+    if [[ $FAIL -gt 0 ]]; then
+        emit_skills_telemetry "skills.validate" "failed" "$summary_payload"
+        exit 1
+    fi
+
+    emit_skills_telemetry "skills.validate" "completed" "$summary_payload"
     exit 0
 }
 
