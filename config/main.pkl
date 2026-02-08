@@ -81,8 +81,6 @@ local tasks: Mapping<String, Dynamic> = new {
 local config: Dynamic = new {
   settings = new {
     experimental = true
-    node_backend = "bun"
-    pip_backend = "uv"
   }
   tools = tools
   tasks = tasks

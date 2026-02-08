@@ -112,6 +112,13 @@ Read AGENTS.md and understand the mise-first philosophy. I need help with [your 
 | `/start-work` | Start from Prometheus plan |
 | `/refactor` | LSP + AST-aware refactoring |
 
+**Autofix + Learnings (Required)**
+
+When warnings or errors appear:
+1. `mise run autofix:fix`
+2. Re-run the failing command
+3. Update **Recent Learnings** in `AGENTS.md` and apply fixes to scripts/docs
+
 ---
 
 ### Gemini CLI
@@ -188,8 +195,8 @@ Mise > Bun > Pixi > Uv
 
 ## Critical Rules
 1. NEVER use sudo - User-space only
-2. NEVER `npm install -g` - Use `mise use -g "npm:<pkg>"`
-3. NEVER `pip install` - Use `mise use -g "pipx:<pkg>"`
+2. NEVER use npm global installs - Use `mise use -g "npm:<pkg>"`
+3. NEVER use pip global installs - Use `mise use -g "pipx:<pkg>"`
 4. ALWAYS use mise tasks - `mise run <task>`
 5. ALWAYS test before commit - `bats tests/`
 
@@ -214,8 +221,8 @@ mise use -g "npm:<package>"
 mise use -g "pipx:<package>"
 
 # WRONG (never do this)
-npm install -g <package>
-pip install <package>
+npm <global install> <package>
+pip <global install> <package>
 brew install <cli-tool>
 ```
 
@@ -279,7 +286,7 @@ After onboarding, verify the agent understands:
 ```
 Quick check - you should know:
 1. What is the tool hierarchy?
-2. Why can't we use `npm install -g`?
+2. Why can't we use npm global installs?
 3. How do we run tests?
 4. What is the source of truth for tool config?
 

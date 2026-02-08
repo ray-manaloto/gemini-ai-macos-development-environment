@@ -95,7 +95,7 @@ The description is the ONLY thing the agent sees before deciding whether to load
 
 **Good:**
 ```yaml
-description: "BATS test patterns for this project's 948-test suite. Use when writing new BATS tests, debugging test failures, adding test coverage, or running the test suite. Triggers on: writing tests, test failures, bats, test_*.bats files."
+description: "BATS test patterns for this project's 821-test suite (549 core + 272 SwiftBar). Use when writing new BATS tests, debugging test failures, adding test coverage, or running the test suite. Triggers on: writing tests, test failures, bats, test_*.bats files."
 ```
 
 **Bad:**

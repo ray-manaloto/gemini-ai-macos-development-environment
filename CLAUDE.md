@@ -13,7 +13,7 @@ This file provides context and guidelines for AI assistants working with this re
 | **Project** | God-Tier macOS Development Environment |
 | **Hierarchy** | Mise > Bun > Pixi > Uv |
 | **Key Config** | `config/mise.toml` |
-| **Tests** | `bats tests/` (402 tests) |
+| **Tests** | `bats tests/` (821 tests: 549 core + 272 SwiftBar) |
 | **Validate** | `mise run validate` |
 
 **Critical Rules:**
@@ -21,6 +21,17 @@ This file provides context and guidelines for AI assistants working with this re
 2. NEVER install globally with npm/pip - use mise
 3. ALWAYS use mise tasks
 4. ALWAYS run tests before committing
+
+**Git Hooks (Mandatory Pre-Commit):**
+```bash
+mise run hooks:install    # Install lefthook-managed git hooks
+mise run hooks:test       # Test hooks without committing
+```
+Hooks run two blocking checks:
+1. `config/scripts/validate.sh` (environment health)
+2. `config/scripts/pre-commit-hook.sh` (repo rules)
+
+Skip with `git commit --no-verify` (use sparingly!).
 
 **For full context, onboarding prompts, and agent-specific instructions, see:**
 - `AGENTS.md` - Complete knowledge base
@@ -43,8 +54,8 @@ The entire stack lives in user-space (`~/.local`) with **zero system modificatio
 ## Core Philosophy
 
 1. **Mise is the orchestrator** - ALL tools are managed through mise
-2. **Bun replaces Node/npm** - Forced via `node_backend = "bun"`
-3. **Uv replaces pip** - Forced via `pip_backend = "uv"`
+2. **Bun replaces Node/npm** - Forced via `settings.npm.package_manager = "bun"`
+3. **Uv replaces pip** - Forced via `settings.python.uv_venv_auto = true`
 4. **Pixi handles binary/system dependencies** - Python, FFmpeg, CUDA, etc.
 5. **Pitchfork manages daemons** - Auto-start/stop services per project
 6. **User-space only** - No sudo, no Homebrew (except for GUI apps via mise)

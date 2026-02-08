@@ -58,10 +58,15 @@ chezmoi diff     # Preview changes
 chezmoi apply    # Apply changes
 ```
 
-### 4. Verify Installation
+### 4. Install Git Hooks (Mandatory)
+```bash
+mise run hooks:install           # Install lefthook-managed pre-commit hooks
+```
+
+### 5. Verify Installation
 ```bash
 mise doctor                      # Check mise health
-./config/scripts/validate.sh     # Run health check
+mise run validate                # Run health check
 bats tests/                      # Run test suite
 ```
 

@@ -297,6 +297,28 @@ oh-my-opencode includes 25+ built-in hooks:
 
 ---
 
+## Autofix + Learnings Loop (Required)
+
+When warnings or errors appear (validation, hooks, tests, tooling), follow this loop:
+
+```
+1) mise run autofix:fix
+2) re-run the failing command
+3) add a learning to AGENTS.md (Recent Learnings)
+4) apply the learning by updating scripts/docs if needed
+```
+
+### Subagent Learnings Prompt
+
+```
+Use a subagent to summarize learnings and apply them to docs/scripts.
+
+Requirements:
+- Update AGENTS.md (Recent Learnings) with a dated bullet
+- Apply the learning to any relevant scripts or docs (AGENTS.md, OPENCODE_* docs)
+- Keep edits minimal and consistent with existing style
+```
+
 ## Built-in MCPs (Model Context Protocol)
 
 | MCP | Purpose |
@@ -358,7 +380,7 @@ Config location: `~/.config/opencode/oh-my-opencode.json`
 bats tests/
 
 # Validate environment
-./config/scripts/validate.sh
+mise run validate
 
 # Regenerate mise config
 pkl eval -f toml config/main.pkl > ~/.config/mise/config.toml

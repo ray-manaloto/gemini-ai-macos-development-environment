@@ -92,7 +92,7 @@ Enhance the existing `dev-status.1m.sh` SwiftBar plugin with richer features and
 ### Current State
 
 - **Existing plugin:** `config/scripts/dev-status.1m.sh` (386 lines, bash)
-- **Existing tests:** `tests/test_swiftbar.bats` (261 lines, 30 tests)
+- **Existing tests:** `tests/test_swiftbar.bats` (261 lines, 43 tests)
 - **Existing tasks:** 6 mise tasks (menubar:install/uninstall/status/refresh/open/edit)
 
 ### What to Build
@@ -116,6 +116,7 @@ DevEnvManager-SwiftBar/
 ├── dev-status.5s.sh              # Enhanced bash plugin
 ├── dev-status-stream.swift       # Swift streaming plugin
 ├── tests/
+│   ├── test_core_functions.bats  # Core functions (126 tests)
 │   ├── test_enhanced_plugin.bats # BATS tests for bash plugin
 │   └── test_swift_plugin.bats    # BATS tests for swift plugin
 └── README.md

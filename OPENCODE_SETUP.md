@@ -36,13 +36,14 @@ Tasks:
 4. Copy starship config: cp config/starship.toml ~/.config/starship.toml
 5. Initialize chezmoi with templates from config/chezmoi/
 6. Run mise install to install all tools
-7. Run ./config/scripts/validate.sh to verify everything works
-8. Fix any issues found during validation
-9. Run bats tests/ to verify all tests pass
+7. Run mise run hooks:install to install mandatory pre-commit hooks
+8. Run mise run validate to verify everything works
+9. If any warnings/errors: run mise run autofix:fix and re-run validate
+10. Run bats tests/ to verify all tests pass
 
 Success criteria:
 - mise doctor shows no errors
-- ./config/scripts/validate.sh shows all green checks
+- mise run validate shows all green checks
 - bats tests/ shows all tests passing
 ```
 
@@ -83,7 +84,7 @@ If the setup needs multiple iterations:
 /ulw-loop complete the macOS dev environment setup, fixing any errors until all tests pass
 
 Read PROJECT_PLAN.md and CLAUDE.md first.
-Run setup.sh, then validate.sh, then bats tests/.
+Run setup.sh, then mise run validate, then bats tests/.
 Keep fixing issues until everything is green.
 ```
 
@@ -103,7 +104,7 @@ Debug and fix the issue.
 ```
 ulw fix validation failures
 
-./config/scripts/validate.sh shows these errors:
+mise run validate shows these errors:
 [paste errors here]
 
 Investigate and fix each issue.
@@ -133,7 +134,7 @@ starship --version
 chezmoi --version
 
 # Run health check
-./config/scripts/validate.sh
+mise run validate
 
 # Run tests
 bats tests/
@@ -154,4 +155,4 @@ When complete, you should have:
 - ✅ `chezmoi` managing dotfiles
 - ✅ CLI tools: zoxide, fd, ripgrep, bat, eza, fzf, jq, yq, delta
 - ✅ All BATS tests passing
-- ✅ validate.sh showing all green
+- ✅ mise run validate showing all green

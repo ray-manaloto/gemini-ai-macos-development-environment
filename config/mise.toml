@@ -56,6 +56,7 @@ yq = "latest"
 shellcheck = "latest"
 hadolint = "latest"
 "pipx:pre-commit" = "latest"
+lefthook = "latest"
 
 # --- AI-Assisted Code Search ---
 "pipx:mgrep" = "latest"
@@ -96,16 +97,20 @@ description = "Validate environment health"
 run = "sh {{config_root}}/config/scripts/validate.sh"
 
 [tasks."hooks:install"]
-description = "Install git pre-commit hook"
+description = "Install lefthook-managed git hooks"
 run = """
-cp {{config_root}}/config/scripts/pre-commit-hook.sh {{config_root}}/.git/hooks/pre-commit
-chmod +x {{config_root}}/.git/hooks/pre-commit
-echo "✅ Pre-commit hook installed to .git/hooks/pre-commit"
+if command -v lefthook >/dev/null 2>&1; then
+  lefthook install
+  echo "✅ Lefthook installed git hooks"
+else
+  echo "ERROR: lefthook not installed. Run 'mise use -g lefthook' first."
+  exit 1
+fi
 """
 
 [tasks."hooks:test"]
-description = "Test pre-commit hook (dry run)"
-run = "{{config_root}}/.git/hooks/pre-commit"
+description = "Run lefthook pre-commit checks"
+run = "lefthook run pre-commit"
 
 [tasks.lint]
 description = "Lint shell scripts with shellcheck"

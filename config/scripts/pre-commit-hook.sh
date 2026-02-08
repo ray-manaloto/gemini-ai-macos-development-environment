@@ -3,8 +3,9 @@
 # pre-commit hook - God-Tier macOS Development Environment
 # =============================================================================
 # Runs quick validation before allowing commits.
+# Orchestrated by: lefthook (git hook manager)
 # Source: config/scripts/pre-commit-hook.sh
-# Install: mise run hooks:install (or cp to .git/hooks/pre-commit)
+# Install: mise run hooks:install
 # Skip: git commit --no-verify (use sparingly!)
 #
 # BLOCKING CHECKS (commit will fail):

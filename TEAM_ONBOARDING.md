@@ -27,7 +27,14 @@ cd ~/dev/github/ray-manaloto/gemini-ai-macos-development-environment
 exec $SHELL
 ```
 
-### 3. Verify Installation
+### 3. Install Git Hooks (Mandatory)
+
+```bash
+# Install lefthook-managed pre-commit hooks
+mise run hooks:install
+```
+
+### 4. Verify Installation
 
 ```bash
 # Check mise health
@@ -40,7 +47,7 @@ mise run validate
 mise ls --current
 ```
 
-### 4. Authenticate CLI Tools
+### 5. Authenticate CLI Tools
 
 ```bash
 # Check what needs authentication
@@ -52,7 +59,7 @@ mise run auth:claude   # Claude Code
 mise run auth:aws      # AWS CLI (if using cloud agents)
 ```
 
-### 5. Apply Team Configuration
+### 6. Apply Team Configuration
 
 If your team has a shared `mise.toml`:
 
@@ -328,7 +335,7 @@ node = "20"
 [tools]
 shellcheck = "latest"   # Shell script linting
 hadolint = "latest"     # Dockerfile linting
-"pipx:pre-commit" = "latest"  # Git hooks
+lefthook = "latest"     # Git hooks (pre-commit orchestrator)
 ```
 
 ### Code Quality Tasks

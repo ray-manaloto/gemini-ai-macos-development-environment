@@ -4,6 +4,7 @@
 # God-Tier macOS Development Environment
 # =============================================================================
 # Run with: mise run validate
+# Also runs as mandatory pre-commit check via lefthook
 # =============================================================================
 
 set -euo pipefail
@@ -77,19 +78,29 @@ if command -v mise &> /dev/null; then
     fi
 
     # Check node backend
-    NODE_BACKEND=$(mise config get settings.node_backend 2>/dev/null || echo "not set")
+    NODE_BACKEND=$(mise config get settings.node_backend 2>/dev/null || echo "")
     if [ "$NODE_BACKEND" = "bun" ]; then
         check_pass "Mise node_backend = bun"
     else
-        check_warn "Mise node_backend = $NODE_BACKEND (expected: bun)"
+        NPM_PM=$(mise config get settings.npm.package_manager 2>/dev/null || echo "not set")
+        if [ "$NPM_PM" = "bun" ]; then
+            check_pass "Mise npm package_manager = bun"
+        else
+            check_warn "Mise node_backend = ${NODE_BACKEND:-not set} (expected: bun)"
+        fi
     fi
 
     # Check pip backend
-    PIP_BACKEND=$(mise config get settings.pip_backend 2>/dev/null || echo "not set")
+    PIP_BACKEND=$(mise config get settings.pip_backend 2>/dev/null || echo "")
     if [ "$PIP_BACKEND" = "uv" ]; then
         check_pass "Mise pip_backend = uv"
     else
-        check_warn "Mise pip_backend = $PIP_BACKEND (expected: uv)"
+        UV_AUTO=$(mise config get settings.python.uv_venv_auto 2>/dev/null || echo "not set")
+        if [ "$UV_AUTO" = "true" ]; then
+            check_pass "Mise python uv_venv_auto = true"
+        else
+            check_warn "Mise pip_backend = ${PIP_BACKEND:-not set} (expected: uv)"
+        fi
     fi
 else
     check_fail "Mise not installed"

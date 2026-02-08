@@ -1,6 +1,39 @@
 # PROJECT KNOWLEDGE BASE
 Generated:2026-02-05|Branch:feat/ai-optimization-from-downloads (PR #1)
 
+## DOCUMENTATION AUDIT & FIX PLAN
+
+**Status**: Complete (Feb 2026)
+
+**Objective**: Consolidate doc audit findings and implement fixes to reflect lefthook + validate.sh mandatory pre-commit flow.
+
+### Verified Counts (Actual)
+- Core BATS tests: 549 @test blocks (18 files)
+- SwiftBar BATS tests: 272 @test blocks (3 files)
+- Iced Rust tests: 7 test files
+- Tauri Rust tests: 6 test files
+- pre-commit-hook.sh: 221 lines
+- validate.sh: 296 lines
+
+### Fixes Applied
+1. **AGENTS.md**: Updated test counts (952→821 core+SwiftBar), clarified lefthook orchestration
+2. **CLAUDE.md**: Added mandatory lefthook pre-commit section
+3. **README.md**: Added hooks install step and switched to `mise run validate`
+4. **MANUAL.md**: Added mandatory pre-commit hook section
+5. **TEAM_ONBOARDING.md**: Replaced `pipx:pre-commit` with lefthook and added hook install step
+6. **config/scripts/pre-commit-hook.sh**: Updated header to clarify lefthook orchestration
+7. **config/scripts/validate.sh**: Updated header to mention mandatory pre-commit role
+8. **lefthook.yml**: Added explanatory comments about mandatory checks
+9. **Research docs**: Fixed stale counts in MENUBAR_IMPLEMENTATION_SPECS.md, SWIFTBAR_TESTING.md, SKILLS_BEST_PRACTICES.md, AI_AGENT_ENFORCEMENT_RESEARCH.md
+
+### Key Changes
+- **Lefthook is now the git hook manager** (not pre-commit)
+- **Both validate.sh and pre-commit-hook.sh run via lefthook** (blocking)
+- **hooks:install and hooks:test tasks** exist in config/mise.toml
+- **No external pre-commit dependency** needed
+
+---
+
 ## FOR LLM AGENTS
 
 ### Critical Instruction
@@ -25,7 +58,7 @@ I want to...|Go to...|Key info
 Understand philosophy|CLAUDE.md|Tool hierarchy, patterns
 Install everything|setup.sh|Run once
 Add/modify tools|config/mise.toml|SOURCE OF TRUTH
-Run tests|tests/*.bats|952 tests, `bats tests/`
+Run tests|tests/*.bats|821 tests (549 core + 272 SwiftBar), `bats tests/`
 Validate env|`mise run validate`|Health check
 Configure dotfiles|config/chezmoi/|Templates
 Configure prompt|config/starship.toml|Modules
@@ -55,6 +88,12 @@ Uninstall|uninstall.sh|--dry-run, --force
 10. ASK if uncertain
 11. ALWAYS install CLI via mise - Never `curl|sh`, `npm -g`
    Install:`mise use -g <tool>@latest`|Check:`mise which <tool>`|Fix:`mise run autofix:fix`
+
+### Autofix + Learnings Workflow (OpenCode/oh-my-opencode)
+When any warnings/errors appear (hooks, validate, tests, or tooling):
+1. Run `mise run autofix:fix`
+2. Re-run the failing command to confirm it is clean
+3. Record a learning in **Recent Learnings** and apply it by updating scripts or docs (AGENTS.md, README.md, OPENCODE_* docs)
 
 ---
 
@@ -96,8 +135,8 @@ gemini-ai-macos-development-environment/
 │   ├── Presentation/      # UI layer
 │   └── project.yml        # XcodeGen configuration
 ├── DevEnvManager-SwiftBar/  # Spec A: Enhanced SwiftBar plugin (bash)
-│   ├── dev-status.5s.sh   # 503-line bash plugin
-│   └── tests/             # BATS tests (10 tests)
+│   ├── dev-status.5s.sh   # 515-line bash plugin
+│   └── tests/             # BATS tests (272 @test blocks, 3 files)
 ├── DevEnvManager-Iced/    # Spec C: Rust iced + tray-icon (5.4 MB binary)
 │   ├── src/               # app.rs, tray.rs, config.rs, domain/, views/
 │   ├── Cargo.toml         # iced 0.14, tray-icon 0.21
@@ -106,7 +145,7 @@ gemini-ai-macos-development-environment/
 │   ├── src-tauri/src/     # lib.rs, tray.rs, commands/
 │   ├── src/               # React frontend (App, components, hooks)
 │   └── package.json       # bun + react + tauri CLI
-├── tests/                 # 402 BATS tests
+├── tests/                 # 549 BATS tests
 ├── research/              # 15+ research docs
 │   ├── DEVENVMANAGER_TRAY_RESEARCH.md   # Notch overflow analysis
 │   ├── MENUBAR_IMPLEMENTATION_SPECS.md  # 4-way specs (1,195 lines)
@@ -150,10 +189,15 @@ mise run skills:validate:fix|Auto-fix broken symlinks
 mise run skills:validate:json|JSON output for CI
 
 ### Git Hooks (Pre-commit) - ALL BLOCKING
-Automatic validation on every commit. **ALL checks are BLOCKING** - commit will fail if any check fails.
+Automatic validation on every commit via Lefthook. **ALL checks are BLOCKING** - commit will fail if any check fails.
+
+**How it works:**
+1. `lefthook.yml` runs `config/scripts/validate.sh` (environment health)
+2. `lefthook.yml` runs `config/scripts/pre-commit-hook.sh` (repo rules)
 
 | Check | Blocks On |
 |-------|-----------|
+| Validate | Environment validation via `config/scripts/validate.sh` |
 | Secrets | Passwords, API keys, tokens in staged files |
 | TOML | Syntax errors in *.toml files |
 | Shellcheck | Errors in *.sh files |
@@ -161,6 +205,7 @@ Automatic validation on every commit. **ALL checks are BLOCKING** - commit will 
 | Rust | Cargo check errors in staged .rs files |
 | Anti-patterns | **sudo**, **npm -g**, **pip install**, **@ts-ignore**, **@ts-expect-error**, **as any** |
 
+**Config**: `lefthook.yml`
 **Install**: `mise run hooks:install`
 **Test**: `mise run hooks:test`
 **Source**: `config/scripts/pre-commit-hook.sh`
@@ -256,7 +301,7 @@ Wrong|Why|Right
 
 ## TESTING
 
-### Test Files (952 total)
+### Test Files (821 total: 549 core + 272 SwiftBar)
 test_mise.bats|Mise backends, tasks
 test_tools.bats|CLI availability
 test_chezmoi.bats|Dotfile templates
@@ -267,25 +312,25 @@ test_skypilot.bats|Cloud agents
 test_unified_setup.bats|Platform tasks
 test_autofix.bats|Autofix system
 test_agent_readiness.bats|Agent setup
-test_skills.bats|Skills architecture (54)
-test_noninteractive_skills.bats|Skill symlinks (25)
+test_skills.bats|Skills architecture
+test_noninteractive_skills.bats|Skill symlinks
 test_swiftbar.bats|Menu bar
-test_menubar_core.bats|Core parity (68)
-DevEnvManager-SwiftBar/tests/|SwiftBar (272)
-DevEnvManager/Tests/|Swift validation (91)
-DevEnvManager-Iced/tests/|Iced Rust (48)
-DevEnvManager-Tauri/src-tauri/tests/|Tauri Rust (42)
+test_menubar_core.bats|Core parity
+DevEnvManager-SwiftBar/tests/|SwiftBar (272 @test blocks, 3 files)
+DevEnvManager/Tests/|Swift validation (7 test files)
+DevEnvManager-Iced/tests/|Iced Rust (7 test files)
+DevEnvManager-Tauri/src-tauri/tests/|Tauri Rust (6 test files)
 
 ### Running
 ```bash
 eval "$(mise activate bash --shims)"
-bats tests/              # All core tests
+bats tests/              # All core tests (549)
 bats tests/test_mise.bats  # Specific
 bats tests/test_menubar_core.bats  # Menu bar parity
 bats DevEnvManager-SwiftBar/tests/  # SwiftBar (272)
-bats DevEnvManager/Tests/  # Swift (91)
-cd DevEnvManager-Iced && cargo test  # Iced (48)
-cd DevEnvManager-Tauri/src-tauri && cargo test  # Tauri (42)
+bats DevEnvManager/Tests/  # Swift (7 files)
+cd DevEnvManager-Iced && cargo test  # Iced (7 files)
+cd DevEnvManager-Tauri/src-tauri && cargo test  # Tauri (6 files)
 ```
 
 ---
@@ -387,6 +432,11 @@ Location|Purpose
 ./config/scripts/telemetry.sh stats       # Show statistics
 ./config/scripts/telemetry.sh cleanup 7   # Remove events older than 7 days
 ```
+
+---
+
+## Recent Learnings
+- (Add new learnings here. Include date, issue, and applied fix.)
 
 ---
 
@@ -499,8 +549,8 @@ AGENTS.md = horizontal knowledge (always loaded). Skills = vertical action workf
 
 ## DESIGN DECISIONS
 1. Mise over asdf - Rust (10x faster), native backends
-2. Bun over Node - 3x faster, native TS
-3. Uv over pip - 10x faster, deterministic
+2. Bun over Node - 3x faster, native TS (settings.npm.package_manager = bun)
+3. Uv over pip - 10x faster, deterministic (settings.python.uv_venv_auto = true)
 4. BATS for tests - Native bash
 5. Chezmoi over stow - Templates, encryption
 

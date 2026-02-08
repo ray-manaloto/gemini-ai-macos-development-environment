@@ -4,6 +4,12 @@
 [settings]
 experimental = true
 
+[settings.npm]
+package_manager = "bun"
+
+[settings.python]
+uv_venv_auto = true
+
 [tasks.setup-mac]
 description = "Configure macOS defaults"
 run = "sh {{config_root}}/config/scripts/macos-defaults.sh"
@@ -73,18 +79,23 @@ description = "List all installed project skills"
 run = "bunx skills list"
 
 [tasks."hooks:install"]
-description = "Install git pre-commit hook from tracked source"
+description = "Install lefthook-managed git hooks"
 run = """
-cp {{config_root}}/config/scripts/pre-commit-hook.sh {{config_root}}/.git/hooks/pre-commit
-chmod +x {{config_root}}/.git/hooks/pre-commit
-echo "✅ Pre-commit hook installed to .git/hooks/pre-commit"
+if command -v lefthook >/dev/null 2>&1; then
+  lefthook install
+  echo "✅ Lefthook installed git hooks"
+else
+  echo "ERROR: lefthook not installed. Run 'mise use -g lefthook' first."
+  exit 1
+fi
 """
 
 [tasks."hooks:test"]
-description = "Test pre-commit hook (dry run on staged files)"
-run = "{{config_root}}/.git/hooks/pre-commit"
+description = "Run lefthook pre-commit checks"
+run = "lefthook run pre-commit"
 
 [tools]
+lefthook = "latest"
 "npm:@ai-sdk/anthropic" = "latest"
 "npm:@playwright/mcp" = "latest"
 "npm:@playwright/test" = "latest"

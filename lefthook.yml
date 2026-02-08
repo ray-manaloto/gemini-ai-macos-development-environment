@@ -1,0 +1,21 @@
+min_version: 2.0.0
+
+# Git hook orchestrator for mandatory pre-commit checks
+# Install: mise run hooks:install
+# Test: mise run hooks:test
+# Skip: git commit --no-verify (use sparingly!)
+
+pre-commit:
+  parallel: false
+  commands:
+    # Mandatory check 1: Environment health validation
+    # Verifies mise, tools, and environment configuration
+    validate-environment:
+      run: sh config/scripts/validate.sh
+      fail_text: "Environment validation failed. Fix issues before committing."
+    
+    # Mandatory check 2: Repository rules enforcement
+    # Detects secrets, syntax errors, type errors, and anti-patterns
+    enforce-repo-rules:
+      run: sh config/scripts/pre-commit-hook.sh
+      fail_text: "Pre-commit rule checks failed. Fix issues before committing."

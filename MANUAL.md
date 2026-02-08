@@ -10,6 +10,14 @@ Check the 🟢 icon in your menu bar. It controls **OrbStack** (Docker) and **Sk
 - `mise run help`: Show this manual.
 - `sky launch agent.yaml`: Deploy AI Agent to AWS.
 
+## Git Hooks (Pre-commit)
+
+Pre-commit hooks are **mandatory** and run on every commit via Lefthook.
+
+- `mise run hooks:install`: Install hooks
+- `mise run hooks:test`: Test hooks without committing
+- `git commit --no-verify`: Skip hooks (use sparingly!)
+
 ## Troubleshooting
 
 ### Python is leaking from System

@@ -5,7 +5,7 @@
 
 ## Executive Summary
 
-SwiftBar plugins are **shell scripts that output formatted text**. Testing does NOT require GUI automation or macOS-specific tooling. Our current BATS test suite (30 tests) provides comprehensive coverage aligned with industry best practices.
+SwiftBar plugins are **shell scripts that output formatted text**. Testing does NOT require GUI automation or macOS-specific tooling. Our current BATS test suite (43 tests) provides comprehensive coverage aligned with industry best practices.
 
 **Verdict: Current implementation is production-ready. No changes needed.**
 
@@ -117,7 +117,7 @@ echo "running"' > "$BATS_TEST_TMPDIR/mocks/orb"
 
 ## Current Test Coverage
 
-### test_swiftbar.bats (30 tests)
+### test_swiftbar.bats (43 tests)
 
 | Category | Count | Coverage |
 |----------|-------|----------|
@@ -188,7 +188,7 @@ If deeper testing is desired in the future:
 
 ## Conclusion
 
-**Current state**: Production-ready with 30 comprehensive tests
+**Current state**: Production-ready with 43 comprehensive tests
 **Action required**: None
 **Future consideration**: Optional shellcheck and env var tests (low priority)
 
