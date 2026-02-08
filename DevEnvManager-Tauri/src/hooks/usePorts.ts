@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ActivePort, listActivePorts, killPort as killPortApi } from "../lib/tauri";
+import { useToast } from "../contexts/ToastContext";
 
 type UsePortsResult = {
   ports: ActivePort[];
@@ -10,10 +11,11 @@ type UsePortsResult = {
 };
 
 export default function usePorts(refreshMs = 60000): UsePortsResult {
-  const [ports, setPorts] = useState<ActivePort[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [actionRunning, setActionRunning] = useState<number | undefined>(undefined);
-  const refreshInFlight = useRef(false);
+   const [ports, setPorts] = useState<ActivePort[]>([]);
+   const [loading, setLoading] = useState(false);
+   const [actionRunning, setActionRunning] = useState<number | undefined>(undefined);
+   const refreshInFlight = useRef(false);
+   const toast = useToast();
 
   const refresh = useCallback(async () => {
     if (refreshInFlight.current) return;
@@ -28,17 +30,20 @@ export default function usePorts(refreshMs = 60000): UsePortsResult {
     }
   }, []);
 
-  const killPort = useCallback(async (pid: number) => {
-    setActionRunning(pid);
-    try {
-      await killPortApi(pid);
-      await refresh();
-    } catch (error) {
-      console.error(`Failed to kill process ${pid}:`, error);
-    } finally {
-      setActionRunning(undefined);
-    }
-  }, [refresh]);
+   const killPort = useCallback(async (pid: number) => {
+     setActionRunning(pid);
+     try {
+       await killPortApi(pid);
+       await refresh();
+       toast.success("Process killed", `PID ${pid} has been terminated`);
+     } catch (error) {
+       const message = error instanceof Error ? error.message : "Unknown error occurred";
+       toast.error(`Failed to kill process ${pid}`, message);
+       console.error(`Failed to kill process ${pid}:`, error);
+     } finally {
+       setActionRunning(undefined);
+     }
+   }, [refresh, toast]);
 
   useEffect(() => {
     refresh();

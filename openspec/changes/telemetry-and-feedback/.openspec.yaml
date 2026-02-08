@@ -1,0 +1,11 @@
+name: telemetry-and-feedback
+description: Add visual feedback (progress bars, status messages, notifications) and telemetry integration to all GUIs/TUIs/CLI/scripts
+status: active
+created: 2026-02-06
+tags:
+  - ui-feedback
+  - telemetry
+  - observability
+  - devenvmanager
+  - grafana
+priority: high

@@ -25,7 +25,7 @@ I want to...|Go to...|Key info
 Understand philosophy|CLAUDE.md|Tool hierarchy, patterns
 Install everything|setup.sh|Run once
 Add/modify tools|config/mise.toml|SOURCE OF TRUTH
-Run tests|tests/*.bats|1002 tests, `bats tests/`
+Run tests|tests/*.bats|952 tests, `bats tests/`
 Validate env|`mise run validate`|Health check
 Configure dotfiles|config/chezmoi/|Templates
 Configure prompt|config/starship.toml|Modules
@@ -233,7 +233,7 @@ Wrong|Why|Right
 
 ## TESTING
 
-### Test Files (1002 total)
+### Test Files (952 total)
 test_mise.bats|Mise backends, tasks
 test_tools.bats|CLI availability
 test_chezmoi.bats|Dotfile templates
@@ -294,6 +294,75 @@ config/main.pkl (Pkl source)
 config/mise.toml (Generated)
     ↓ cp to ~/.config/mise/
 ~/.config/mise/config.toml (Active)
+```
+
+---
+
+## TELEMETRY & FEEDBACK
+
+### Overview
+All GUIs/TUIs/CLI/scripts emit telemetry events to `~/.config/dev-env/telemetry/events.jsonl`.
+Events are JSON formatted, local-first, with optional remote sync to Grafana/OpenList on AWS.
+
+### For AI Agents
+When implementing operations that should emit telemetry:
+
+**Bash scripts** - Source the telemetry helper:
+```bash
+source config/scripts/telemetry.sh
+emit_telemetry "validate.start" "started"
+# ... do work ...
+emit_telemetry "validate.complete" "completed" '{"checks": 42}'
+
+# Or wrap commands with timing:
+emit_timed "tools.update" mise run tools:update
+```
+
+**Tauri/Rust** - Use the telemetry module:
+```rust
+use crate::telemetry::telemetry;
+telemetry().emit_operation("mise.update_all", "started", None)?;
+// ... do work ...
+telemetry().emit_operation("mise.update_all", "completed", Some(json!({"tools": 12})))?;
+```
+
+**React hooks** - All hooks use toast notifications:
+```typescript
+import { useToast } from "../contexts/ToastContext";
+const toast = useToast();
+toast.success("Operation completed");
+toast.error("Operation failed", errorMessage);
+toast.progress("Updating...", 50); // 50%
+```
+
+### Event Schema
+```json
+{
+  "id": "uuid-v4",
+  "timestamp": "2026-02-07T00:00:00.000Z",
+  "source": "tauri|cli|tui|script",
+  "machine_id": "hashed-hostname",
+  "category": "operation|error|metric",
+  "name": "mise.update_all",
+  "status": "started|progress|completed|failed",
+  "duration_ms": 45000,
+  "payload": {}
+}
+```
+
+### Key Files
+Location|Purpose
+`~/.config/dev-env/telemetry/events.jsonl`|Local event storage
+`~/.config/dev-env/telemetry/config.json`|Telemetry settings
+`config/scripts/telemetry.sh`|Bash helper functions
+`DevEnvManager-Tauri/src-tauri/src/telemetry.rs`|Rust telemetry module
+`DevEnvManager-Tauri/src/contexts/ToastContext.tsx`|React toast notifications
+
+### Commands
+```bash
+./config/scripts/telemetry.sh tail 20     # View recent events
+./config/scripts/telemetry.sh stats       # Show statistics
+./config/scripts/telemetry.sh cleanup 7   # Remove events older than 7 days
 ```
 
 ---
@@ -367,7 +436,7 @@ Config not loading|`cp config/mise.toml ~/.config/mise/config.toml`
 
 ## PROJECT SKILLS (AI Agent Capabilities)
 
-Skills are project-level only (`.claude/skills/`, `.opencode/skills/`, `.agents/skills/`).
+Skills are project-level only (`.claude/skills/`, `.Claude/skills/`, `.agents/skills/`).
 Managed via `bunx skills add/remove/list`. Never install globally.
 
 ### Custom Project Skills (5)
@@ -399,7 +468,7 @@ refactor|Non-interactive code refactoring
 ```
 .agents/skills/    ← Universal source (26 skills, managed by bunx)
   ├── symlink → .claude/skills/     (26 total: all symlinked)
-  └── symlink → .opencode/skills/   (26 total: all symlinked)
+  └── symlink → .Claude/skills/   (26 total: all symlinked)
 ```
 AGENTS.md = horizontal knowledge (always loaded). Skills = vertical action workflows (loaded on trigger).
 

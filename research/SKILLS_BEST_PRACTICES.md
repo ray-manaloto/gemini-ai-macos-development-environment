@@ -52,7 +52,7 @@ Best for:
 ```
 .agents/skills/    ← Universal source (managed by bunx skills CLI)
   ├── symlink → .claude/skills/     (Claude Code reads from here)
-  └── symlink → .opencode/skills/   (OpenCode reads from here)
+  └── symlink → .Claude/skills/   (Claude Code reads from here)
 ```
 
 ### How Oh-My-OpenCode Loads Skills
@@ -63,7 +63,7 @@ Oh-my-opencode discovers skills from 6 locations (in order):
 3. **user** — `~/.claude/skills/` (global, user-level)
 4. **global** — `~/.config/opencode/skills/`
 5. **project** — `.claude/skills/` (project-level)
-6. **project** — `.opencode/skills/` (project-level)
+6. **project** — `.Claude/skills/` (project-level)
 
 When `delegate_task(load_skills=["name"])` runs, the skill's SKILL.md content is injected into the subagent's system prompt.
 
@@ -130,7 +130,7 @@ Trusted sources:
 ```bash
 bunx skills init <name>   # Creates template SKILL.md
 # Edit .agents/skills/<name>/SKILL.md
-# Symlink to .claude/skills/ and .opencode/skills/
+# Symlink to .claude/skills/ and .Claude/skills/
 ```
 
 ### List Installed

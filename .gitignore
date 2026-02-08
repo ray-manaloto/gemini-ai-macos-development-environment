@@ -84,6 +84,9 @@ ui-debug.log
 logs/
 *.log
 
+# Telemetry (local runtime data)
+telemetry/
+
 # Research repos (cloned for reference, not part of main project)
 research/repos/
 

@@ -1,6 +1,8 @@
 import { useEffect } from "react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
+import { ToastProvider } from "./contexts/ToastContext";
 import MenuBarPopup from "./components/MenuBarPopup";
+import ToastContainer from "./components/ToastContainer";
 
 export default function App() {
   useEffect(() => {
@@ -23,5 +25,10 @@ export default function App() {
     };
   }, []);
 
-  return <MenuBarPopup />;
+  return (
+    <ToastProvider>
+      <MenuBarPopup />
+      <ToastContainer />
+    </ToastProvider>
+  );
 }

@@ -1,4 +1,5 @@
 use serde::Deserialize;
+use tauri::Emitter;
 
 use crate::commands::run_command;
 use crate::models::{MiseTool, MiseToolSource};
@@ -46,6 +47,27 @@ pub fn parse_mise_tools(json: &str) -> Result<Vec<MiseTool>, String> {
     Ok(tools)
 }
 
+/// Emit a progress event to the frontend via the Tauri event system.
+fn emit_progress(
+    window: &tauri::Window,
+    operation: &str,
+    status: &str,
+    percent: u8,
+    message: &str,
+) {
+    window
+        .emit(
+            "operation-progress",
+            serde_json::json!({
+                "operation": operation,
+                "status": status,
+                "percent": percent,
+                "message": message,
+            }),
+        )
+        .ok();
+}
+
 #[tauri::command]
 pub async fn list_mise_tools() -> Result<Vec<MiseTool>, String> {
     let output = run_command("mise", &["ls", "--json"]).await?;
@@ -80,8 +102,41 @@ pub async fn run_mise_doctor() -> Result<String, String> {
 }
 
 #[tauri::command]
-pub async fn run_mise_update_all() -> Result<String, String> {
-    run_command("mise", &["run", "tools:update"]).await
+pub async fn run_mise_update_all(window: tauri::Window) -> Result<String, String> {
+    emit_progress(&window, "update_all", "started", 0, "Starting update...");
+
+    emit_progress(
+        &window,
+        "update_all",
+        "progress",
+        20,
+        "Checking for tool updates...",
+    );
+
+    let result = run_command("mise", &["run", "tools:update"]).await;
+
+    match &result {
+        Ok(output) => {
+            emit_progress(
+                &window,
+                "update_all",
+                "completed",
+                100,
+                "All tools updated",
+            );
+            Ok(output.clone())
+        }
+        Err(error) => {
+            emit_progress(
+                &window,
+                "update_all",
+                "failed",
+                0,
+                &format!("Update failed: {error}"),
+            );
+            Err(error.clone())
+        }
+    }
 }
 
 #[tauri::command]

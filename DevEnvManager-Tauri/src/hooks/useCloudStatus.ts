@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
+import { useToast } from "../contexts/ToastContext";
 
 export type CloudStatus = "connected" | "disconnected" | "notinstalled" | "unknown";
 
@@ -40,12 +41,13 @@ type UseCloudStatusResult = {
 };
 
 export default function useCloudStatus(refreshMs = 60000): UseCloudStatusResult {
-  const [skyPilot, setSkyPilot] = useState<SkyPilotStatus | null>(null);
-  const [aws, setAws] = useState<AwsStatus | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [actionRunning, setActionRunning] = useState<string | undefined>(undefined);
-  const [clusterLogs, setClusterLogs] = useState<string | undefined>(undefined);
-  const refreshInFlight = useRef(false);
+   const [skyPilot, setSkyPilot] = useState<SkyPilotStatus | null>(null);
+   const [aws, setAws] = useState<AwsStatus | null>(null);
+   const [loading, setLoading] = useState(false);
+   const [actionRunning, setActionRunning] = useState<string | undefined>(undefined);
+   const [clusterLogs, setClusterLogs] = useState<string | undefined>(undefined);
+   const refreshInFlight = useRef(false);
+   const toast = useToast();
 
   const clearLogs = useCallback(() => {
     setClusterLogs(undefined);
@@ -72,64 +74,83 @@ export default function useCloudStatus(refreshMs = 60000): UseCloudStatusResult 
     }
   }, []);
 
-  const launchAgent = useCallback(async () => {
-    setActionRunning("skypilot-launch");
-    try {
-      await invoke<string>("launch_skypilot_agent");
-      await refresh();
-    } catch (error) {
-      console.error("Failed to launch agent:", error);
-    } finally {
-      setActionRunning(undefined);
-    }
-  }, [refresh]);
+   const launchAgent = useCallback(async () => {
+     setActionRunning("skypilot-launch");
+     const progressId = toast.progress("Launching SkyPilot agent...", 0);
+     try {
+       await invoke<string>("launch_skypilot_agent");
+       toast.removeToast(progressId);
+       await refresh();
+       toast.success("Agent launched", "SkyPilot cluster is starting");
+     } catch (error) {
+       toast.removeToast(progressId);
+       const message = error instanceof Error ? error.message : "Unknown error occurred";
+       toast.error("Failed to launch agent", message);
+       console.error("Failed to launch agent:", error);
+     } finally {
+       setActionRunning(undefined);
+     }
+   }, [refresh, toast]);
 
-  const stopAgents = useCallback(async () => {
-    setActionRunning("skypilot-stop");
-    try {
-      await invoke<string>("stop_skypilot_agents");
-      await refresh();
-    } catch (error) {
-      console.error("Failed to stop agents:", error);
-    } finally {
-      setActionRunning(undefined);
-    }
-  }, [refresh]);
+   const stopAgents = useCallback(async () => {
+     setActionRunning("skypilot-stop");
+     try {
+       await invoke<string>("stop_skypilot_agents");
+       await refresh();
+       toast.success("Agents stopped", "All SkyPilot clusters terminated");
+     } catch (error) {
+       const message = error instanceof Error ? error.message : "Unknown error occurred";
+       toast.error("Failed to stop agents", message);
+       console.error("Failed to stop agents:", error);
+     } finally {
+       setActionRunning(undefined);
+     }
+   }, [refresh, toast]);
 
-  const stopCluster = useCallback(async (name: string) => {
-    setActionRunning(`cluster-stop-${name}`);
-    try {
-      await invoke<string>("stop_skypilot_cluster", { name });
-      await refresh();
-    } catch (error) {
-      console.error(`Failed to stop cluster ${name}:`, error);
-    } finally {
-      setActionRunning(undefined);
-    }
-  }, [refresh]);
+   const stopCluster = useCallback(async (name: string) => {
+     setActionRunning(`cluster-stop-${name}`);
+     try {
+       await invoke<string>("stop_skypilot_cluster", { name });
+       await refresh();
+       toast.success("Cluster stopped", `${name} has been terminated`);
+     } catch (error) {
+       const message = error instanceof Error ? error.message : "Unknown error occurred";
+       toast.error(`Failed to stop cluster ${name}`, message);
+       console.error(`Failed to stop cluster ${name}:`, error);
+     } finally {
+       setActionRunning(undefined);
+     }
+   }, [refresh, toast]);
 
-  const sshCluster = useCallback(async (name: string) => {
-    setActionRunning(`cluster-ssh-${name}`);
-    try {
-      await invoke<string>("ssh_skypilot_cluster", { name });
-    } catch (error) {
-      console.error(`Failed to SSH to cluster ${name}:`, error);
-    } finally {
-      setActionRunning(undefined);
-    }
-  }, []);
+   const sshCluster = useCallback(async (name: string) => {
+     setActionRunning(`cluster-ssh-${name}`);
+     toast.info("Opening SSH session...", `Connecting to ${name}`);
+     try {
+       await invoke<string>("ssh_skypilot_cluster", { name });
+     } catch (error) {
+       const message = error instanceof Error ? error.message : "Unknown error occurred";
+       toast.error(`Failed to SSH to cluster ${name}`, message);
+       console.error(`Failed to SSH to cluster ${name}:`, error);
+     } finally {
+       setActionRunning(undefined);
+     }
+   }, [toast]);
 
-  const getClusterLogs = useCallback(async (name: string) => {
-    setActionRunning(`cluster-logs-${name}`);
-    try {
-      const logs = await invoke<string>("get_skypilot_logs", { name });
-      setClusterLogs(logs);
-    } catch (error) {
-      console.error(`Failed to get logs for cluster ${name}:`, error);
-    } finally {
-      setActionRunning(undefined);
-    }
-  }, []);
+   const getClusterLogs = useCallback(async (name: string) => {
+     setActionRunning(`cluster-logs-${name}`);
+     toast.info("Fetching logs...", `Loading logs from ${name}`);
+     try {
+       const logs = await invoke<string>("get_skypilot_logs", { name });
+       setClusterLogs(logs);
+       toast.success("Logs loaded", `Retrieved logs from ${name}`);
+     } catch (error) {
+       const message = error instanceof Error ? error.message : "Unknown error occurred";
+       toast.error(`Failed to get logs for cluster ${name}`, message);
+       console.error(`Failed to get logs for cluster ${name}:`, error);
+     } finally {
+       setActionRunning(undefined);
+     }
+   }, [toast]);
 
   useEffect(() => {
     refresh();

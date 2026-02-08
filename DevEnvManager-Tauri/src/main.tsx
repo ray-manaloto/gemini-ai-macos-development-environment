@@ -6,6 +6,7 @@ import "./styles/menubar.css";
 import "./styles/package-managers.css";
 import "./styles/cloud.css";
 import "./styles/quick-actions.css";
+import "./styles/toast.css";
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>

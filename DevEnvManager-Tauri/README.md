@@ -35,7 +35,9 @@ DevEnvManager-Tauri/
 │   │   ├── ToolsList.tsx         # Mise tools tab
 │   │   ├── ServicesList.tsx      # Homebrew services tab
 │   │   ├── ContainersList.tsx    # OrbStack containers tab
-│   │   └── PortsList.tsx         # Active ports tab
+│   │   ├── PortsList.tsx         # Active ports tab
+│   │   ├── Toast.tsx             # Individual toast notification
+│   │   └── ToastContainer.tsx    # Toast stack container
 │   ├── hooks/              # Data fetching hooks
 │   │   ├── useQuickActions.ts    # Mise task execution
 │   │   ├── usePackageManagers.ts # Package manager status
@@ -43,15 +45,19 @@ DevEnvManager-Tauri/
 │   │   ├── useMiseTools.ts       # Mise tools list
 │   │   ├── useBrewServices.ts    # Homebrew services
 │   │   ├── useContainers.ts      # OrbStack containers
-│   │   └── usePorts.ts           # Active ports
+│   │   ├── usePorts.ts           # Active ports
+│   │   └── useProgressOperation.ts  # Tauri event progress
+│   ├── contexts/           # React contexts
+│   │   └── ToastContext.tsx      # Toast state management
 │   ├── lib/tauri.ts        # Tauri invoke wrappers
 │   └── styles/             # CSS stylesheets
 ├── src-tauri/              # Rust backend
 │   ├── src/
 │   │   ├── lib.rs          # App entry, command registration
 │   │   ├── tray.rs         # System tray icon setup
+│   │   ├── telemetry.rs    # Telemetry collection
 │   │   └── commands/       # Tauri commands
-│   │       ├── mise.rs           # Mise operations
+│   │       ├── mise.rs           # Mise operations + progress events
 │   │       ├── homebrew.rs       # Brew services
 │   │       ├── orbstack.rs       # Container management
 │   │       ├── ports.rs          # Port detection
@@ -199,3 +205,91 @@ Industrial-brutalist aesthetic:
 - Sharp geometric shapes
 - Animated scan-line effects
 - Staggered slide-in animations
+
+## Toast Notifications
+
+All operations show visual feedback via toast notifications:
+
+### Usage
+```typescript
+import { useToast } from "../contexts/ToastContext";
+
+function MyComponent() {
+  const toast = useToast();
+
+  // Simple notifications
+  toast.success("Operation completed");
+  toast.error("Failed to save", "Network timeout");
+  toast.warning("Low disk space");
+  toast.info("Opening dashboard...");
+
+  // Progress tracking
+  const id = toast.progress("Uploading file", 0);
+  toast.updateProgress(id, 50, "Halfway there...");
+  toast.removeToast(id);
+}
+```
+
+### Toast Types
+| Type | Color | Auto-dismiss |
+|------|-------|--------------|
+| Success | Green (#10b981) | 3 seconds |
+| Error | Red (#ef4444) | 5 seconds |
+| Warning | Amber (#f59e0b) | 4 seconds |
+| Info | Blue (#3b82f6) | 3 seconds |
+| Progress | Blue | Never (manual) |
+
+### Key Files
+| File | Purpose |
+|------|---------|
+| `src/contexts/ToastContext.tsx` | State management and API |
+| `src/components/Toast.tsx` | Individual toast component |
+| `src/components/ToastContainer.tsx` | Fixed position container |
+| `src/styles/toast.css` | Industrial-brutalist styling |
+
+## Telemetry
+
+All operations emit telemetry events to local storage with optional remote sync.
+
+### Event Emission
+```rust
+// In Rust commands
+use crate::telemetry::telemetry;
+
+telemetry().emit_operation("mise.update_all", "started", None)?;
+// ... do work ...
+telemetry().emit_operation("mise.update_all", "completed", Some(json!({"tools": 12})))?;
+```
+
+### Storage
+Events stored in `~/.config/dev-env/telemetry/events.jsonl` as JSON Lines format.
+
+### Key Files
+| File | Purpose |
+|------|---------|
+| `src-tauri/src/telemetry.rs` | Rust telemetry module |
+| `config/scripts/telemetry.sh` | Bash helper for scripts |
+
+## Progress Events
+
+Long-running operations emit Tauri events for real-time progress:
+
+### Rust Side
+```rust
+use tauri::Emitter;
+
+window.emit("operation-progress", json!({
+    "operation": "update_all",
+    "status": "progress",
+    "percent": 50,
+    "message": "Updating bun..."
+}))?;
+```
+
+### React Side
+```typescript
+import { useProgressOperation } from "../hooks/useProgressOperation";
+
+const progress = useProgressOperation("update_all");
+// progress.percent, progress.message, progress.status
+```
