@@ -72,6 +72,18 @@ fi
 description = "List all installed project skills"
 run = "bunx skills list"
 
+[tasks."hooks:install"]
+description = "Install git pre-commit hook from tracked source"
+run = """
+cp {{config_root}}/config/scripts/pre-commit-hook.sh {{config_root}}/.git/hooks/pre-commit
+chmod +x {{config_root}}/.git/hooks/pre-commit
+echo "✅ Pre-commit hook installed to .git/hooks/pre-commit"
+"""
+
+[tasks."hooks:test"]
+description = "Test pre-commit hook (dry run on staged files)"
+run = "{{config_root}}/.git/hooks/pre-commit"
+
 [tools]
 "npm:@ai-sdk/anthropic" = "latest"
 "npm:@playwright/mcp" = "latest"

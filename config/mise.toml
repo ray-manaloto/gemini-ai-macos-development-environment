@@ -95,6 +95,18 @@ run = "pixi run python config/scripts/dashboard.py"
 description = "Validate environment health"
 run = "sh {{config_root}}/config/scripts/validate.sh"
 
+[tasks."hooks:install"]
+description = "Install git pre-commit hook"
+run = """
+cp {{config_root}}/config/scripts/pre-commit-hook.sh {{config_root}}/.git/hooks/pre-commit
+chmod +x {{config_root}}/.git/hooks/pre-commit
+echo "✅ Pre-commit hook installed to .git/hooks/pre-commit"
+"""
+
+[tasks."hooks:test"]
+description = "Test pre-commit hook (dry run)"
+run = "{{config_root}}/.git/hooks/pre-commit"
+
 [tasks.lint]
 description = "Lint shell scripts with shellcheck"
 run = "find . -name '*.sh' -not -path '*/node_modules/*' -not -path '*/.git/*' -not -path '*/.pixi/*' -not -path '*/research/repos/*' -exec shellcheck --exclude=SC2016,SC2088,SC2034,SC2129,SC2059 {} +"

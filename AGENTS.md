@@ -149,17 +149,22 @@ mise run skills:validate|Validate symlinks, format, inventory
 mise run skills:validate:fix|Auto-fix broken symlinks
 mise run skills:validate:json|JSON output for CI
 
-### Git Hooks (Pre-commit)
-Automatic validation on every commit:
-- Secrets detection (blocks if found)
-- TOML syntax validation
-- Shell script linting (shellcheck)
-- TypeScript type checking
-- Rust cargo check
-- Anti-pattern detection (sudo, npm -g, @ts-ignore)
+### Git Hooks (Pre-commit) - ALL BLOCKING
+Automatic validation on every commit. **ALL checks are BLOCKING** - commit will fail if any check fails.
 
-Location: `.git/hooks/pre-commit`
-Skip: `git commit --no-verify` (use sparingly)
+| Check | Blocks On |
+|-------|-----------|
+| Secrets | Passwords, API keys, tokens in staged files |
+| TOML | Syntax errors in *.toml files |
+| Shellcheck | Errors in *.sh files |
+| TypeScript | Type errors in staged TS/TSX files |
+| Rust | Cargo check errors in staged .rs files |
+| Anti-patterns | **sudo**, **npm -g**, **pip install**, **@ts-ignore**, **@ts-expect-error**, **as any** |
+
+**Install**: `mise run hooks:install`
+**Test**: `mise run hooks:test`
+**Source**: `config/scripts/pre-commit-hook.sh`
+**Skip**: `git commit --no-verify` (use sparingly!)
 
 ### Agent Readiness
 mise run agent:ready|Check setup
