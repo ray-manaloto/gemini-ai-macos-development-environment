@@ -71,3 +71,13 @@ fi
 [tasks."skills:list"]
 description = "List all installed project skills"
 run = "bunx skills list"
+
+[tools]
+"npm:@ai-sdk/anthropic" = "latest"
+"npm:@playwright/mcp" = "latest"
+"npm:@playwright/test" = "latest"
+"npm:ai" = "latest"
+"npm:just-bash" = "latest"
+"npm:opensrc" = "latest"
+"npm:playwright" = "latest"
+"npm:specli" = "latest"

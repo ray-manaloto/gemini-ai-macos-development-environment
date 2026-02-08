@@ -101,3 +101,10 @@ temp/
 
 # mise local config (user-specific)
 .mise.local.toml
+
+# Agent skills directories (installed per-project, symlinked from .agents/skills/)
+.agent/
+.augment/
+.cursor/skills/
+.kiro/
+.windsurf/
