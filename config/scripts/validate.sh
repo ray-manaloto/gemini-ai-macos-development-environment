@@ -8,6 +8,7 @@
 # Options:
 #   --strict    Treat warnings as failures (exit 1 on any warning)
 #   --quiet     Only output summary
+#   --autofix   Run autofix to migrate non-mise installs
 # =============================================================================
 
 set -euo pipefail
@@ -15,12 +16,18 @@ set -euo pipefail
 # Parse arguments
 STRICT_MODE=false
 QUIET_MODE=false
+AUTOFIX_MODE=false
 for arg in "$@"; do
   case "$arg" in
     --strict) STRICT_MODE=true ;;
     --quiet) QUIET_MODE=true ;;
+    --autofix) AUTOFIX_MODE=true ;;
   esac
 done
+
+# Resolve script root for auxiliary scripts
+PROJECT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
+SCRIPT_ROOT="${DEV_ENV_ROOT:-$PROJECT_ROOT}"
 
 # Colors for output
 RED='\033[0;31m'
@@ -40,28 +47,58 @@ REQUIRED_WARN=0
 # -----------------------------------------------------------------------------
 
 check_pass() {
-    echo -e "${GREEN}✅ PASS${NC}: $1"
+    local message="$1"
+    local detail="${2:-}"
+    if [ -n "$detail" ]; then
+        echo -e "${GREEN}✅ PASS${NC}: $message - $detail"
+    else
+        echo -e "${GREEN}✅ PASS${NC}: $message"
+    fi
     PASS=$((PASS + 1))
 }
 
 check_warn() {
-    echo -e "${YELLOW}⚠️  WARN${NC}: $1"
+    local message="$1"
+    local detail="${2:-}"
+    if [ -n "$detail" ]; then
+        echo -e "${YELLOW}⚠️  WARN${NC}: $message - $detail"
+    else
+        echo -e "${YELLOW}⚠️  WARN${NC}: $message"
+    fi
     WARN=$((WARN + 1))
 }
 
 check_warn_required() {
-    echo -e "${YELLOW}⚠️  WARN${NC}: $1"
+    local message="$1"
+    local detail="${2:-}"
+    if [ -n "$detail" ]; then
+        echo -e "${YELLOW}⚠️  WARN${NC}: $message - $detail"
+    else
+        echo -e "${YELLOW}⚠️  WARN${NC}: $message"
+    fi
     WARN=$((WARN + 1))
     REQUIRED_WARN=$((REQUIRED_WARN + 1))
 }
 
 check_fail() {
-    echo -e "${RED}❌ FAIL${NC}: $1"
+    local message="$1"
+    local detail="${2:-}"
+    if [ -n "$detail" ]; then
+        echo -e "${RED}❌ FAIL${NC}: $message - $detail"
+    else
+        echo -e "${RED}❌ FAIL${NC}: $message"
+    fi
     FAIL=$((FAIL + 1))
 }
 
 check_info() {
-    echo -e "${BLUE}ℹ️  INFO${NC}: $1"
+    local message="$1"
+    local detail="${2:-}"
+    if [ -n "$detail" ]; then
+        echo -e "${BLUE}ℹ️  INFO${NC}: $message - $detail"
+    else
+        echo -e "${BLUE}ℹ️  INFO${NC}: $message"
+    fi
 }
 
 section() {
@@ -307,6 +344,30 @@ else
     check_warn "hadolint" "Not installed"
 fi
 
+if command -v biome &> /dev/null; then
+    BIOME_PATH=$(mise which biome 2>/dev/null || command -v biome)
+    check_pass "biome" "$BIOME_PATH"
+else
+    check_warn "biome" "Not installed"
+fi
+
+# Rust native linters/formatters
+if command -v rustup &> /dev/null; then
+    RUST_COMPONENTS=$(rustup component list --installed 2>/dev/null || echo "")
+    if echo "$RUST_COMPONENTS" | grep -q "clippy"; then
+        check_pass "rust clippy" "Installed via rustup"
+    else
+        check_warn "rust clippy" "Missing (rustup component add clippy)"
+    fi
+    if echo "$RUST_COMPONENTS" | grep -q "rustfmt"; then
+        check_pass "rustfmt" "Installed via rustup"
+    else
+        check_warn "rustfmt" "Missing (rustup component add rustfmt)"
+    fi
+else
+    check_info "rustup not installed (optional)"
+fi
+
 # --- Dotfile Management ---
 section "Dotfile Management"
 
@@ -346,9 +407,9 @@ if command -v mise &> /dev/null && command -v python3 &> /dev/null; then
     fi
 
     if [ -f "$HOME/.config/mise/config.toml" ]; then
-        check_pass "Mise global config" "~/.config/mise/config.toml exists"
+        check_pass "Mise global config" "$HOME/.config/mise/config.toml exists"
     else
-        check_warn_required "Mise global config" "Missing ~/.config/mise/config.toml"
+        check_warn_required "Mise global config" "Missing $HOME/.config/mise/config.toml"
     fi
 else
     check_warn "Mise global env" "mise/python3 not available"
@@ -384,6 +445,78 @@ if command -v mise &> /dev/null && command -v python3 &> /dev/null; then
     fi
 else
     check_warn "Secrets validation" "mise/python3 not available"
+fi
+
+section "Autofix Migration"
+
+AUTOFIX_SCRIPT="$SCRIPT_ROOT/config/scripts/autofix.sh"
+if [ -f "$AUTOFIX_SCRIPT" ] && command -v python3 &> /dev/null; then
+    AUTOFIX_TMP=$(mktemp)
+    if bash "$AUTOFIX_SCRIPT" status --json > "$AUTOFIX_TMP" 2>/dev/null; then
+        if [ -s "$AUTOFIX_TMP" ]; then
+            AUTOFIX_ISSUES=$(python3 - "$AUTOFIX_TMP" <<'PY'
+import json
+import sys
+
+path = sys.argv[1]
+with open(path, "r", encoding="utf-8") as f:
+    raw = f.read().strip()
+if not raw:
+    sys.exit(0)
+try:
+    data = json.loads(raw)
+except Exception:
+    sys.exit(0)
+print(data.get("issues_found", 0))
+PY
+            )
+        fi
+    fi
+    rm -f "$AUTOFIX_TMP"
+
+    if [ -z "${AUTOFIX_ISSUES:-}" ]; then
+        check_warn "Autofix" "No JSON output from autofix status"
+    else
+
+        if [ "$AUTOFIX_ISSUES" -gt 0 ]; then
+            check_warn_required "Autofix issues detected: $AUTOFIX_ISSUES" "Run: mise run autofix:fix"
+            if [ "$AUTOFIX_MODE" = "true" ]; then
+                bash "$AUTOFIX_SCRIPT" fix 2>/dev/null || true
+                POST_TMP=$(mktemp)
+                if bash "$AUTOFIX_SCRIPT" status --json > "$POST_TMP" 2>/dev/null; then
+                    if [ -s "$POST_TMP" ]; then
+                        POST_ISSUES=$(python3 - "$POST_TMP" <<'PY'
+import json
+import sys
+
+path = sys.argv[1]
+with open(path, "r", encoding="utf-8") as f:
+    raw = f.read().strip()
+if not raw:
+    sys.exit(0)
+try:
+    data = json.loads(raw)
+except Exception:
+    sys.exit(0)
+print(data.get("issues_found", 0))
+PY
+                        )
+                    fi
+                fi
+                rm -f "$POST_TMP"
+
+                if [ -n "${POST_ISSUES:-}" ] && [ "$POST_ISSUES" -eq 0 ]; then
+                    check_pass "Autofix completed" "All migration issues resolved"
+                else
+                    check_warn_required "Autofix remaining issues: ${POST_ISSUES:-unknown}" "Re-run: mise run autofix:fix"
+                fi
+            fi
+        else
+            check_pass "Autofix" "No migration issues detected"
+        fi
+    fi
+else
+    check_warn "Autofix" "autofix.sh or python3 not available"
 fi
 
 section "Containers (Optional)"

@@ -112,6 +112,7 @@ All tools→~/.local, zero system mods.
 [settings]
 experimental = true
 not_found_auto_install = true
+lockfile = true
 [settings.npm]
 bun = true
 package_manager = "bun"
@@ -125,6 +126,12 @@ npm = "bun"
 npx = "bunx"
 pip = "uv pip"
 pip3 = "uv pip"
+```
+
+### Lockfile Workflow
+```bash
+mise install
+mise lock
 ```
 
 ---
@@ -179,10 +186,18 @@ mise run help|Manual
 mise run setup:auto|Platform detect + setup
 mise run validate:rules|Anti-pattern check
 
+### Environment Lifecycle
+mise run env:start|Start environment services
+mise run env:stop|Stop environment services
+mise run env:restart|Restart environment services
+mise run env:update|Update all tools
+mise run env:status|Show environment status
+
 ### Tool Management
 mise run tools:status|All tools/settings
 mise run tools:install|Install all
-mise run tools:update|Update all
+mise run tools:update|Update all (bump to latest)
+mise run tools:bump|Bump versions to latest
 mise run tools:doctor|Full health
 
 ### Validation
@@ -568,9 +583,10 @@ AGENTS.md = horizontal knowledge (always loaded). Skills = vertical action workf
 2. Bun over npm - 3x faster, native TS (settings.npm.package_manager = bun)
 3. Uv over pip - 10x faster, deterministic (settings.python.uv_venv_auto = true, settings.pipx.uvx = true)
 4. Precompiled Python - faster installs (settings.python.compile = false)
-5. Native linters - aqua binaries (shellcheck/hadolint), bunx tsc, rustup components (rustfmt/clippy)
-6. BATS for tests - Native bash
-7. Chezmoi over stow - Templates, encryption
+5. Native linters - aqua binaries (shellcheck/hadolint), bunx biome/tsc, rustup components (rustfmt/clippy)
+6. Prefer language-native toolchains for analyzers (cargo/rustup, bunx, uvx)
+7. BATS for tests - Native bash
+8. Chezmoi over stow - Templates, encryption
 
 ### Dependencies
 macOS 14+ (Sonoma)|Xcode CLT|~10GB disk

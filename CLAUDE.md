@@ -57,10 +57,12 @@ The entire stack lives in user-space (`~/.local`) with **zero system modificatio
 2. **Bun replaces npm** - Forced via `settings.npm.package_manager = "bun"`
 3. **Uv replaces pip** - Forced via `settings.python.uv_venv_auto = true` and `settings.pipx.uvx = true`
 4. **Precompiled Python** - Forced via `settings.python.compile = false`
-5. **Native linters** - Prefer aqua binaries (shellcheck/hadolint), bunx tsc, rustup components (rustfmt/clippy)
-4. **Pixi handles binary/system dependencies** - Python, FFmpeg, CUDA, etc.
-5. **Pitchfork manages daemons** - Auto-start/stop services per project
-6. **User-space only** - No sudo, no Homebrew (except for GUI apps via mise)
+5. **Lockfiles enabled** - `settings.lockfile = true` (reproducible installs)
+5. **Native linters** - Prefer aqua binaries (shellcheck/hadolint), bunx biome/tsc, rustup components (rustfmt/clippy)
+6. **Native analyzers** - Prefer language toolchains (cargo/rustup, bunx, uvx)
+7. **Pixi handles binary/system dependencies** - Python, FFmpeg, CUDA, etc.
+8. **Pitchfork manages daemons** - Auto-start/stop services per project
+9. **User-space only** - No sudo, no Homebrew (except for GUI apps via mise)
 
 **Operational rule:** resolve all warnings/errors from `mise run validate` before proceeding.
 
@@ -133,9 +135,10 @@ Mise automatically:
 [settings]
 experimental = true              # Required for MCP
 not_found_auto_install = true   # Auto-install missing tools
+lockfile = true                  # Enable mise.lock
 
 [settings.npm]
-package_manager = "npm"          # npm backend uses npm (NOT Bun)
+package_manager = "bun"          # Use bun for npm packages
 
 [settings.pipx]
 uvx = true                      # Use uvx instead of pipx
@@ -157,6 +160,12 @@ python = "latest"               # Python runtime
 [tasks."task-name"]
 description = "Description"
 run = "#!/bin/bash\n# Task script"
+```
+
+**Lockfile Workflow**:
+```bash
+mise install
+mise lock
 ```
 
 ### Important: npm vs Bun

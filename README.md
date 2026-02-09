@@ -33,7 +33,10 @@ This project is optimized for AI/LLM agents. See:
 - **Tool Hierarchy**: Mise > Bun > Pixi > Uv
 - **Critical Rule**: NEVER use sudo, NEVER install globally with npm/pip
 - **All tools managed via**: `mise use -g <tool>`
-- **Native linters**: aqua binaries (shellcheck/hadolint), bunx tsc, rustup components (rustfmt/clippy)
+- **Version policy**: Use fuzzy versions + `mise.lock` and bump via `mise run tools:update` (or `tools:bump`)
+- **Lockfile**: run `mise lock` after upgrades to refresh `mise.lock`
+- **Native linters**: aqua binaries (shellcheck/hadolint), bunx biome/tsc, rustup components (rustfmt/clippy)
+- **Native analyzers**: prefer language toolchains (cargo/rustup, bunx, uvx)
 - **Always resolve warnings**: `mise run validate` must be clean
 
 ## Quick Start
@@ -70,6 +73,15 @@ mise run hooks:install           # Install lefthook-managed pre-commit hooks
 mise doctor                      # Check mise health
 mise run validate                # Run health check
 bats tests/                      # Run test suite
+```
+
+### 6. Environment Lifecycle (Mise Tasks)
+```bash
+mise run env:start
+mise run env:stop
+mise run env:restart
+mise run env:update
+mise run env:status
 ```
 
 ### What Gets Installed

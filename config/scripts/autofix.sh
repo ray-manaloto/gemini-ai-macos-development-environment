@@ -47,7 +47,7 @@ init_backup_dir() {
     fi
 }
 MISE_MANAGED_TOOLS="bun pixi chezmoi usage pkl node starship ripgrep fd zoxide pitchfork opencode claude gh jq yq bat eza delta fzf"
-BOOTSTRAP_TOOLS="mise uv uvx"  # Tools that should remain in ~/.local/bin
+BOOTSTRAP_TOOLS="mise uv uvx"
 
 # Counters
 ISSUES_FOUND=0
@@ -75,6 +75,11 @@ for arg in "$@"; do
             ;;
     esac
 done
+
+if $JSON_OUTPUT; then
+    set +e
+    set +o pipefail
+fi
 
 # JSON output buffer
 JSON_ISSUES=()
@@ -218,7 +223,12 @@ detect_npm_global() {
     fi
     
     local global_packages
-    global_packages=$(npm list -g --depth=0 --json 2>/dev/null | jq -r '.dependencies // {} | keys[]' 2>/dev/null || echo "")
+    set +e
+    global_packages=$(npm list -g --depth=0 --json 2>/dev/null || echo "{}")
+    global_packages=$(echo "$global_packages" | jq -r '.dependencies // {} | keys[]' 2>/dev/null || echo "")
+    if ! $JSON_OUTPUT; then
+        set -e
+    fi
     
     if [[ -n "$global_packages" ]]; then
         local found=0
@@ -268,7 +278,12 @@ detect_pip_global() {
     # Check for pip installed packages outside venv
     if command -v pip &>/dev/null && [[ -z "${VIRTUAL_ENV:-}" ]]; then
         local user_packages
-        user_packages=$(pip list --user 2>/dev/null | tail -n +3 | awk '{print $1}' || echo "")
+    set +e
+    user_packages=$(pip list --user 2>/dev/null || true)
+    user_packages=$(echo "$user_packages" | tail -n +3 | awk '{print $1}' || echo "")
+    if ! $JSON_OUTPUT; then
+        set -e
+    fi
         
         if [[ -n "$user_packages" ]]; then
             local found=0
@@ -334,12 +349,14 @@ detect_brew_cli() {
 detect_path_issues() {
     log_section "PATH Configuration"
     
-    # Check if mise shims are in PATH
+    # Check if mise shims or installs are in PATH
     if echo "$PATH" | grep -q 'mise/shims'; then
         log_ok "Mise shims in PATH"
+    elif echo "$PATH" | grep -q 'mise/installs'; then
+        log_ok "Mise activation mode in PATH"
     else
-        log_issue "PATH" "mise" "Mise shims not in PATH" "Add 'eval \"\$(mise activate bash)\"' to shell config"
-        
+        log_issue "PATH" "mise" "Mise not in PATH" "Add 'eval \"\$(mise activate bash)\"' to shell config"
+
         if [[ "$MODE" == "fix" ]]; then
             # Can't auto-fix PATH - needs shell config change
             echo -e "${YELLOW}    Manual fix required: Add mise activation to your shell config${NC}"
@@ -352,7 +369,7 @@ detect_path_issues() {
     if [[ -n "$path_order" ]]; then
         if echo "$path_order" | grep -q 'local/bin' && echo "$path_order" | head -1 | grep -q 'local/bin'; then
             if echo "$path_order" | grep -q 'mise/shims'; then
-                log_issue "PATH_ORDER" "PATH" "~/.local/bin comes before mise shims" "Reorder PATH in shell config"
+                log_issue "PATH_ORDER" "PATH" "$HOME/.local/bin comes before mise shims" "Reorder PATH in shell config"
             fi
         fi
     fi

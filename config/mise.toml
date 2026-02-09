@@ -6,6 +6,7 @@
 experimental = true
 not_found_auto_install = true
 status = { missing_tools = "if_other_versions_installed" }
+lockfile = true
 
 [settings.npm]
 bun = true
@@ -64,6 +65,7 @@ yq = "latest"
 # --- Code Quality ---
 "aqua:koalaman/shellcheck" = "latest"
 "aqua:hadolint/hadolint" = "latest"
+"npm:@biomejs/biome" = "latest"
 "pipx:pre-commit" = "latest"
 lefthook = "latest"
 
@@ -924,6 +926,12 @@ mise upgrade --bump
 mise reshim
 echo "Done. Updated tools:"
 mise ls --current
+"""
+
+[tasks."tools:bump"]
+description = "Bump tool versions to latest (alias of tools:update)"
+run = """
+mise run tools:update
 """
 
 [tasks."tools:uninstall"]
@@ -1791,6 +1799,12 @@ description = "Restart environment"
 depends = ["env:stop", "env:start"]
 run = """
 echo "Environment restarted."
+"""
+
+[tasks."env:update"]
+description = "Update all tools"
+run = """
+mise run tools:update
 """
 
 # =============================================================================
