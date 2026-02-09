@@ -40,14 +40,12 @@ bunx oh-my-opencode install
 bunx oh-my-opencode install --no-tui \
     --claude=max20 \
     --openai=yes \
-    --gemini=yes \
     --copilot=no
 ```
 
 **Provider flags:**
 - `--claude=<yes|no|max20>` - Claude Pro/Max subscription
 - `--openai=<yes|no>` - OpenAI/ChatGPT Plus
-- `--gemini=<yes|no>` - Google Gemini
 - `--copilot=<yes|no>` - GitHub Copilot (fallback)
 - `--opencode-zen=<yes|no>` - OpenCode Zen
 - `--zai-coding-plan=<yes|no>` - Z.ai Coding Plan
@@ -149,7 +147,7 @@ oh-my-opencode provides 10 specialized agents:
 | **Oracle** | `openai/gpt-5.2` | Architecture decisions, code review (read-only) |
 | **Librarian** | `opencode/big-pickle` | Multi-repo analysis, documentation lookup |
 | **Explore** | `opencode/gpt-5-nano` | Fast codebase exploration, contextual grep |
-| **Multimodal-Looker** | `google/gemini-3-flash` | Visual content (PDFs, images, diagrams) |
+| **Multimodal-Looker** | `anthropic/claude-sonnet-4-5` | Visual content (PDFs, images, diagrams) |
 
 ### Planning Agents
 
@@ -362,6 +360,17 @@ Config location: `~/.config/opencode/oh-my-opencode.json`
 }
 ```
 
+### Playwright Test Agents (Planner/Generator/Healer)
+
+Playwright provides built-in test agents for OpenCode and Claude Code. Initialize them with:
+
+```bash
+npx playwright init-agents --loop=opencode
+npx playwright init-agents --loop=claude
+```
+
+Re-run after Playwright upgrades to keep agent definitions current.
+
 ### Disable Features
 
 ```json
@@ -370,6 +379,22 @@ Config location: `~/.config/opencode/oh-my-opencode.json`
   "disabled_skills": ["playwright"]
 }
 ```
+
+### Model & Provider Validation
+
+Use these to ensure model IDs and credentials are valid for your account:
+
+```bash
+# From your shell
+opencode models         # Lists available models for configured providers
+
+# Inside an OpenCode session
+/connect                # Authenticate to a provider (Anthropic/OpenAI/GitHub, etc.)
+/models                 # List available models for your account
+```
+
+**Tip:** If you see `model_not_found`, pick a model shown in `/models` or `opencode models`.
+This project avoids unsupported IDs like `openai/gpt-5.3-codex` and uses `openai/gpt-5.2` instead.
 
 ---
 

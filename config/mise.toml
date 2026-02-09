@@ -6,14 +6,24 @@
 experimental = true
 not_found_auto_install = true
 status = { missing_tools = "if_other_versions_installed" }
+lockfile = true
 
 [settings.npm]
-# Bun backend: 3x faster installs. Requires node for version resolution.
-# https://mise.jdx.dev/dev-tools/backends/npm.html
+bun = true
 package_manager = "bun"
 
+[settings.pipx]
+uvx = true
+
 [settings.python]
+compile = false
 uv_venv_auto = true
+
+[shell_alias]
+npm = "bun"
+npx = "bunx"
+pip = "uv pip"
+pip3 = "uv pip"
 
 [tools]
 # Strict Hierarchy: Mise > Bun > Pixi > Uv
@@ -53,8 +63,9 @@ jq = "latest"
 yq = "latest"
 
 # --- Code Quality ---
-shellcheck = "latest"
-hadolint = "latest"
+"aqua:koalaman/shellcheck" = "latest"
+"aqua:hadolint/hadolint" = "latest"
+"npm:@biomejs/biome" = "latest"
 "pipx:pre-commit" = "latest"
 lefthook = "latest"
 
@@ -78,8 +89,6 @@ github-cli = "latest"
 "npm:bats" = "latest"
 "ubi:charmbracelet/gum" = "latest"
 
-# --- AI Agents ---
-"npm:@google/gemini-cli" = "latest"
 "npm:@ralph-orchestrator/ralph-cli" = "latest"
 "npm:@anthropic-ai/claude-code" = "latest"
 "npm:@openai/codex" = "latest"
@@ -89,12 +98,59 @@ github-cli = "latest"
 
 [tasks.dashboard]
 description = "Launch Unified TUI"
-dir = "{{config_root}}"
+dir = "$DEV_ENV_ROOT"
 run = "pixi run python config/scripts/dashboard.py"
 
 [tasks.validate]
 description = "Validate environment health"
-run = "sh {{config_root}}/config/scripts/validate.sh"
+run = "sh $DEV_ENV_ROOT/config/scripts/validate.sh"
+
+[tasks."validate:strict"]
+description = "Validate with warnings as errors"
+run = "sh $DEV_ENV_ROOT/config/scripts/validate.sh --strict"
+
+[tasks."validate:quick"]
+description = "Quick health check (core tools only)"
+run = """
+echo "=== Quick Health Check ==="
+ERRORS=0
+
+if ! command -v mise &> /dev/null; then
+  echo "FAIL: mise not installed"
+  ERRORS=1
+else
+  echo "OK: mise $(mise --version | head -c 20)"
+fi
+
+if ! command -v bun &> /dev/null; then
+  echo "FAIL: bun not installed"
+  ERRORS=1
+else
+  echo "OK: bun $(bun --version)"
+fi
+
+if ! command -v uv &> /dev/null; then
+  echo "FAIL: uv not installed"
+  ERRORS=1
+else
+  echo "OK: uv $(uv --version 2>&1 | head -1)"
+fi
+
+if echo "$PATH" | grep -q "mise"; then
+  echo "OK: mise in PATH"
+else
+  echo "WARN: mise shims not in PATH"
+fi
+
+if [ $ERRORS -gt 0 ]; then
+  echo ""
+  echo "FAILED: $ERRORS critical issue(s)"
+  exit 1
+else
+  echo ""
+  echo "PASSED: Core tools healthy"
+fi
+"""
 
 [tasks."hooks:install"]
 description = "Install lefthook-managed git hooks"
@@ -118,7 +174,7 @@ run = "find . -name '*.sh' -not -path '*/node_modules/*' -not -path '*/.git/*' -
 
 [tasks.help]
 description = "Show System Manual"
-run = "gum format --theme=pink < {{config_root}}/MANUAL.md"
+run = "gum format --theme=pink < $DEV_ENV_ROOT/MANUAL.md"
 
 [tasks."agent:check"]
 description = "Verify AWS/cloud credentials are configured"
@@ -153,7 +209,7 @@ depends = ["agent:check"]
 run = """
 CLUSTER="${CLUSTER:-ai-agent}"
 echo "Launching cloud agent: $CLUSTER"
-sky launch -c "$CLUSTER" {{config_root}}/templates/agent.yaml --detach
+sky launch -c "$CLUSTER" $DEV_ENV_ROOT/templates/agent.yaml --detach
 """
 
 [tasks."agent:down"]
@@ -439,11 +495,11 @@ run = "gh extension install github/gh-copilot --force"
 
 [tasks.setup-mac]
 description = "Configure macOS defaults"
-run = "sh {{config_root}}/config/scripts/macos-defaults.sh"
+run = "sh $DEV_ENV_ROOT/config/scripts/macos-defaults.sh"
 
 [tasks.setup-mcp]
 description = "Configure mise MCP"
-run = "sh {{config_root}}/config/scripts/setup-mcp.sh"
+run = "sh $DEV_ENV_ROOT/config/scripts/setup-mcp.sh"
 
 # =============================================================================
 # SwiftBar Menu Bar Tasks
@@ -872,6 +928,12 @@ echo "Done. Updated tools:"
 mise ls --current
 """
 
+[tasks."tools:bump"]
+description = "Bump tool versions to latest (alias of tools:update)"
+run = """
+mise run tools:update
+"""
+
 [tasks."tools:uninstall"]
 description = "Uninstall a specific tool (usage: mise run tools:uninstall -- <tool>)"
 run = """
@@ -970,24 +1032,10 @@ else
 fi
 echo ""
 
-# Gemini CLI
-echo "Gemini CLI (gemini):"
-if command -v gemini &> /dev/null; then
-  if [ -n "$GEMINI_API_KEY" ] || [ -n "$GOOGLE_API_KEY" ]; then
-    echo "  ✓ API key set (env)"
-  else
-    echo "  ✗ Not authenticated"
-    echo "    Run: mise run auth:gemini"
-  fi
-else
-  echo "  - Not installed"
-fi
-echo ""
-
 # OpenCode
 echo "OpenCode (opencode):"
 if command -v opencode &> /dev/null; then
-  if [ -n "$ANTHROPIC_API_KEY" ] || [ -n "$OPENAI_API_KEY" ] || [ -n "$GOOGLE_API_KEY" ]; then
+  if [ -n "$ANTHROPIC_API_KEY" ] || [ -n "$OPENAI_API_KEY" ]; then
     echo "  ✓ Provider API key set (env)"
   elif [ -f "$HOME/.config/opencode/config.json" ]; then
     echo "  ✓ Authenticated (stored config)"
@@ -1123,46 +1171,6 @@ echo "Starting interactive authentication..."
 codex login
 """
 
-[tasks."auth:gemini"]
-description = "Authenticate Gemini CLI"
-run = """
-echo "=== Gemini CLI Authentication ==="
-echo ""
-
-if ! command -v gemini &> /dev/null; then
-  echo "Gemini CLI not installed. Installing..."
-  mise install "npm:@google/gemini-cli"
-  mise reshim
-fi
-
-if [ -n "$GEMINI_API_KEY" ]; then
-  echo "GEMINI_API_KEY environment variable is set."
-  echo "Gemini CLI will use this key automatically."
-  exit 0
-fi
-
-if [ -n "$GOOGLE_API_KEY" ]; then
-  echo "GOOGLE_API_KEY environment variable is set."
-  echo "Gemini CLI will use this key automatically."
-  exit 0
-fi
-
-echo "Gemini CLI requires an API key from Google AI Studio."
-echo ""
-echo "1. Get your API key from: https://aistudio.google.com/apikey"
-echo "2. Set it using one of these methods:"
-echo ""
-echo "   Option A: Environment variable"
-echo "   export GEMINI_API_KEY='your-api-key'"
-echo ""
-echo "   Option B: Mise secrets (recommended)"
-echo "   mise secrets set GEMINI_API_KEY='your-api-key'"
-echo ""
-echo "   Option C: 1Password integration"
-echo "   Add to mise.toml [env]: GEMINI_API_KEY = \"op://Private/Google AI/api_key\""
-echo ""
-"""
-
 [tasks."auth:opencode"]
 description = "Authenticate OpenCode CLI"
 run = """
@@ -1179,8 +1187,6 @@ fi
 HAS_KEY=0
 [ -n "$ANTHROPIC_API_KEY" ] && HAS_KEY=1 && echo "✓ ANTHROPIC_API_KEY is set"
 [ -n "$OPENAI_API_KEY" ] && HAS_KEY=1 && echo "✓ OPENAI_API_KEY is set"
-[ -n "$GOOGLE_API_KEY" ] && HAS_KEY=1 && echo "✓ GOOGLE_API_KEY is set"
-[ -n "$GEMINI_API_KEY" ] && HAS_KEY=1 && echo "✓ GEMINI_API_KEY is set"
 
 if [ "$HAS_KEY" = "1" ]; then
   echo ""
@@ -1192,7 +1198,6 @@ echo "OpenCode supports multiple providers. Set one or more API keys:"
 echo ""
 echo "  Anthropic:  export ANTHROPIC_API_KEY='sk-ant-...'"
 echo "  OpenAI:     export OPENAI_API_KEY='sk-proj-...'"
-echo "  Google:     export GOOGLE_API_KEY='...'"
 echo ""
 echo "Or run interactive setup:"
 opencode auth
@@ -1266,7 +1271,6 @@ TOOLS=""
 command -v gh &> /dev/null && TOOLS="$TOOLS gh"
 command -v claude &> /dev/null && TOOLS="$TOOLS claude"
 command -v codex &> /dev/null && TOOLS="$TOOLS codex"
-command -v gemini &> /dev/null && TOOLS="$TOOLS gemini"
 command -v opencode &> /dev/null && TOOLS="$TOOLS opencode"
 command -v aws &> /dev/null && TOOLS="$TOOLS aws"
 command -v op &> /dev/null && TOOLS="$TOOLS op"
@@ -1287,7 +1291,6 @@ echo "To configure individual tools, run:"
 echo "  mise run auth:gh       # GitHub CLI"
 echo "  mise run auth:claude   # Claude Code"
 echo "  mise run auth:codex    # OpenAI Codex"
-echo "  mise run auth:gemini   # Gemini CLI"
 echo "  mise run auth:opencode # OpenCode"
 echo "  mise run auth:aws      # AWS CLI"
 echo "  mise run auth:1password # 1Password CLI"
@@ -1426,15 +1429,15 @@ echo "=== Checking Project Rules ==="
 ERRORS=0
 
 echo "Checking for hardcoded paths in mise.toml..."
-if grep -q '~/.config/dev-env' "{{config_root}}/config/mise.toml" 2>/dev/null; then
-  echo "  ERROR: Found hardcoded ~/.config/dev-env - use {{config_root}} instead"
+if grep -q '~/.config/dev-env' "$DEV_ENV_ROOT/config/mise.toml" 2>/dev/null; then
+  echo "  ERROR: Found hardcoded ~/.config/dev-env - use $DEV_ENV_ROOT instead"
   ERRORS=$((ERRORS + 1))
 else
   echo "  OK: No hardcoded paths"
 fi
 
 echo "Checking for sudo in scripts..."
-if grep -rn 'sudo ' "{{config_root}}/config/scripts/" 2>/dev/null | grep -v '#'; then
+if grep -rn 'sudo ' "$DEV_ENV_ROOT/config/scripts/" 2>/dev/null | grep -v '#'; then
   echo "  ERROR: Found sudo usage - all tools should be user-space"
   ERRORS=$((ERRORS + 1))
 else
@@ -1442,7 +1445,7 @@ else
 fi
 
 echo "Checking for global npm/pip installs in scripts..."
-if grep -n -e 'npm install -g' -e 'npm i -g' -e 'pip install ' "{{config_root}}/setup.sh" "{{config_root}}/config/scripts/"*.sh 2>/dev/null | grep -v 'mise' | grep -v '#'; then
+if grep -n -e 'npm install -g' -e 'npm i -g' -e 'pip install ' "$DEV_ENV_ROOT/setup.sh" "$DEV_ENV_ROOT/config/scripts/"*.sh 2>/dev/null | grep -v 'mise' | grep -v '#'; then
   echo "  ERROR: Found direct npm/pip installs - use mise instead"
   ERRORS=$((ERRORS + 1))
 else
@@ -1450,7 +1453,7 @@ else
 fi
 
 echo "Checking for secrets in config files..."
-if grep -n -e 'sk-ant-' -e 'sk-proj-' -e 'ghp_' -e 'gho_' "{{config_root}}/config/mise.toml" "{{config_root}}/.env" 2>/dev/null | grep -v '.example' | grep -v '#'; then
+if grep -n -e 'sk-ant-' -e 'sk-proj-' -e 'ghp_' -e 'gho_' "$DEV_ENV_ROOT/config/mise.toml" "$DEV_ENV_ROOT/.env" 2>/dev/null | grep -v '.example' | grep -v '#'; then
   echo "  ERROR: Potential secrets found in tracked files"
   ERRORS=$((ERRORS + 1))
 else
@@ -1515,17 +1518,17 @@ if [ "$(uname)" != "Darwin" ]; then
 fi
 
 # Configure macOS defaults (if script exists)
-if [ -f "{{config_root}}/config/scripts/macos-defaults.sh" ]; then
-  sh "{{config_root}}/config/scripts/macos-defaults.sh"
+if [ -f "$DEV_ENV_ROOT/config/scripts/macos-defaults.sh" ]; then
+  sh "$DEV_ENV_ROOT/config/scripts/macos-defaults.sh"
 fi
 
 # Setup starship config
 mkdir -p ~/.config
-cp "{{config_root}}/config/starship.toml" ~/.config/starship.toml 2>/dev/null || true
+cp "$DEV_ENV_ROOT/config/starship.toml" ~/.config/starship.toml 2>/dev/null || true
 
 # Initialize pixi for dashboard
-if [ -f "{{config_root}}/pixi.toml" ]; then
-  cd "{{config_root}}" && pixi install
+if [ -f "$DEV_ENV_ROOT/pixi.toml" ]; then
+  cd "$DEV_ENV_ROOT" && pixi install
 fi
 
 echo "macOS setup complete."
@@ -1547,7 +1550,7 @@ mise trust
 
 # Copy starship config
 mkdir -p ~/.config
-cp "{{config_root}}/config/starship.toml" ~/.config/starship.toml 2>/dev/null || true
+cp "$DEV_ENV_ROOT/config/starship.toml" ~/.config/starship.toml 2>/dev/null || true
 
 echo "Container setup complete."
 """
@@ -1565,7 +1568,7 @@ fi
 
 # Copy starship config
 mkdir -p ~/.config
-cp "{{config_root}}/config/starship.toml" ~/.config/starship.toml 2>/dev/null || true
+cp "$DEV_ENV_ROOT/config/starship.toml" ~/.config/starship.toml 2>/dev/null || true
 
 echo "Linux setup complete."
 """
@@ -1591,6 +1594,8 @@ fi
 
 [env]
 EDITOR = "zed --wait"
+DEV_ENV_ROOT = "{{env.HOME}}/.config/dev-env"
+_.file = { path = "~/.config/dev-env/.env.json", redact = true }
 
 # =============================================================================
 # Environment Lifecycle Tasks
@@ -1708,6 +1713,12 @@ echo "For detailed SkyPilot info: mise run agent:status"
 echo "For standalone AWS view: mise run aws:status"
 """
 
+[tasks."secrets:status:redacted"]
+description = "Show secrets status (redacted)"
+run = """
+bash "$HOME/.config/dev-env/config/scripts/secrets-status.sh" --redacted
+"""
+
 [tasks."env:start"]
 description = "Start full environment (SKIP_CLOUD=1 to skip cloud agents)"
 run = """
@@ -1788,6 +1799,12 @@ description = "Restart environment"
 depends = ["env:stop", "env:start"]
 run = """
 echo "Environment restarted."
+"""
+
+[tasks."env:update"]
+description = "Update all tools"
+run = """
+mise run tools:update
 """
 
 # =============================================================================

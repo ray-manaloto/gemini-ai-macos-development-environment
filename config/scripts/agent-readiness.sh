@@ -4,11 +4,11 @@
 # God-Tier macOS Development Environment
 # =============================================================================
 # Validates:
-# - AI CLI tools (claude, gemini, opencode, gh)
+# - AI CLI tools (claude, opencode, gh)
 # - Authentication status for each tool
 # - oh-my-opencode configuration
 # - MCP server configurations
-# - Agent config directories (.claude, .gemini, .cursor, .opencode)
+# - Agent config directories (.claude, .cursor, .opencode)
 # - API keys availability
 # - Project-level agent configs
 #
@@ -146,12 +146,6 @@ check_ai_cli_tools() {
         log_warn "claude" "Not installed (optional)" "mise use -g claude-code"
     fi
     
-    if command -v gemini &>/dev/null; then
-        log_pass "gemini" "Installed"
-    else
-        log_warn "gemini" "Not installed (optional)" "mise use -g \"npm:@anthropic-ai/claude-code\""
-    fi
-    
     if command -v gh &>/dev/null; then
         local ver
         ver=$(gh --version 2>/dev/null | head -1 || echo "unknown")
@@ -172,24 +166,37 @@ check_authentication() {
         fi
     fi
     
-    if [[ -n "${ANTHROPIC_API_KEY:-}" ]]; then
-        log_pass "ANTHROPIC_API_KEY" "Set in environment"
-    elif [[ -f ~/.config/claude/credentials.json ]]; then
-        log_pass "ANTHROPIC_API_KEY" "Credentials file exists"
-    else
-        log_warn "ANTHROPIC_API_KEY" "Not found" "Set ANTHROPIC_API_KEY or run 'claude auth'"
+    if [[ -f ~/.config/claude/credentials.json ]]; then
+        log_pass "ANTHROPIC_API_KEY" "Claude credentials file exists"
     fi
-    
-    if [[ -n "${OPENAI_API_KEY:-}" ]]; then
-        log_pass "OPENAI_API_KEY" "Set in environment"
-    else
-        log_warn "OPENAI_API_KEY" "Not found (needed for GPT models)" "Set OPENAI_API_KEY"
+
+    if [[ -f "$HOME/.config/opencode/credentials.json" ]]; then
+        log_pass "OPENAI_API_KEY" "OpenCode credentials file exists"
     fi
-    
-    if [[ -n "${GOOGLE_API_KEY:-}" || -n "${GEMINI_API_KEY:-}" ]]; then
-        log_pass "GOOGLE_API_KEY" "Set in environment"
+
+    # Prefer mise-managed secrets (global config)
+    local secrets_script
+    secrets_script="$HOME/.config/dev-env/config/scripts/secrets-status.sh"
+    if [[ ! -f "$secrets_script" ]]; then
+        secrets_script="${DEV_ENV_ROOT:-$(pwd)}/config/scripts/secrets-status.sh"
+    fi
+
+    if [[ -f "$secrets_script" ]]; then
+        while IFS='|' read -r status key source; do
+            case "$status" in
+                OK)
+                    log_pass "$key" "Mise-managed (${source})"
+                    ;;
+                MISSING)
+                    log_warn "$key" "Missing (mise secrets)" "mise set -g --age-encrypt --prompt $key"
+                    ;;
+                INVALID)
+                    log_warn "$key" "Not from mise" "Unset shell value and set via mise"
+                    ;;
+            esac
+        done < <(bash "$secrets_script" 2>/dev/null || true)
     else
-        log_warn "GOOGLE_API_KEY" "Not found (needed for Gemini)" "Set GOOGLE_API_KEY or GEMINI_API_KEY"
+        log_warn "secrets registry" "Missing secrets-status.sh" "Check config/scripts/secrets-status.sh"
     fi
 }
 
@@ -264,7 +271,6 @@ check_agent_configs() {
     local configs=(
         ".claude:Claude Code"
         ".Claude:Claude Code (alt)"
-        ".gemini:Gemini CLI"
         ".cursor:Cursor"
         ".opencode:OpenCode"
     )

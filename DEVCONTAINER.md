@@ -107,7 +107,6 @@ Passed from host to container via `remoteEnv`:
   "remoteEnv": {
     "ANTHROPIC_API_KEY": "${localEnv:ANTHROPIC_API_KEY}",
     "OPENAI_API_KEY": "${localEnv:OPENAI_API_KEY}",
-    "GOOGLE_API_KEY": "${localEnv:GOOGLE_API_KEY}",
     "GITHUB_TOKEN": "${localEnv:GITHUB_TOKEN}"
   }
 }
@@ -375,7 +374,6 @@ Pass API keys via host environment:
 # On host, add to ~/.zshrc or ~/.bashrc
 export ANTHROPIC_API_KEY=sk-ant-...
 export OPENAI_API_KEY=sk-...
-export GOOGLE_API_KEY=...
 ```
 
 These are automatically available in the container.

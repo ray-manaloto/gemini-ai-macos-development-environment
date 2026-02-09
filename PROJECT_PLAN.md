@@ -297,6 +297,26 @@ cd DevEnvManager-Tauri && bun tauri dev
 - [ ] Consider egui + tray-icon as 5th contender (~2 MB binary)
 - [ ] Pick winner and merge to main
 
+### P6 - Future Enhancements (Deferred)
+
+| ID | Story | Status | Description |
+|----|-------|--------|-------------|
+| US-21 | Project MCP Server | 🔜 Planned | Implement `mcp-server.js` for project-specific AI queries (structure, patterns, docs, code analysis). Currently a placeholder in `.mcp.json`. |
+| US-22 | egui + tray-icon menu bar | 🔜 Planned | 5th menu bar implementation contender (~2 MB binary) |
+
+**US-21 Details (Project MCP Server)**:
+- **Current State**: `.mcp.json` defines a "project" server pointing to non-existent `mcp-server.js`
+- **Goal**: Enable AI assistants to query project-specific context beyond what mise MCP provides
+- **Proposed Capabilities**:
+  - `project-structure` - Query directory layout, key files
+  - `patterns-discovery` - Find coding patterns, conventions
+  - `documentation-search` - Search project docs (AGENTS.md, research/, etc.)
+  - `code-analysis` - AST-based code queries
+- **Implementation Options**:
+  1. Node.js with `@modelcontextprotocol/sdk`
+  2. Python with `mcp` package
+  3. Rust with `rmcp` crate (matches mise's implementation)
+
 ---
 
 ## Technical Architecture

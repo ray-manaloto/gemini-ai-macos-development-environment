@@ -11,8 +11,44 @@ pre-commit:
     # Mandatory check 1: Environment health validation
     # Verifies mise, tools, and environment configuration
     validate-environment:
-      run: sh config/scripts/validate.sh
+      run: sh config/scripts/validate.sh --autofix
       fail_text: "Environment validation failed. Fix issues before committing."
+
+    # Lint shell scripts (shellcheck)
+    lint-shell:
+      glob: "**/*.sh"
+      run: bash -lc 'test -z "{staged_files}" || shellcheck -x -S warning {staged_files}'
+      fail_text: "Shellcheck failed. Fix shell script issues."
+
+    # Lint Dockerfiles (hadolint)
+    lint-dockerfile:
+      glob: "**/Dockerfile*"
+      run: bash -lc 'test -z "{staged_files}" || hadolint {staged_files}'
+      fail_text: "Hadolint failed. Fix Dockerfile issues."
+
+    # TypeScript static analysis (tsc)
+    lint-typescript:
+      glob: "**/*.{ts,tsx}"
+      run: bash -lc 'test -z "{staged_files}" || bunx tsc --noEmit'
+      fail_text: "TypeScript check failed. Fix type errors."
+
+    lint-biome:
+      glob: "**/*.{js,jsx,ts,tsx,json,jsonc}"
+      run: bash -lc 'test -z "{staged_files}" || bunx biome check {staged_files}'
+      fail_text: "Biome check failed. Fix formatting/lint errors."
+
+    # Rust static analysis (clippy)
+    lint-rust-tauri:
+      root: DevEnvManager-Tauri/src-tauri
+      glob: "**/*.rs"
+      run: bash -lc 'test -z "{staged_files}" || cargo clippy --quiet'
+      fail_text: "Rust clippy failed in DevEnvManager-Tauri."
+
+    lint-rust-iced:
+      root: DevEnvManager-Iced
+      glob: "**/*.rs"
+      run: bash -lc 'test -z "{staged_files}" || cargo clippy --quiet'
+      fail_text: "Rust clippy failed in DevEnvManager-Iced."
     
     # Mandatory check 2: Repository rules enforcement
     # Detects secrets, syntax errors, type errors, and anti-patterns

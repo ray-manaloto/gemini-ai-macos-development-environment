@@ -54,11 +54,17 @@ The entire stack lives in user-space (`~/.local`) with **zero system modificatio
 ## Core Philosophy
 
 1. **Mise is the orchestrator** - ALL tools are managed through mise
-2. **Bun replaces Node/npm** - Forced via `settings.npm.package_manager = "bun"`
-3. **Uv replaces pip** - Forced via `settings.python.uv_venv_auto = true`
-4. **Pixi handles binary/system dependencies** - Python, FFmpeg, CUDA, etc.
-5. **Pitchfork manages daemons** - Auto-start/stop services per project
-6. **User-space only** - No sudo, no Homebrew (except for GUI apps via mise)
+2. **Bun replaces npm** - Forced via `settings.npm.package_manager = "bun"`
+3. **Uv replaces pip** - Forced via `settings.python.uv_venv_auto = true` and `settings.pipx.uvx = true`
+4. **Precompiled Python** - Forced via `settings.python.compile = false`
+5. **Lockfiles enabled** - `settings.lockfile = true` (reproducible installs)
+5. **Native linters** - Prefer aqua binaries (shellcheck/hadolint), bunx biome/tsc, rustup components (rustfmt/clippy)
+6. **Native analyzers** - Prefer language toolchains (cargo/rustup, bunx, uvx)
+7. **Pixi handles binary/system dependencies** - Python, FFmpeg, CUDA, etc.
+8. **Pitchfork manages daemons** - Auto-start/stop services per project
+9. **User-space only** - No sudo, no Homebrew (except for GUI apps via mise)
+
+**Operational rule:** resolve all warnings/errors from `mise run validate` before proceeding.
 
 ---
 
@@ -129,12 +135,21 @@ Mise automatically:
 [settings]
 experimental = true              # Required for MCP
 not_found_auto_install = true   # Auto-install missing tools
+lockfile = true                  # Enable mise.lock
 
 [settings.npm]
-package_manager = "npm"          # npm backend uses npm (NOT Bun)
+package_manager = "bun"          # Use bun for npm packages
 
+[settings.pipx]
+uvx = true                      # Use uvx instead of pipx
 [settings.python]
-uv_venv_auto = true             # Auto-create uv venvs
+compile = false                 # Use precompiled Python
+uv_venv_auto = true             # Auto-create/source uv venvs
+[shell_alias]
+npm = "bun"
+npx = "bunx"
+pip = "uv pip"
+pip3 = "uv pip"
 
 [tools]
 bun = "latest"                  # JavaScript runtime
@@ -147,13 +162,19 @@ description = "Description"
 run = "#!/bin/bash\n# Task script"
 ```
 
+**Lockfile Workflow**:
+```bash
+mise install
+mise lock
+```
+
 ### Important: npm vs Bun
 
 **Configuration is CORRECT**:
-- `npm.package_manager = "npm"` - npm backend uses npm to install npm packages as tools
+- `npm.package_manager = "bun"` - npm backend uses bun for npm packages
 - `bun = "latest"` - Bun is installed as a JavaScript runtime
 - When you run `bun install` in projects, you're using Bun directly
-- When Mise installs npm packages as tools (e.g., `npm:gemini-cli`), it uses npm
+- When Mise installs npm packages as tools (e.g., `npm:@openai/codex`), it uses npm
 
 This is the recommended configuration for maximum compatibility.
 
@@ -238,8 +259,59 @@ Run these with `mise run <task>`:
 ### AI Agents
 - `claude-code` - Claude Code CLI
 - `opencode-ai` - OpenCode terminal agent
-- `gemini-cli` - Google Gemini CLI
 - `github-cli` - GitHub CLI + Copilot
+
+### MacBook AI Configuration (Local)
+
+**Claude Desktop (macOS):**
+- `~/Library/Application Support/Claude/claude_desktop_config.json`
+
+**Claude Code (CLI):**
+- `~/.claude/settings.json`
+- `~/.claude/mcp_servers.json`
+
+**OpenCode:**
+- `~/.opencode/mcp_servers.json`
+- `~/.config/opencode/oh-my-opencode.json`
+
+**Codex:**
+- `~/.codex/config.json`
+
+**Setup & enforcement:**
+```bash
+mise run setup-mcp   # configures MCP servers (mise + context7 + exa)
+mise run auth:claude
+mise run auth:codex
+mise run auth:opencode
+```
+
+Secrets must be set via Mise only (global config), not shell exports.
+
+**Secrets registry:** `config/secrets.toml` → `[secrets].required`
+```bash
+bash config/scripts/secrets-status.sh
+```
+
+**1Password automation:**
+```bash
+$EDITOR config/secrets.1password.toml
+bash config/scripts/secrets-1password-setup.sh
+```
+
+**1Password bootstrap (create items):**
+```bash
+eval "$(op signin)"
+VAULT=Private bash config/scripts/1password-bootstrap.sh
+```
+
+**Encrypted file option (SOPS + age):**
+```bash
+cp config/secrets.env.json.example .env.json
+sops encrypt -i --age "$(age-keygen -y ~/.config/mise/age.txt)" .env.json
+# Then set in ~/.config/mise/config.toml:
+# [env]
+# _.file = { path = "~/.config/dev-env/.env.json", redact = true }
+```
 
 ### Infrastructure
 - `orbstack` - Docker replacement (<1% CPU)

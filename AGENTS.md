@@ -65,7 +65,7 @@ Configure prompt|config/starship.toml|Modules
 View manual|`mise run help`|MANUAL.md
 Project plan|PROJECT_PLAN.md|Sprints, backlog
 Research docs|research/|15+ documents
-OpenSpec|.claude/,.gemini/,.Claude/,.cursor/|10 commands each
+OpenSpec|.claude/,.Claude/,.cursor/|10 commands each
 Secrets|SECRETS.md|1Password, Infisical
 Migration|MIGRATION.md|nvm, pyenv, asdf
 Cloud agents|SKYPILOT.md|AWS spot instances
@@ -83,10 +83,11 @@ Uninstall|uninstall.sh|--dry-run, --force
 5. NEVER suppress type errors - No `as any`, `@ts-ignore`
 6. ALWAYS use mise tasks - `mise run <task>`
 7. ALWAYS test before commit - `bats tests/`
-8. ALWAYS `mise doctor` after issues
-9. PREFER existing patterns
-10. ASK if uncertain
-11. ALWAYS install CLI via mise - Never `curl|sh`, `npm -g`
+8. ALWAYS resolve warnings/errors - Fix `mise run validate` before proceeding
+9. ALWAYS `mise doctor` after issues
+10. PREFER existing patterns
+11. ASK if uncertain
+12. ALWAYS install CLI via mise - Never `curl|sh`, `npm -g`
    Install:`mise use -g <tool>@latest`|Check:`mise which <tool>`|Fix:`mise run autofix:fix`
 
 ### Autofix + Learnings Workflow (OpenCode/oh-my-opencode)
@@ -111,11 +112,26 @@ All tools→~/.local, zero system mods.
 [settings]
 experimental = true
 not_found_auto_install = true
+lockfile = true
 [settings.npm]
 bun = true
 package_manager = "bun"
+[settings.pipx]
+uvx = true
 [settings.python]
+compile = false
 uv_venv_auto = true
+[shell_alias]
+npm = "bun"
+npx = "bunx"
+pip = "uv pip"
+pip3 = "uv pip"
+```
+
+### Lockfile Workflow
+```bash
+mise install
+mise lock
 ```
 
 ---
@@ -152,7 +168,7 @@ gemini-ai-macos-development-environment/
 │   └── MENUBAR_COMPARISON_REPORT.md     # Metrics + ranking
 ├── openspec/              # Specs, changes
 ├── templates/agent.yaml   # SkyPilot AWS
-├── .claude/,.gemini/,.Claude/,.cursor/  # AI configs
+├── .claude/,.Claude/,.cursor/  # AI configs
 ├── .vscode/,.zed/,.devcontainer/         # IDE configs
 ├── setup.sh               # Bootstrap
 ├── uninstall.sh           # Cleanup
@@ -170,11 +186,23 @@ mise run help|Manual
 mise run setup:auto|Platform detect + setup
 mise run validate:rules|Anti-pattern check
 
+### Environment Lifecycle
+mise run env:start|Start environment services
+mise run env:stop|Stop environment services
+mise run env:restart|Restart environment services
+mise run env:update|Update all tools
+mise run env:status|Show environment status
+
 ### Tool Management
 mise run tools:status|All tools/settings
 mise run tools:install|Install all
-mise run tools:update|Update all
+mise run tools:update|Update all (bump to latest)
+mise run tools:bump|Bump versions to latest
 mise run tools:doctor|Full health
+
+### Validation
+mise run validate:strict|Warnings as errors (CI)
+mise run validate:quick|5-second health check
 
 ### Autofix
 mise run autofix:status|Show issues
@@ -291,46 +319,6 @@ mise use -g "cargo:<pkg>"       # Rust package
 ```
 
 ### WRONG (never do)
-Wrong|Why|Right
-`curl -fsSL...\|sh`|Shadows mise|`mise use -g <tool>`
-`npm install -g`|Bypasses mise|`mise use -g "npm:<pkg>"`
-`pip install`|System pollution|`mise use -g "pipx:<pkg>"`
-`brew install <cli>`|Wrong manager|`mise use -g <tool>`
-
----
-
-## TESTING
-
-### Test Files (821 total: 549 core + 272 SwiftBar)
-test_mise.bats|Mise backends, tasks
-test_tools.bats|CLI availability
-test_chezmoi.bats|Dotfile templates
-test_starship.bats|Prompt config
-test_integration.bats|E2E structure
-test_ide_configs.bats|VS Code, Zed
-test_skypilot.bats|Cloud agents
-test_unified_setup.bats|Platform tasks
-test_autofix.bats|Autofix system
-test_agent_readiness.bats|Agent setup
-test_skills.bats|Skills architecture
-test_noninteractive_skills.bats|Skill symlinks
-test_swiftbar.bats|Menu bar
-test_menubar_core.bats|Core parity
-DevEnvManager-SwiftBar/tests/|SwiftBar (272 @test blocks, 3 files)
-DevEnvManager/Tests/|Swift validation (7 test files)
-DevEnvManager-Iced/tests/|Iced Rust (7 test files)
-DevEnvManager-Tauri/src-tauri/tests/|Tauri Rust (6 test files)
-
-### Running
-```bash
-eval "$(mise activate bash --shims)"
-bats tests/              # All core tests (549)
-bats tests/test_mise.bats  # Specific
-bats tests/test_menubar_core.bats  # Menu bar parity
-bats DevEnvManager-SwiftBar/tests/  # SwiftBar (272)
-bats DevEnvManager/Tests/  # Swift (7 files)
-cd DevEnvManager-Iced && cargo test  # Iced (7 files)
-cd DevEnvManager-Tauri/src-tauri && cargo test  # Tauri (6 files)
 ```
 
 ---
@@ -445,7 +433,6 @@ Location|Purpose
 ### Platforms
 Platform|Location|Prefix
 Claude|.claude/commands/opsx/|`/opsx:`
-Gemini|.gemini/commands/opsx/|`@opsx:`
 Claude Code|.Claude/command/|`/opsx-`
 Cursor|.cursor/commands/opsx/|`/opsx:`
 
@@ -492,6 +479,50 @@ cd ~/dev/github/ray-manaloto/gemini-ai-macos-development-environment
 # Restart terminal
 mise doctor && bats tests/
 ```
+
+## LOCAL MACBOOK AI CONFIG
+
+**User-level config paths:**
+- Claude Desktop: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- Claude Code: `~/.claude/settings.json`, `~/.claude/mcp_servers.json`
+- OpenCode: `~/.opencode/mcp_servers.json`, `~/.config/opencode/oh-my-opencode.json`
+- Codex: `~/.codex/config.json`
+
+**Setup:**
+```bash
+mise run setup-mcp   # configures MCP servers (mise + context7 + exa)
+mise run auth:claude
+mise run auth:codex
+mise run auth:opencode
+```
+
+**Secrets registry:** `config/secrets.toml` → `[secrets].required`
+```bash
+bash config/scripts/secrets-status.sh
+```
+
+**1Password automation:**
+```bash
+$EDITOR config/secrets.1password.toml
+bash config/scripts/secrets-1password-setup.sh
+```
+
+**1Password bootstrap (create items):**
+```bash
+eval "$(op signin)"
+VAULT=Private bash config/scripts/1password-bootstrap.sh
+```
+
+**Encrypted file option (SOPS + age):**
+```bash
+cp config/secrets.env.json.example .env.json
+sops encrypt -i --age "$(age-keygen -y ~/.config/mise/age.txt)" .env.json
+# Then set in ~/.config/mise/config.toml:
+# [env]
+# _.file = { path = "~/.config/dev-env/.env.json", redact = true }
+```
+
+**Rule:** secrets must be set via Mise (global config), not shell exports.
 
 ### Daily
 ```bash
@@ -549,10 +580,13 @@ AGENTS.md = horizontal knowledge (always loaded). Skills = vertical action workf
 
 ## DESIGN DECISIONS
 1. Mise over asdf - Rust (10x faster), native backends
-2. Bun over Node - 3x faster, native TS (settings.npm.package_manager = bun)
-3. Uv over pip - 10x faster, deterministic (settings.python.uv_venv_auto = true)
-4. BATS for tests - Native bash
-5. Chezmoi over stow - Templates, encryption
+2. Bun over npm - 3x faster, native TS (settings.npm.package_manager = bun)
+3. Uv over pip - 10x faster, deterministic (settings.python.uv_venv_auto = true, settings.pipx.uvx = true)
+4. Precompiled Python - faster installs (settings.python.compile = false)
+5. Native linters - aqua binaries (shellcheck/hadolint), bunx biome/tsc, rustup components (rustfmt/clippy)
+6. Prefer language-native toolchains for analyzers (cargo/rustup, bunx, uvx)
+7. BATS for tests - Native bash
+8. Chezmoi over stow - Templates, encryption
 
 ### Dependencies
 macOS 14+ (Sonoma)|Xcode CLT|~10GB disk

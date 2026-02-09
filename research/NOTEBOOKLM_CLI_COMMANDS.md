@@ -93,8 +93,6 @@ nlm source add macos-dev --url "https://github.com/BurntSushi/ripgrep"
 # Add fd documentation
 nlm source add macos-dev --url "https://github.com/sharkdp/fd"
 
-# Add Google Gemini CLI
-nlm source add macos-dev --url "https://github.com/google/gemini-cli"
 ```
 
 ---
@@ -159,7 +157,6 @@ SOURCES=(
     "https://docs.orbstack.dev/"
     "https://github.com/BurntSushi/ripgrep"
     "https://github.com/sharkdp/fd"
-    "https://github.com/google/gemini-cli"
 )
 
 echo "Adding ${#SOURCES[@]} sources to notebook: $NOTEBOOK_ID"

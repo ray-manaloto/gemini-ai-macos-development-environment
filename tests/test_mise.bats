@@ -42,7 +42,12 @@ setup() {
   [[ "$output" =~ "uv" ]]
 }
 
-@test "mise has bun configured as npm backend" {
+@test "mise has bun configured for npm" {
+  # Verify npm.bun=true or npm.package_manager=bun for bun-based npm package management
+  run mise settings get npm.bun
+  if [ "$status" -eq 0 ] && [ "$output" = "true" ]; then
+    return 0
+  fi
   run mise settings get npm.package_manager
   [ "$status" -eq 0 ]
   [ "$output" = "bun" ]

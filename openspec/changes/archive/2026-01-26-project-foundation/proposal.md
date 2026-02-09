@@ -93,4 +93,3 @@ A **mise-first development environment** that:
 - [Uv Documentation](https://docs.astral.sh/uv/)
 - [Pixi Documentation](https://pixi.sh/)
 - [research/CHATGPT_DEEP_RESEARCH.md](../../research/CHATGPT_DEEP_RESEARCH.md) - Original ChatGPT research
-- [research/GEMINI_SPEC_COMPARISON.md](../../research/GEMINI_SPEC_COMPARISON.md) - Gemini specification analysis

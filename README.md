@@ -33,6 +33,11 @@ This project is optimized for AI/LLM agents. See:
 - **Tool Hierarchy**: Mise > Bun > Pixi > Uv
 - **Critical Rule**: NEVER use sudo, NEVER install globally with npm/pip
 - **All tools managed via**: `mise use -g <tool>`
+- **Version policy**: Use fuzzy versions + `mise.lock` and bump via `mise run tools:update` (or `tools:bump`)
+- **Lockfile**: run `mise lock` after upgrades to refresh `mise.lock`
+- **Native linters**: aqua binaries (shellcheck/hadolint), bunx biome/tsc, rustup components (rustfmt/clippy)
+- **Native analyzers**: prefer language toolchains (cargo/rustup, bunx, uvx)
+- **Always resolve warnings**: `mise run validate` must be clean
 
 ## Quick Start
 
@@ -68,6 +73,15 @@ mise run hooks:install           # Install lefthook-managed pre-commit hooks
 mise doctor                      # Check mise health
 mise run validate                # Run health check
 bats tests/                      # Run test suite
+```
+
+### 6. Environment Lifecycle (Mise Tasks)
+```bash
+mise run env:start
+mise run env:stop
+mise run env:restart
+mise run env:update
+mise run env:status
 ```
 
 ### What Gets Installed
@@ -157,7 +171,7 @@ The `config/main.pkl` file is the source of truth. It compiles to `~/.config/mis
 | **Core Runtimes** | bun, pixi, uv, usage, pitchfork |
 | **Modern CLI** | starship, ripgrep, fd-find, zoxide, ast-grep, mgrep |
 | **Cloud & Containers** | orbstack, skypilot, devpod |
-| **AI Agents** | claude-code, opencode-ai, gemini-cli, github-cli |
+| **AI Agents** | claude-code, opencode-ai, github-cli |
 | **Secrets** | 1password-cli, infisical |
 | **GUI** | swiftbar, zed, DevEnvManager |
 
@@ -243,7 +257,7 @@ mise use -g npm:bats
 bats tests/
 ```
 
-### Test Files
+### Test Files (305 tests total)
 | File | Tests |
 |------|-------|
 | `tests/test_mise.bats` | Mise installation, backends, tasks |
@@ -251,11 +265,22 @@ bats tests/
 | `tests/test_chezmoi.bats` | Dotfile template validation |
 | `tests/test_starship.bats` | Prompt configuration |
 | `tests/test_integration.bats` | End-to-end project structure |
+| `tests/test_workflow_validation.bats` | Comprehensive workflow validation |
+| `tests/test_env_status.bats` | Environment status command tests |
+| `tests/test_skypilot.bats` | Cloud agent configuration |
+| `tests/test_setup.bats` | Bootstrap script validation |
+| `tests/test_unified_setup.bats` | Platform setup tasks |
 
 ### Health Check
 ```bash
-# Quick validation
-./config/scripts/validate.sh
+# Full validation (recommended)
+mise run validate
+
+# Strict mode (warnings = failures, for CI)
+mise run validate:strict
+
+# Quick health check (5 seconds)
+mise run validate:quick
 
 # Mise diagnostics
 mise doctor
@@ -269,11 +294,13 @@ mise ls
 | Document | Purpose |
 |----------|---------|
 | `CLAUDE.md` | AI assistant context and development patterns |
+| `AGENTS.md` | Comprehensive project knowledge base |
 | `PROJECT_PLAN.md` | Agile project plan and sprint status |
-| `OPENCODE_PROMPTS.md` | OpenCode + oh-my-opencode usage guide |
-| `OPENCODE_SETUP.md` | Automated setup with ultrawork mode |
+| `TDD_VALIDATION_PLAN.md` | TDD plan for workflow validation |
 | `MANUAL.md` | System manual (accessible via `mise run help`) |
-| `PREFLIGHT_CHECKLIST.md` | Pre-installation requirements |
+| `SECRETS.md` | Secrets management guide |
+| `MIGRATION.md` | Migration from nvm/pyenv/asdf |
+| `SKYPILOT.md` | Cloud agent documentation |
 | `research/` | Research documentation and findings |
 
 ## Related Projects
