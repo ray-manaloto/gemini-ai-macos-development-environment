@@ -72,7 +72,6 @@ This specification defines all tools managed by the God-Tier macOS Development E
 |------|---------|--------|---------|
 | `claude-code` | latest | npm | Claude Code CLI |
 | `opencode-ai` | latest | npm | OpenCode CLI |
-| `gemini-cli` | latest | npm | Google Gemini CLI |
 | `github-cli` | latest | mise | GitHub CLI + Copilot |
 
 **Acceptance Criteria**:

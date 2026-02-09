@@ -46,7 +46,7 @@ init_backup_dir() {
         BACKUP_DIR=$(mktemp -d "$HOME/.local/autofix-backup/$(date +%Y%m%d-%H%M%S)-XXXXXX")
     fi
 }
-MISE_MANAGED_TOOLS="bun pixi chezmoi usage pkl node starship ripgrep fd zoxide pitchfork opencode claude gemini gh jq yq bat eza delta fzf"
+MISE_MANAGED_TOOLS="bun pixi chezmoi usage pkl node starship ripgrep fd zoxide pitchfork opencode claude gh jq yq bat eza delta fzf"
 BOOTSTRAP_TOOLS="mise uv uvx"  # Tools that should remain in ~/.local/bin
 
 # Counters

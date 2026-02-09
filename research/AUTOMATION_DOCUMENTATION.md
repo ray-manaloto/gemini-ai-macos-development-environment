@@ -30,7 +30,6 @@ Complete documentation of all research, changes, and scripts created during this
 ["cargo:zoxide"] = "latest"     // cd replacement
 
 // AI Agents
-["npm:@google/gemini-cli"] = "latest"  // Gemini CLI
 ["github-cli"] = "latest"              // GitHub CLI
 
 // Secrets
@@ -71,7 +70,6 @@ env = new {
 
 | Document | Purpose | Location |
 |----------|---------|----------|
-| `GEMINI_SPEC_COMPARISON.md` | Compare Gemini spec vs implementation | `research/` |
 | `MISE_MCP_SETUP.md` | MCP configuration guide | `research/` |
 | `NOTEBOOKLM_CLI_COMMANDS.md` | CLI commands for NotebookLM | `research/` |
 | `MISE_ECOSYSTEM_RESEARCH.md` | Community research findings | `research/` |
@@ -115,7 +113,6 @@ gemini-ai-macos-development-environment/
 │       └── dashboard.py       # TUI dashboard
 ├── CLAUDE.md                   # Claude Code context ✨ NEW
 └── research/
-    ├── GEMINI_SPEC_COMPARISON.md   ✨ NEW
     ├── MISE_MCP_SETUP.md           ✨ NEW
     └── (other docs)
 ```

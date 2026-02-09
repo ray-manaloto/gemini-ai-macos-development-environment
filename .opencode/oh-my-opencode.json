@@ -2,7 +2,7 @@
   "$schema": "https://raw.githubusercontent.com/code-yeongyu/oh-my-opencode/master/assets/oh-my-opencode.schema.json",
   "agents": {
     "sisyphus": {
-      "model": "anthropic/claude-opus-4-5",
+      "model": "anthropic/claude-opus-4-6",
       "variant": "max"
     },
     "oracle": {
@@ -19,11 +19,11 @@
       "model": "anthropic/claude-sonnet-4-5"
     },
     "prometheus": {
-      "model": "anthropic/claude-opus-4-5",
+      "model": "anthropic/claude-opus-4-6",
       "variant": "max"
     },
     "metis": {
-      "model": "anthropic/claude-opus-4-5",
+      "model": "anthropic/claude-opus-4-6",
       "variant": "max"
     },
     "momus": {
@@ -39,11 +39,11 @@
       "model": "anthropic/claude-sonnet-4-5"
     },
     "ultrabrain": {
-      "model": "openai/gpt-5.2-codex",
+      "model": "openai/gpt-5.2",
       "variant": "xhigh"
     },
     "artistry": {
-      "model": "anthropic/claude-opus-4-5",
+      "model": "anthropic/claude-opus-4-6",
       "variant": "max"
     },
     "quick": {
@@ -53,11 +53,18 @@
       "model": "anthropic/claude-sonnet-4-5"
     },
     "unspecified-high": {
-      "model": "anthropic/claude-opus-4-5",
+      "model": "anthropic/claude-opus-4-6",
       "variant": "max"
     },
     "writing": {
       "model": "anthropic/claude-haiku-4-5"
     }
-  }
+  },
+  "_migrations": [
+    "model-version:anthropic/claude-opus-4-5->anthropic/claude-opus-4-6",
+    "model-version:anthropic/claude-opus-4-5->anthropic/claude-opus-4-6",
+    "model-version:anthropic/claude-opus-4-5->anthropic/claude-opus-4-6",
+    "model-version:anthropic/claude-opus-4-5->anthropic/claude-opus-4-6",
+    "model-version:anthropic/claude-opus-4-5->anthropic/claude-opus-4-6"
+  ]
 }

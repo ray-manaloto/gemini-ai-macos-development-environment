@@ -10,7 +10,6 @@ Add these secrets in **Settings > Secrets and variables > Actions**:
 |-------------|--------------|------------|
 | `OPENAI_API_KEY` | CodeRabbit, ChatGPT-CodeReview | [platform.openai.com/api-keys](https://platform.openai.com/api-keys) |
 | `OPENAI_KEY` | PR-Agent | Same as above (can use same key) |
-| `GEMINI_API_KEY` | Gemini Review | [aistudio.google.com/apikey](https://aistudio.google.com/apikey) |
 | `ANTHROPIC_API_KEY` | Claude Code | [console.anthropic.com/api-keys](https://console.anthropic.com/settings/keys) |
 
 > **Note**: `GITHUB_TOKEN` is automatically provided by GitHub Actions.
@@ -22,7 +21,6 @@ Add these secrets in **Settings > Secrets and variables > Actions**:
 | PR-Agent | `ai-review-pr-agent.yml` | Open source by Qodo, highly configurable |
 | CodeRabbit | `ai-review-coderabbit.yml` | Popular AI reviewer, free for OSS (archived but functional) |
 | ChatGPT-CodeReview | `ai-review-chatgpt.yml` | Lightweight GPT-4 reviewer |
-| Gemini | `ai-review-gemini.yml` | Google's Gemini AI reviewer |
 | Claude Code | `ai-review-claude.yml` | Official Anthropic action, 5.4k+ stars |
 
 ## Behavior

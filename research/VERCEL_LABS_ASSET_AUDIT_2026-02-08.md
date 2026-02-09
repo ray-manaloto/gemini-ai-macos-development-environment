@@ -7,7 +7,7 @@
 
 ## Existing Baseline (Before Audit)
 - Skills already present at project level under `.agents/skills`.
-- Core tools already present via mise: `opencode-ai`, `openspec`, `codex`, `claude-code`, `gemini-cli`, `playwright`, `@playwright/mcp`, `ai`, `just-bash`, `opensrc`, `specli`, `lefthook`.
+- Core tools already present via mise: `opencode-ai`, `openspec`, `codex`, `claude-code`, `playwright`, `@playwright/mcp`, `ai`, `just-bash`, `opensrc`, `specli`, `lefthook`.
 
 ## High-Confidence Additions Applied
 

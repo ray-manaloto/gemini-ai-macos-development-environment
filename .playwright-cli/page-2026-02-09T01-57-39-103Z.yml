@@ -1,0 +1,77 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e4]:
+      - generic [ref=e8]:
+        - main "Sign In" [ref=e9]:
+          - generic [ref=e10]:
+            - heading "Sign in to 1Password" [level=1] [ref=e11]
+            - generic [ref=e12]:
+              - generic [ref=e14]:
+                - generic [ref=e15]:
+                  - heading "Use QR Code" [level=3] [ref=e16]
+                  - list [ref=e17]:
+                    - 'listitem "Step 1: Open 1Password on a mobile device where you’re signed in." [ref=e18]':
+                      - generic [ref=e20]: "1"
+                      - generic [ref=e21]: Open 1Password on a mobile device where you’re signed in.
+                    - 'listitem "Step 2: Select the account icon or 1Password logo in the top corner." [ref=e22]':
+                      - generic [ref=e24]: "2"
+                      - generic [ref=e25]: Select the account icon or 1Password logo in the top corner.
+                    - 'listitem "Step 3: Choose “Scan QR Code.”" [ref=e26]':
+                      - generic [ref=e28]: "3"
+                      - generic [ref=e29]: Choose “Scan QR Code.”
+                - img "Sign In Code" [ref=e32]
+              - generic [ref=e36]:
+                - checkbox "This is a public or shared computer" [ref=e39] [cursor=pointer]
+                - generic [ref=e40]: This is a public or shared computer
+            - generic [ref=e42]: OR
+            - generic [ref=e44]:
+              - generic [ref=e45]:
+                - generic [ref=e46]: Email
+                - textbox "Email" [ref=e48]
+              - generic [ref=e49]:
+                - button "Continue" [ref=e50]:
+                  - generic [ref=e52]: Continue
+                - link "Having trouble signing in?" [ref=e53] [cursor=pointer]:
+                  - /url: /support
+                  - paragraph [ref=e55]: Having trouble signing in?
+        - contentinfo [ref=e56]:
+          - button "1Password.com" [ref=e58]:
+            - generic [ref=e59]:
+              - generic [ref=e61]: 1Password.com
+              - img [ref=e63]
+          - generic [ref=e65]:
+            - link "Find my account" [ref=e66] [cursor=pointer]:
+              - /url: /support
+              - paragraph [ref=e68]: Find my account
+            - text: •
+            - link "Have a team account?" [ref=e69] [cursor=pointer]:
+              - /url: https://start.1password.com/signin/team
+              - paragraph [ref=e71]: Have a team account?
+            - text: •
+            - link "Create a new account" [ref=e72] [cursor=pointer]:
+              - /url: https://1password.com/sign-up/
+              - paragraph [ref=e74]: Create a new account
+          - paragraph [ref=e76]:
+            - link "Version 2178" [ref=e77] [cursor=pointer]:
+              - /url: https://app-updates.agilebits.com/product_history/B5
+            - text: — © 2026
+            - link "1Password" [ref=e78] [cursor=pointer]:
+              - /url: https://1password.com
+            - text: . All rights reserved.
+            - text: 4711 Yonge St, 10th Floor, Toronto, Ontario, M2N 6K8, Canada.
+      - iframe [ref=e80]:
+        - generic [active] [ref=f3e1]:
+          - main [ref=f3e3]:
+            - generic [ref=f3e6]:
+              - 'heading "Guide : How secure is my password?" [level=1] [ref=f3e7]':
+                - generic [ref=f3e8]:
+                  - text: Guide
+                  - generic [ref=f3e9]: ":"
+                - text: How secure is my password?
+              - img "test" [ref=f3e10]
+              - paragraph [ref=f3e12]: As an average internet user, you probably have over 100 passwords for various online accounts. All of these login credentials should be strong and unique but the reality is that people often choose passwords that could take an hour or two for a hacker to crack. Read our guide to learn how to stay safe online.
+              - link "Read the guide" [ref=f3e13] [cursor=pointer]:
+                - /url: https://blog.1password.com/how-secure-is-my-password/
+          - alert [ref=f3e14]
+    - textbox [ref=e81]
+  - status "Notifications"

@@ -191,7 +191,8 @@ ANTHROPIC_API_KEY = "mise:ANTHROPIC_API_KEY"
 |--------|---------|------------|
 | `ANTHROPIC_API_KEY` | Claude Code, Claude API | [console.anthropic.com](https://console.anthropic.com) |
 | `OPENAI_API_KEY` | Codex CLI, OpenAI API | [platform.openai.com](https://platform.openai.com) |
-| `GOOGLE_API_KEY` or `GEMINI_API_KEY` | Gemini CLI | [ai.google.dev](https://ai.google.dev) |
+| `CONTEXT7_API_KEY` | Context7 MCP | [context7.com/dashboard](https://context7.com/dashboard) |
+| `EXA_API_KEY` | Exa MCP (web search) | [dashboard.exa.ai/api-keys](https://dashboard.exa.ai/api-keys) |
 | `GITHUB_TOKEN` | GitHub Copilot, gh CLI | [github.com/settings/tokens](https://github.com/settings/tokens) |
 
 ### Cloud Providers
@@ -278,27 +279,6 @@ codex --version
 codex logout
 ```
 
-### Gemini CLI
-
-```bash
-# Option 1: Environment variable (GEMINI_API_KEY preferred)
-export GEMINI_API_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-
-# Option 2: Alternative env var name
-export GOOGLE_API_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-
-# Option 3: Mise secrets
-mise secrets set GEMINI_API_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-
-# Option 4: 1Password
-# In mise.toml:
-# [env]
-# GEMINI_API_KEY = "op://Private/Google AI/api_key"
-
-# Verify
-gemini --version
-```
-
 ### OpenCode CLI
 
 ```bash
@@ -308,7 +288,6 @@ opencode auth
 # Option 2: Environment variables (supports multiple providers)
 export ANTHROPIC_API_KEY=sk-ant-api03-xxxxxxxxxxxx  # For Claude models
 export OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxxxxx       # For OpenAI models
-export GEMINI_API_KEY=xxxxxxxxxxxxxxxxxxxxxxxx      # For Gemini models
 
 # Option 3: Mise secrets
 mise secrets set ANTHROPIC_API_KEY=sk-ant-api03-xxxxxxxxxxxx
@@ -318,7 +297,6 @@ mise secrets set ANTHROPIC_API_KEY=sk-ant-api03-xxxxxxxxxxxx
 # [env]
 # ANTHROPIC_API_KEY = "op://Private/Anthropic/credential"
 # OPENAI_API_KEY = "op://Private/OpenAI/api_key"
-# GEMINI_API_KEY = "op://Private/Google AI/api_key"
 
 # List available models
 opencode models
@@ -338,7 +316,8 @@ For solo developers, mise native secrets is the simplest approach:
 mise secrets set GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxx
 mise secrets set ANTHROPIC_API_KEY=sk-ant-api03-xxxxxxxxxxxx
 mise secrets set OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxxxxx
-mise secrets set GEMINI_API_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+mise secrets set CONTEXT7_API_KEY=ctx7sk-xxxxxxxxxxxxxxxxxxxx
+mise secrets set EXA_API_KEY=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 
 # Verify secrets are stored
 mise secrets ls
@@ -348,7 +327,20 @@ mise secrets ls
 # GITHUB_TOKEN = "mise:GITHUB_TOKEN"
 # ANTHROPIC_API_KEY = "mise:ANTHROPIC_API_KEY"
 # OPENAI_API_KEY = "mise:OPENAI_API_KEY"
-# GEMINI_API_KEY = "mise:GEMINI_API_KEY"
+# CONTEXT7_API_KEY = "mise:CONTEXT7_API_KEY"
+# EXA_API_KEY = "mise:EXA_API_KEY"
+```
+
+### Secrets Registry & Validation (Mise-only)
+
+The canonical list of required secrets lives in `config/secrets.toml` under `[secrets]`.
+Validation is enforced by `config/scripts/secrets-status.sh` and surfaced in `mise run validate`.
+
+**Rule:** Secrets must come from Mise (global config), not shell exports.
+
+```bash
+# Validate sources (no values printed)
+bash config/scripts/secrets-status.sh
 ```
 
 ---
@@ -365,20 +357,87 @@ op signin
 # 3. Add to mise.toml:
 ```
 
+### Scripted 1Password Bootstrap (Recommended)
+
+Use the bootstrap script to create the required items interactively:
+
+```bash
+eval "$(op signin)"
+VAULT=Private bash config/scripts/1password-bootstrap.sh
+
+# Optional: overwrite existing items
+VAULT=Private bash config/scripts/1password-bootstrap.sh --force
+```
+
+Then apply them to Mise:
+
+```bash
+bash config/scripts/secrets-1password-setup.sh
+bash config/scripts/secrets-status.sh
+```
+
 ```toml
 # mise.toml or ~/.config/mise/config.toml
 [env]
 GITHUB_TOKEN = "op://Private/GitHub/token"
 ANTHROPIC_API_KEY = "op://Private/Anthropic/credential"
 OPENAI_API_KEY = "op://Private/OpenAI/api_key"
-GEMINI_API_KEY = "op://Private/Google AI/api_key"
+CONTEXT7_API_KEY = "op://Private/Context7/api_key"
+EXA_API_KEY = "op://Private/Exa/api_key"
 ```
 
 ```bash
 # 4. Verify secrets resolve
 mise trust
-mise env | grep -E "GITHUB|ANTHROPIC|OPENAI|GEMINI"
+mise env | grep -E "GITHUB|ANTHROPIC|OPENAI|CONTEXT7|EXA"
 ```
+
+### One-time Automation (Preferred)
+
+Use the provided template and script to apply all 1Password secrets to Mise globally:
+
+```bash
+# 1) Edit template (set correct op:// paths)
+$EDITOR config/secrets.1password.toml
+
+# 2) Apply to Mise global config
+bash config/scripts/secrets-1password-setup.sh
+
+# 3) Verify
+bash config/scripts/secrets-status.sh
+```
+
+---
+
+## Encrypted Secrets File (SOPS + age)
+
+If you want a single encrypted file as the source of truth, mise supports **SOPS‑encrypted** files referenced from `env._.file` (jdx/mise docs).
+
+**Workflow (recommended):**
+
+```bash
+# 1) Create an age key (one-time)
+age-keygen -o ~/.config/mise/age.txt
+
+# 2) Copy the example file and fill values
+cp config/secrets.env.json.example .env.json
+$EDITOR .env.json
+
+# 3) Encrypt with sops (age)
+sops encrypt -i --age "$(age-keygen -y ~/.config/mise/age.txt)" .env.json
+
+# 4) Reference it in global mise config
+# ~/.config/mise/config.toml
+[env]
+_.file = { path = "~/.config/dev-env/.env.json", redact = true }
+
+# 5) Verify
+mise env --redacted | grep -E "GITHUB|ANTHROPIC|OPENAI|CONTEXT7|EXA"
+```
+
+**Notes**:
+- Encrypted `.env.json` can be safely stored in the repo.
+- Mise automatically decrypts if the age key exists.
 
 ---
 
@@ -393,7 +452,6 @@ Create this file in your project root as a reference:
 # AI Services
 ANTHROPIC_API_KEY=sk-ant-api03-...
 OPENAI_API_KEY=sk-...
-GOOGLE_API_KEY=...
 
 # GitHub
 GITHUB_TOKEN=ghp_...

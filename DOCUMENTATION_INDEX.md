@@ -21,7 +21,6 @@ Complete index of all documentation and research for the God-Tier macOS Developm
 | Platform | Location | Commands |
 |----------|----------|----------|
 | Claude Code | [.claude/](.claude/) | 10 OpenSpec workflow commands |
-| Gemini CLI | [.gemini/](.gemini/) | 10 OpenSpec workflow commands |
 | OpenCode | [.opencode/](.opencode/) | 10 OpenSpec workflow commands |
 | Cursor | [.cursor/](.cursor/) | 10 OpenSpec workflow commands |
 
@@ -111,7 +110,6 @@ Located in `research/` directory:
 | `DEEP_RESEARCH_FINDINGS.md` | YouTube/NotebookLM research findings |
 | `GAPS_ANALYSIS.md` | Gap analysis with P1/P2/P3 priorities |
 | `AUTOMATION_DOCUMENTATION.md` | Automation patterns and scripts |
-| `GEMINI_SPEC_COMPARISON.md` | Gemini vs original spec comparison |
 | `MISE_DOCUMENTATION_AUDIT.md` | Mise documentation review |
 | `MISE_ECOSYSTEM_RESEARCH.md` | Mise ecosystem tools research |
 | `MISE_MCP_SETUP.md` | MCP (Model Context Protocol) setup guide |

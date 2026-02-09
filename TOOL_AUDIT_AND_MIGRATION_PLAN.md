@@ -65,7 +65,7 @@ GUI applications should remain in Homebrew:
 - orbstack (containers)
 - sublime-text (editor)
 - mactex (LaTeX)
-- gemini, opencode-desktop (AI tools)
+- opencode-desktop (AI tools)
 
 ### 3. Mise Tools (45 installed) ✅ Properly Managed
 
@@ -73,7 +73,7 @@ Currently managed by mise:
 ```
 bun, node, pixi, uv, chezmoi, starship, ripgrep, fd, zoxide, 
 ast-grep, github-cli, pkl, usage, pitchfork, 1password-cli,
-npm:bats, npm:gemini-cli, npm:ralph-cli, pipx:mgrep, ubi:gum
+npm:bats, npm:ralph-cli, pipx:mgrep, ubi:gum
 ```
 
 ### 4. uv Tools in ~/.local/bin (25 tools)

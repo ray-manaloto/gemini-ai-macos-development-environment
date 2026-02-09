@@ -1,4 +1,5 @@
 #!/bin/bash
+#!/usr/bin/env bash
 # =============================================================================
 # validate-skills.sh - AI Agent Skills Validation
 # God-Tier macOS Development Environment
@@ -260,7 +261,8 @@ check_symlinks() {
         local symlinked=0
         local broken=0
         local direct=0
-        local missing_from_target=()
+        local missing_count=0
+        local missing_from_target_list=""
 
         # Check each canonical skill has a symlink in target
         for skill_dir in "$agents_dir"/*/; do
@@ -292,14 +294,15 @@ check_symlinks() {
                     printf '%b' "    ${GREEN}Fixed:${NC} Replaced with symlink\n"
                 fi
             else
-                missing_from_target+=("$name")
+                missing_from_target_list+=" $name"
+                ((++missing_count))
             fi
 
             ((++total))
         done
 
         # Report missing symlinks
-        for name in "${missing_from_target[@]}"; do
+        for name in $missing_from_target_list; do
             check_fail "$target_rel/$name" "Missing from $target_rel/" "ln -sf \"../../.agents/skills/$name\" \"$target_rel/$name\""
 
             if $FIX_MODE; then
@@ -308,7 +311,7 @@ check_symlinks() {
             fi
         done
 
-        if [[ "$broken" -eq 0 && "$direct" -eq 0 && "${#missing_from_target[@]}" -eq 0 ]]; then
+        if [[ "$broken" -eq 0 && "$direct" -eq 0 && "$missing_count" -eq 0 ]]; then
             check_pass "$target_rel/" "$symlinked/$total skills properly symlinked"
         fi
 

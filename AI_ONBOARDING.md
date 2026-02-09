@@ -205,7 +205,7 @@ Mise > Bun > Pixi > Uv
 - `mise run tools:status` - Show tools
 - `mise run tools:update` - Update all
 - `mise doctor` - Diagnostics
-- `bats tests/` - Run 402 tests
+- `bats tests/` - Run 821+ tests
 
 ## Project Structure
 - config/mise.toml - Tool config (SOURCE OF TRUTH)

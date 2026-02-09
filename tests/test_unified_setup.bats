@@ -6,26 +6,30 @@ setup() {
   fi
 }
 
-@test "mise.toml uses config_root template for dashboard task" {
-  grep -q '{{config_root}}' config/mise.toml
-  grep -q 'dir = "{{config_root}}"' config/mise.toml
+@test "mise.toml uses DEV_ENV_ROOT for dashboard task" {
+  # We use $DEV_ENV_ROOT (stable symlink) instead of {{config_root}} 
+  # because {{config_root}} resolves incorrectly when config is global
+  grep -q 'DEV_ENV_ROOT' config/mise.toml
+  grep -q 'dir = "\$DEV_ENV_ROOT"' config/mise.toml
 }
 
-@test "mise.toml uses config_root template for validate task" {
-  grep -q 'sh {{config_root}}/config/scripts/validate.sh' config/mise.toml
+@test "mise.toml uses DEV_ENV_ROOT for validate task" {
+  grep -q 'sh \$DEV_ENV_ROOT/config/scripts/validate.sh' config/mise.toml
 }
 
-@test "mise.toml uses config_root template for help task" {
-  grep -q '{{config_root}}/MANUAL.md' config/mise.toml
+@test "mise.toml uses DEV_ENV_ROOT for help task" {
+  grep -q '\$DEV_ENV_ROOT/MANUAL.md' config/mise.toml
 }
 
-@test "mise.toml uses config_root template for agent:up task" {
-  grep -q '{{config_root}}/templates/agent.yaml' config/mise.toml
+@test "mise.toml uses DEV_ENV_ROOT for agent:up task" {
+  grep -q '\$DEV_ENV_ROOT/templates/agent.yaml' config/mise.toml
 }
 
-@test "mise.toml has no hardcoded ~/.config/dev-env paths" {
-  ! grep -q '\~/.config/dev-env' config/mise.toml
-  ! grep -q '\$HOME/.config/dev-env' config/mise.toml
+@test "mise.toml defines DEV_ENV_ROOT in env section" {
+  # DEV_ENV_ROOT is defined in [env] using {{env.HOME}}/.config/dev-env template
+  # This provides a stable path that works when config is in global location
+  grep -q 'DEV_ENV_ROOT' config/mise.toml
+  grep -q '{{env.HOME}}/.config/dev-env' config/mise.toml
 }
 
 @test "setup:common task exists" {

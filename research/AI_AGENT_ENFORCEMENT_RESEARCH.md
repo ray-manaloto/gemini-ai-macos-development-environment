@@ -167,7 +167,6 @@ lefthook install
 .Claude/skills/          ← Symlinks to .agents/skills/
 .opencode/skills/        ← Symlinks to .agents/skills/
 .cursor/skills/          ← Symlinks to .agents/skills/
-.gemini/skills/          ← Symlinks to .agents/skills/
 .windsurf/skills/        ← Symlinks to .agents/skills/
 .augment/skills/         ← Symlinks to .agents/skills/
 .agent/skills/           ← Symlinks to .agents/skills/
@@ -356,7 +355,7 @@ litellm.success_callback = ["langfuse"]  # Auto-track to Langfuse
 
 # Works with any provider
 response = completion(
-    model="anthropic/claude-sonnet-4",  # or "openai/gpt-4" or "gemini/gemini-pro"
+    model="anthropic/claude-sonnet-4",  # or "openai/gpt-4"
     messages=[{"role": "user", "content": "Hello"}]
 )
 
@@ -585,9 +584,7 @@ const PRICING = {
     'gpt-5.2': { input: 0.01, output: 0.03 },
     'gpt-5.2-codex': { input: 0.012, output: 0.036 }
   },
-  google: {
-    'gemini-3-pro': { input: 0.00125, output: 0.005 }
-  }
+  // google: { ... }  # removed (Gemini not in scope)
 };
 
 function calculateCost(provider: string, model: string, usage: TokenUsage): number {

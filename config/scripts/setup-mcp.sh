@@ -23,8 +23,37 @@ if ! command -v jq &> /dev/null; then
     mise use -g jq
 fi
 
-# MCP configuration payload (using jq --argjson for safety)
-MCP_CONFIG='{"command": "mise", "args": ["mcp"], "env": {"MISE_EXPERIMENTAL": "1"}}'
+# MCP server configurations (using jq --argjson for safety)
+MCP_SERVERS=$(cat << 'EOF'
+{
+  "mise": {
+    "command": "mise",
+    "args": ["mcp"],
+    "env": {"MISE_EXPERIMENTAL": "1"}
+  },
+  "context7": {
+    "command": "mise",
+    "args": [
+      "exec",
+      "--",
+      "bash",
+      "-lc",
+      "npx -y @upstash/context7-mcp --api-key \"$CONTEXT7_API_KEY\""
+    ]
+  },
+  "exa": {
+    "command": "mise",
+    "args": [
+      "exec",
+      "--",
+      "bash",
+      "-lc",
+      "EXA_API_KEY=\"$EXA_API_KEY\" npx -y exa-mcp-server"
+    ]
+  }
+}
+EOF
+)
 
 # Helper function for safe JSON file writing
 # Uses atomic write (temp file + move) to prevent corruption
@@ -59,7 +88,7 @@ safe_json_write() {
 # Helper function to merge MCP config into existing JSON
 merge_mcp_config() {
     local target="$1"
-    local mcp_config="$2"
+    local mcp_servers="$2"
     local json_path="$3"  # e.g., ".mcpServers" or ".mcp.servers"
     
     if [ -f "$target" ]; then
@@ -70,26 +99,10 @@ merge_mcp_config() {
             return 1  # Signal to create fresh file
         fi
         
-        # Check if path exists and merge
-        if jq -e "$json_path" "$target" > /dev/null 2>&1; then
-            # Path exists, add/update mise entry
-            local new_content
-            new_content=$(jq --argjson mise "$mcp_config" "${json_path}.mise = \$mise" "$target")
-            safe_json_write "$target" "$new_content"
-        else
-            # Path doesn't exist, add it
-            local parent_path="${json_path%.*}"
-            local key_name="${json_path##*.}"
-            local new_content
-            if [ "$parent_path" = "$json_path" ]; then
-                # Top-level key (e.g., .mcpServers)
-                new_content=$(jq --argjson mise "$mcp_config" ". + {${key_name#.}: {mise: \$mise}}" "$target")
-            else
-                # Nested key (e.g., .mcp.servers)
-                new_content=$(jq --argjson mise "$mcp_config" "${parent_path} + {${key_name}: {mise: \$mise}}" "$target")
-            fi
-            safe_json_write "$target" "$new_content"
-        fi
+        # Merge all servers into the target path
+        local new_content
+        new_content=$(jq --argjson servers "$mcp_servers" "${json_path} = (${json_path} // {}) + \$servers" "$target")
+        safe_json_write "$target" "$new_content"
         return 0
     fi
     return 1  # File doesn't exist
@@ -135,23 +148,10 @@ configure_claude_desktop() {
     
     mkdir -p "$(dirname "$config_path")"
 
-    if ! merge_mcp_config "$config_path" "$MCP_CONFIG" ".mcpServers"; then
+    if ! merge_mcp_config "$config_path" "$MCP_SERVERS" ".mcpServers"; then
         # Create new file
         local content
-        content=$(cat << 'EOF'
-{
-  "mcpServers": {
-    "mise": {
-      "command": "mise",
-      "args": ["mcp"],
-      "env": {
-        "MISE_EXPERIMENTAL": "1"
-      }
-    }
-  }
-}
-EOF
-)
+        content=$(jq -n --argjson servers "$MCP_SERVERS" '{mcpServers: $servers}')
         safe_json_write "$config_path" "$content"
     fi
     echo "  ✅ Claude Desktop configured: $config_path"
@@ -168,42 +168,14 @@ configure_claude_code() {
     # Create MCP servers configuration
     local mcp_servers_path="$claude_dir/mcp_servers.json"
     local content
-    content=$(cat << 'EOF'
-{
-  "mcpServers": {
-    "mise": {
-      "command": "mise",
-      "args": ["mcp"],
-      "env": {
-        "MISE_EXPERIMENTAL": "1"
-      }
-    }
-  }
-}
-EOF
-)
+    content=$(jq -n --argjson servers "$MCP_SERVERS" '{mcpServers: $servers}')
     safe_json_write "$mcp_servers_path" "$content"
     echo "  ✅ Claude Code MCP servers configured: $mcp_servers_path"
 
     # Create or update settings.json
     local settings_path="$claude_dir/settings.json"
-    if ! merge_mcp_config "$settings_path" "$MCP_CONFIG" ".mcp.servers"; then
-        content=$(cat << 'EOF'
-{
-  "mcp": {
-    "servers": {
-      "mise": {
-        "command": "mise",
-        "args": ["mcp"],
-        "env": {
-          "MISE_EXPERIMENTAL": "1"
-        }
-      }
-    }
-  }
-}
-EOF
-)
+    if ! merge_mcp_config "$settings_path" "$MCP_SERVERS" ".mcp.servers"; then
+        content=$(jq -n --argjson servers "$MCP_SERVERS" '{mcp: {servers: $servers}}')
         safe_json_write "$settings_path" "$content"
     fi
     echo "  ✅ Claude Code settings configured: $settings_path"
@@ -218,20 +190,7 @@ configure_opencode() {
     
     local mcp_path="$opencode_dir/mcp_servers.json"
     local content
-    content=$(cat << 'EOF'
-{
-  "mcpServers": {
-    "mise": {
-      "command": "mise",
-      "args": ["mcp"],
-      "env": {
-        "MISE_EXPERIMENTAL": "1"
-      }
-    }
-  }
-}
-EOF
-)
+    content=$(jq -n --argjson servers "$MCP_SERVERS" '{mcpServers: $servers}')
     safe_json_write "$mcp_path" "$content"
     echo "  ✅ OpenCode MCP configured: $mcp_path"
 }
