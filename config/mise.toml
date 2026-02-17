@@ -2485,6 +2485,9 @@ description = "Check AI/LLM agent setup readiness"
 run = """
 #!/bin/bash
 SCRIPT="{{config_root}}/config/scripts/agent-readiness.sh"
+if [ ! -f "$SCRIPT" ]; then
+  SCRIPT="$HOME/.config/dev-env/config/scripts/agent-readiness.sh"
+fi
 if [ -f "$SCRIPT" ]; then
   bash "$SCRIPT" status
 else
@@ -2498,6 +2501,9 @@ description = "Show AI/LLM agent readiness status"
 run = """
 #!/bin/bash
 SCRIPT="{{config_root}}/config/scripts/agent-readiness.sh"
+if [ ! -f "$SCRIPT" ]; then
+  SCRIPT="$HOME/.config/dev-env/config/scripts/agent-readiness.sh"
+fi
 if [ -f "$SCRIPT" ]; then
   bash "$SCRIPT" status
 else
@@ -2511,6 +2517,9 @@ description = "Fix common AI/LLM agent setup issues"
 run = """
 #!/bin/bash
 SCRIPT="{{config_root}}/config/scripts/agent-readiness.sh"
+if [ ! -f "$SCRIPT" ]; then
+  SCRIPT="$HOME/.config/dev-env/config/scripts/agent-readiness.sh"
+fi
 if [ -f "$SCRIPT" ]; then
   bash "$SCRIPT" fix
 else
@@ -2524,6 +2533,9 @@ description = "Output AI/LLM agent readiness as JSON"
 run = """
 #!/bin/bash
 SCRIPT="{{config_root}}/config/scripts/agent-readiness.sh"
+if [ ! -f "$SCRIPT" ]; then
+  SCRIPT="$HOME/.config/dev-env/config/scripts/agent-readiness.sh"
+fi
 if [ -f "$SCRIPT" ]; then
   bash "$SCRIPT" --json
 else
@@ -2537,6 +2549,9 @@ description = "Check agent readiness (only output if issues found)"
 run = """
 #!/bin/bash
 SCRIPT="{{config_root}}/config/scripts/agent-readiness.sh"
+if [ ! -f "$SCRIPT" ]; then
+  SCRIPT="$HOME/.config/dev-env/config/scripts/agent-readiness.sh"
+fi
 if [ -f "$SCRIPT" ]; then
   bash "$SCRIPT" --quiet
 else
