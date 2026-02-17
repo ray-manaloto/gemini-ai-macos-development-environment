@@ -1,3 +1,7 @@
+use std::fs;
+use std::path::PathBuf;
+use std::thread;
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use tauri::image::Image;
 use tauri::menu::{MenuBuilder, MenuItem};
 use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
@@ -46,7 +50,8 @@ pub fn create(app: &AppHandle) -> tauri::Result<()> {
     TrayIconBuilder::with_id("main")
         .icon(icon)
         .icon_as_template(true)
-        .tooltip("DevEnvManager")
+        .tooltip("DevEnvManager (Tauri)")
+        .title("T")
         .menu(&menu)
         .show_menu_on_left_click(false)
         .on_menu_event(|app, event| match event.id().as_ref() {
@@ -70,5 +75,41 @@ pub fn create(app: &AppHandle) -> tauri::Result<()> {
         })
         .build(app)?;
 
+    start_status_writer("DevEnvManager (Tauri)");
+
     Ok(())
+}
+
+fn start_status_writer(label: &str) {
+    let label = label.to_string();
+    thread::spawn(move || loop {
+        write_visibility_status(&label);
+        thread::sleep(Duration::from_secs(30));
+    });
+}
+
+fn write_visibility_status(label: &str) {
+    let home = match std::env::var("HOME") {
+        Ok(value) => value,
+        Err(_) => return,
+    };
+
+    let dir = PathBuf::from(home)
+        .join(".config")
+        .join("dev-env")
+        .join("menubar");
+
+    let _ = fs::create_dir_all(&dir);
+
+    let timestamp = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|value| value.as_secs())
+        .unwrap_or(0);
+
+    let payload = format!(
+        "{{\"app\":\"tauri\",\"label\":\"{}\",\"updated_at_epoch\":{}}}",
+        label, timestamp
+    );
+
+    let _ = fs::write(dir.join("tauri.json"), payload);
 }

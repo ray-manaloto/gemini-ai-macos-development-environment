@@ -264,6 +264,7 @@ mise run devcontainer:ssh|Connect
 ### Menu Bar (SwiftBar)
 mise run menubar:install|Install plugin
 mise run menubar:status|Check status
+mise run menubar:validate|Validate menu bar visibility
 
 ### DevEnvManager (Native App)
 mise run devenv-app:install|Download from GitHub Release

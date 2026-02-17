@@ -589,6 +589,52 @@ else
   echo ""
   echo "Install with: mise run menubar:install"
 fi
+
+echo ""
+echo "=== Menu Bar Visibility (Best Effort) ==="
+mise run menubar:validate || true
+"""
+
+[tasks."menubar:validate"]
+description = "Validate menu bar processes + visibility"
+run = """
+SCRIPT="$HOME/.config/dev-env/config/scripts/menubar-visibility.sh"
+if [ ! -x "$SCRIPT" ]; then
+  SCRIPT="{{config_root}}/config/scripts/menubar-visibility.sh"
+fi
+
+echo "Checking SwiftBar..."
+bash "$SCRIPT" --process "SwiftBar" --label "SwiftBar" || true
+
+echo "Checking DevEnvManager (Swift)..."
+bash "$SCRIPT" --process "DevEnvManager" --label "DevEnvManager (Swift)" || true
+
+echo "Checking DevEnvManager-Iced..."
+bash "$SCRIPT" --process "devenv-manager-iced" --label "DevEnvManager-Iced" --match "DevEnvManager" --status-file "$HOME/.config/dev-env/menubar/iced.json" || true
+
+echo "Checking DevEnvManager-Tauri..."
+bash "$SCRIPT" --process "devenv-manager-tauri" --pattern "devenv-manager-tauri|DevEnvManager" --label "DevEnvManager-Tauri" --match "DevEnvManager" --status-file "$HOME/.config/dev-env/menubar/tauri.json" || true
+"""
+
+[tasks."menubar:validate:strict"]
+description = "Validate menu bar visibility (strict self-report)"
+run = """
+SCRIPT="$HOME/.config/dev-env/config/scripts/menubar-visibility.sh"
+if [ ! -x "$SCRIPT" ]; then
+  SCRIPT="{{config_root}}/config/scripts/menubar-visibility.sh"
+fi
+
+echo "Checking SwiftBar..."
+bash "$SCRIPT" --process "SwiftBar" --label "SwiftBar" --strict
+
+echo "Checking DevEnvManager (Swift)..."
+bash "$SCRIPT" --process "DevEnvManager" --label "DevEnvManager (Swift)" --strict
+
+echo "Checking DevEnvManager-Iced..."
+bash "$SCRIPT" --process "devenv-manager-iced" --label "DevEnvManager-Iced" --match "DevEnvManager" --status-file "$HOME/.config/dev-env/menubar/iced.json" --strict
+
+echo "Checking DevEnvManager-Tauri..."
+bash "$SCRIPT" --process "devenv-manager-tauri" --pattern "devenv-manager-tauri|DevEnvManager" --label "DevEnvManager-Tauri" --match "DevEnvManager" --status-file "$HOME/.config/dev-env/menubar/tauri.json" --strict
 """
 
 [tasks."menubar:refresh"]

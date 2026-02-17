@@ -96,6 +96,9 @@ temp/
 *.tmp
 *.temp
 
+# Local menu bar visibility snapshots
+menubar/
+
 # Pixi environment
 .pixi/
 
