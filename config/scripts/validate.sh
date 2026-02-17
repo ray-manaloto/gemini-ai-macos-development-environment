@@ -25,6 +25,10 @@ for arg in "$@"; do
   esac
 done
 
+if [ "$QUIET_MODE" = "true" ]; then
+    : # reserved for quiet-mode output shaping
+fi
+
 # Resolve script root for auxiliary scripts
 PROJECT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
 SCRIPT_ROOT="${DEV_ENV_ROOT:-$PROJECT_ROOT}"
@@ -189,23 +193,34 @@ elif echo "$PATH" | grep -q "mise/installs"; then
     MISE_IN_PATH=true
 fi
 
+ZSH_RC_HAS_MISE=false
+ZSH_ENV_HAS_MISE=false
+if grep -q "mise activate" "$HOME/.zshrc" 2>/dev/null; then
+    ZSH_RC_HAS_MISE=true
+fi
+if grep -q "mise activate" "$HOME/.zshenv" 2>/dev/null; then
+    ZSH_ENV_HAS_MISE=true
+fi
+
 if [ "$MISE_IN_PATH" = "false" ]; then
-    if grep -q "mise activate" "$HOME/.zshrc" 2>/dev/null; then
-        check_pass "Mise activation configured in ~/.zshrc (restart shell to apply)"
+    if [ "$ZSH_RC_HAS_MISE" = "true" ] || [ "$ZSH_ENV_HAS_MISE" = "true" ]; then
+        check_pass "Mise activation configured in zsh startup files (restart shell to apply)"
     else
-        check_warn_required "Mise NOT in PATH (add to ~/.zshrc: eval \"\$(mise activate zsh)\")"
+        check_warn_required "Mise NOT in PATH" 'Add to ~/.zshenv or ~/.zshrc: eval "$(mise activate zsh --shims)"'
     fi
 fi
 
 # Verify activation hooks across common shells
-if ! grep -q "mise activate" "$HOME/.zshrc" 2>/dev/null; then
-    check_warn_required "Mise activation missing in ~/.zshrc" "Add: eval \"\$(mise activate zsh)\""
+if [ "$ZSH_RC_HAS_MISE" = "true" ] || [ "$ZSH_ENV_HAS_MISE" = "true" ]; then
+    check_pass "Mise activation hook found for zsh" "$HOME/.zshrc or $HOME/.zshenv"
+else
+    check_warn_required "Mise activation missing for zsh" 'Add: eval "$(mise activate zsh --shims)"'
 fi
 if [ -f "$HOME/.bashrc" ] && ! grep -q "mise activate" "$HOME/.bashrc" 2>/dev/null; then
-    check_warn_required "Mise activation missing in ~/.bashrc" "Add: eval \"\$(mise activate bash)\""
+    check_warn_required "Mise activation missing in ~/.bashrc" 'Add: eval "$(mise activate bash)"'
 fi
 if [ -f "$HOME/.bash_profile" ] && ! grep -q "mise activate" "$HOME/.bash_profile" 2>/dev/null; then
-    check_warn_required "Mise activation missing in ~/.bash_profile" "Add: eval \"\$(mise activate bash)\""
+    check_warn_required "Mise activation missing in ~/.bash_profile" 'Add: eval "$(mise activate bash)"'
 fi
 
 if [ -d "$HOME/.local/share/mise/shims" ]; then
@@ -517,6 +532,19 @@ PY
     fi
 else
     check_warn "Autofix" "autofix.sh or python3 not available"
+fi
+
+section "Skills Guardrails"
+
+SKILLS_GUARD_SCRIPT="$SCRIPT_ROOT/config/scripts/skills-guard.sh"
+if [ -f "$SKILLS_GUARD_SCRIPT" ]; then
+    if bash "$SKILLS_GUARD_SCRIPT" --quiet >/dev/null 2>&1; then
+        check_pass "Required workflow skills" "validated"
+    else
+        check_fail "Required workflow skills" "Run: mise run skills:guard"
+    fi
+else
+    check_fail "Skills guard script missing" "$SKILLS_GUARD_SCRIPT"
 fi
 
 section "Containers (Optional)"

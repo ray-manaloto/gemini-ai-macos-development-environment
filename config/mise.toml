@@ -168,6 +168,10 @@ fi
 description = "Run lefthook pre-commit checks"
 run = "lefthook run pre-commit"
 
+[tasks."skills:guard"]
+description = "Enforce required workflow skills are present and healthy"
+run = "bash $DEV_ENV_ROOT/config/scripts/skills-guard.sh"
+
 [tasks.lint]
 description = "Lint shell scripts with shellcheck"
 run = "find . -name '*.sh' -not -path '*/node_modules/*' -not -path '*/.git/*' -not -path '*/.pixi/*' -not -path '*/research/repos/*' -exec shellcheck --exclude=SC2016,SC2088,SC2034,SC2129,SC2059 {} +"
@@ -637,6 +641,77 @@ echo "Checking DevEnvManager-Tauri..."
 bash "$SCRIPT" --process "devenv-manager-tauri" --pattern "devenv-manager-tauri|DevEnvManager" --label "DevEnvManager-Tauri" --match "DevEnvManager" --status-file "$HOME/.config/dev-env/menubar/tauri.json" --strict
 """
 
+[tasks."menubar:ensure"]
+description = "Start available menu bar apps and run strict validation"
+run = """
+#!/bin/bash
+set -euo pipefail
+
+echo "=== Menu Bar Ensure + Validate ==="
+echo ""
+
+SCRIPT="$HOME/.config/dev-env/config/scripts/menubar-visibility.sh"
+if [ ! -x "$SCRIPT" ]; then
+  SCRIPT="{{config_root}}/config/scripts/menubar-visibility.sh"
+fi
+
+ICED_BIN="$PWD/DevEnvManager-Iced/target/release/devenv-manager-iced"
+TAURI_APP="$HOME/Applications/DevEnvManager.app"
+ICED_STARTED=false
+STATUS=0
+
+if [ -d "/Applications/SwiftBar.app" ]; then
+  echo "Starting SwiftBar..."
+  open -a SwiftBar || true
+else
+  echo "Skipping SwiftBar (not installed)"
+fi
+
+if [ -d "$TAURI_APP" ]; then
+  echo "Starting DevEnvManager (Tauri app)..."
+  open "$TAURI_APP" || true
+else
+  echo "Skipping DevEnvManager app (not installed)"
+fi
+
+if [ -x "$ICED_BIN" ]; then
+  if ! pgrep -f "$ICED_BIN" >/dev/null 2>&1; then
+    echo "Starting DevEnvManager-Iced..."
+    nohup "$ICED_BIN" >/tmp/devenv-iced.log 2>&1 &
+    ICED_STARTED=true
+  else
+    echo "DevEnvManager-Iced already running"
+  fi
+else
+  echo "Skipping DevEnvManager-Iced (binary not found)"
+fi
+
+sleep 4
+
+if [ -d "/Applications/SwiftBar.app" ]; then
+  echo "Checking SwiftBar..."
+  bash "$SCRIPT" --process "SwiftBar" --label "SwiftBar" --strict || STATUS=$?
+fi
+
+if [ -d "$TAURI_APP" ]; then
+  echo "Checking DevEnvManager-Tauri..."
+  bash "$SCRIPT" --process "devenv-manager-tauri" --pattern "devenv-manager-tauri|DevEnvManager" --label "DevEnvManager-Tauri" --match "DevEnvManager" --status-file "$HOME/.config/dev-env/menubar/tauri.json" --strict || STATUS=$?
+fi
+
+if [ -x "$ICED_BIN" ]; then
+  echo "Checking DevEnvManager-Iced..."
+  bash "$SCRIPT" --process "devenv-manager-iced" --label "DevEnvManager-Iced" --match "DevEnvManager" --status-file "$HOME/.config/dev-env/menubar/iced.json" --strict || STATUS=$?
+fi
+
+if [ "$ICED_STARTED" = true ]; then
+  echo "Stopping temporary DevEnvManager-Iced process..."
+  pkill -f "$ICED_BIN" >/dev/null 2>&1 || true
+fi
+
+exit "$STATUS"
+"""
+
+
 [tasks."menubar:refresh"]
 description = "Refresh SwiftBar plugins"
 run = """
@@ -824,8 +899,14 @@ if [ -d "$APP_PATH" ]; then
   echo "   Version: $VERSION"
   
   # Check if running
-  if pgrep -x "DevEnvManager" > /dev/null; then
-    PID=$(pgrep -x "DevEnvManager")
+  if pgrep -x "DevEnvManager" > /dev/null || pgrep -x "devenv-manager-tauri" > /dev/null || pgrep -f "devenv-manager-tauri" > /dev/null; then
+    PID=$(pgrep -x "DevEnvManager" | head -n1 || true)
+    if [ -z "$PID" ]; then
+      PID=$(pgrep -x "devenv-manager-tauri" | head -n1 || true)
+    fi
+    if [ -z "$PID" ]; then
+      PID=$(pgrep -f "devenv-manager-tauri" | head -n1 || true)
+    fi
     echo "✅ Running (PID: $PID)"
   else
     echo "⚪ Not running"
@@ -855,8 +936,12 @@ fi
 [tasks."devenv-app:quit"]
 description = "Quit DevEnvManager app"
 run = """
-if pgrep -x "DevEnvManager" > /dev/null; then
+if pgrep -x "DevEnvManager" > /dev/null || pgrep -x "devenv-manager-tauri" > /dev/null || pgrep -f "devenv-manager-tauri" > /dev/null; then
   osascript -e 'tell application "DevEnvManager" to quit'
+  sleep 1
+  if pgrep -x "devenv-manager-tauri" > /dev/null || pgrep -f "devenv-manager-tauri" > /dev/null; then
+    pkill -f "/DevEnvManager.app/Contents/MacOS/devenv-manager-tauri" >/dev/null 2>&1 || true
+  fi
   echo "✅ DevEnvManager quit"
 else
   echo "⚪ DevEnvManager is not running"
@@ -876,9 +961,12 @@ if [ ! -d "$APP_PATH" ]; then
 fi
 
 echo "Restarting DevEnvManager..."
-if pgrep -x "DevEnvManager" > /dev/null; then
+if pgrep -x "DevEnvManager" > /dev/null || pgrep -x "devenv-manager-tauri" > /dev/null || pgrep -f "devenv-manager-tauri" > /dev/null; then
   osascript -e 'tell application "DevEnvManager" to quit'
   sleep 1
+  if pgrep -x "devenv-manager-tauri" > /dev/null || pgrep -f "devenv-manager-tauri" > /dev/null; then
+    pkill -f "/DevEnvManager.app/Contents/MacOS/devenv-manager-tauri" >/dev/null 2>&1 || true
+  fi
 fi
 open "$APP_PATH"
 echo "✅ DevEnvManager restarted"
@@ -899,10 +987,13 @@ if [ ! -d "$APP_PATH" ]; then
 fi
 
 # Quit if running
-if pgrep -x "DevEnvManager" > /dev/null; then
+if pgrep -x "DevEnvManager" > /dev/null || pgrep -x "devenv-manager-tauri" > /dev/null || pgrep -f "devenv-manager-tauri" > /dev/null; then
   echo "Quitting DevEnvManager..."
   osascript -e 'tell application "DevEnvManager" to quit' 2>/dev/null || true
   sleep 1
+  if pgrep -x "devenv-manager-tauri" > /dev/null || pgrep -f "devenv-manager-tauri" > /dev/null; then
+    pkill -f "/DevEnvManager.app/Contents/MacOS/devenv-manager-tauri" >/dev/null 2>&1 || true
+  fi
 fi
 
 # Remove app
@@ -1543,10 +1634,18 @@ if ! grep -q 'mise activate' "$SHELL_RC" 2>/dev/null; then
   echo "Added mise activation to $SHELL_RC"
 fi
 
-if [ -f "{{config_root}}/config/scripts/autofix.sh" ]; then
+AUTOFIX_SCRIPT=""
+for CANDIDATE in   "$DEV_ENV_ROOT/config/scripts/autofix.sh"   "$HOME/.config/dev-env/config/scripts/autofix.sh"   "$(pwd)/config/scripts/autofix.sh"; do
+  if [ -f "$CANDIDATE" ]; then
+    AUTOFIX_SCRIPT="$CANDIDATE"
+    break
+  fi
+done
+
+if [ -n "$AUTOFIX_SCRIPT" ]; then
   echo ""
   echo "=== Running Autofix ==="
-  bash "{{config_root}}/config/scripts/autofix.sh" fix || true
+  bash "$AUTOFIX_SCRIPT" fix || true
 fi
 
 echo "Common setup complete."
@@ -2337,11 +2436,17 @@ fi
 description = "Show environment issues without fixing (dry-run)"
 run = """
 #!/bin/bash
-SCRIPT="{{config_root}}/config/scripts/autofix.sh"
+SCRIPT=""
+for CANDIDATE in   "$DEV_ENV_ROOT/config/scripts/autofix.sh"   "$HOME/.config/dev-env/config/scripts/autofix.sh"   "$(pwd)/config/scripts/autofix.sh"; do
+  if [ -f "$CANDIDATE" ]; then
+    SCRIPT="$CANDIDATE"
+    break
+  fi
+done
 if [ -f "$SCRIPT" ]; then
   bash "$SCRIPT" status
 else
-  echo "ERROR: autofix.sh not found at $SCRIPT"
+  echo "ERROR: autofix.sh not found (checked DEV_ENV_ROOT, ~/.config/dev-env, cwd)"
   exit 1
 fi
 """
@@ -2350,11 +2455,17 @@ fi
 description = "Fix environment issues with backup"
 run = """
 #!/bin/bash
-SCRIPT="{{config_root}}/config/scripts/autofix.sh"
+SCRIPT=""
+for CANDIDATE in   "$DEV_ENV_ROOT/config/scripts/autofix.sh"   "$HOME/.config/dev-env/config/scripts/autofix.sh"   "$(pwd)/config/scripts/autofix.sh"; do
+  if [ -f "$CANDIDATE" ]; then
+    SCRIPT="$CANDIDATE"
+    break
+  fi
+done
 if [ -f "$SCRIPT" ]; then
   bash "$SCRIPT" fix
 else
-  echo "ERROR: autofix.sh not found at $SCRIPT"
+  echo "ERROR: autofix.sh not found (checked DEV_ENV_ROOT, ~/.config/dev-env, cwd)"
   exit 1
 fi
 """
@@ -2363,11 +2474,17 @@ fi
 description = "Output environment issues as JSON (for integration)"
 run = """
 #!/bin/bash
-SCRIPT="{{config_root}}/config/scripts/autofix.sh"
+SCRIPT=""
+for CANDIDATE in   "$DEV_ENV_ROOT/config/scripts/autofix.sh"   "$HOME/.config/dev-env/config/scripts/autofix.sh"   "$(pwd)/config/scripts/autofix.sh"; do
+  if [ -f "$CANDIDATE" ]; then
+    SCRIPT="$CANDIDATE"
+    break
+  fi
+done
 if [ -f "$SCRIPT" ]; then
   bash "$SCRIPT" --json
 else
-  echo '{"error": "autofix.sh not found"}'
+  echo '{"error": "autofix.sh not found (checked DEV_ENV_ROOT, ~/.config/dev-env, cwd)"}'
   exit 1
 fi
 """
