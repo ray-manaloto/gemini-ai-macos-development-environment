@@ -96,11 +96,17 @@ temp/
 *.tmp
 *.temp
 
+# Local menu bar visibility snapshots
+menubar/
+
 # Pixi environment
 .pixi/
 
 # mise local config (user-specific)
 .mise.local.toml
+
+# Backups (local CLI config snapshots)
+backups/
 
 # Agent skills directories (installed per-project, symlinked from .agents/skills/)
 .agent/

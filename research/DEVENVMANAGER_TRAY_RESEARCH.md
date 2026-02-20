@@ -2,7 +2,7 @@
 
 > **Date:** February 2026
 > **Status:** Research complete, decision pending
-> **Context:** DevEnvManager menu bar icon invisible on notched MacBook Pro (M2 Max)
+> **Context:** Menu bar icon visibility issues (do NOT assume notch overflow without verification)
 
 ---
 
@@ -20,6 +20,8 @@
 ### What Happened
 
 DevEnvManager's menu bar icon is registered and running but **invisible** -- hidden behind the MacBook Pro notch. Confirmed via macOS Accessibility APIs:
+
+> **Note:** Always verify process status and actual visibility (Mission Control, menu bar managers, Space focus) before attributing invisibility to notch overflow.
 
 - Status item named `"terminal"` exists at position **X=781**
 - Notch spans approximately **X=772-956** on 1728pt-wide display (3456x2234 native)

@@ -7,24 +7,34 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		01F07FB8EFE0C36F8A728085 /* OrbStackModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D7F33E4F224575B91C2CE5B /* OrbStackModels.swift */; };
 		0A2468E09B2E62EA98F5B64D /* ToolRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5194D0A502DD8D638DC6EBED /* ToolRowView.swift */; };
+		0F024C681AA43CBD1AEEEE7C /* ContainersSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 337D98E986D442710EE906DD /* ContainersSection.swift */; };
 		13B4BFD93E5D7BF5FFAF394E /* BrewModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9E068994E442F85942354EA /* BrewModels.swift */; };
+		203F4D39BB8FE53F9635589C /* PopoverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2BCCC551F177D2CE745141D /* PopoverTests.swift */; };
 		2FD61DCB67F6003B446A0541 /* MiseClientProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42645E2DDF3D56D285C34538 /* MiseClientProtocol.swift */; };
 		332FFB57CAA85EDD900B0E92 /* ToolsDiskCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0C555DEE068DC64A768E248 /* ToolsDiskCache.swift */; };
+		36DC73E8A6A9BE34E97042F1 /* OrbStackError.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE868E8E86396AE6D0E93708 /* OrbStackError.swift */; };
 		4375C7B2678022B08E4F4A4A /* MiseClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = B91AF867AD9A80192BF6FF98 /* MiseClient.swift */; };
 		4F6A020A647D5F57F7FCEFDB /* LayoutConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDAB3260BBC57E1478F3E636 /* LayoutConstants.swift */; };
+		5205612C14EF9ECD206B0A78 /* FakeOrbStackClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6560EDD4DAD0B757E9222353 /* FakeOrbStackClient.swift */; };
 		5351BAC059D25B804387A7D0 /* MiseModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = F59377E6A0E43F1300D62065 /* MiseModels.swift */; };
 		63E750B632B331C9141ED840 /* StatusBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB82EEB6486645F6CD348096 /* StatusBadge.swift */; };
+		659D4DE6F788826676DF3B7D /* OrbStackClientProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 916065C6985560781BA0ED55 /* OrbStackClientProtocol.swift */; };
 		69D3B03BFA5A5F6C18B3958B /* CommandExecutor.swift in Sources */ = {isa = PBXBuildFile; fileRef = C82D4D64D74C97DFC18387A8 /* CommandExecutor.swift */; };
+		7416ED9FF2F6933A50CF94DC /* test_swift_validation.bats in Resources */ = {isa = PBXBuildFile; fileRef = D8E996EEB93DB30AFAB570C2 /* test_swift_validation.bats */; };
 		780A62248176D3268F21215D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9090EDD493AD2B5553E48ED /* AppDelegate.swift */; };
 		8E9BEB93EDC7D9CAEACF22C4 /* FakeMiseClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C64D6ECBDCBB94DFB46356E /* FakeMiseClient.swift */; };
 		93A2E02CDAC95EB91AC1806C /* ToolsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B84B8AE81EB71CE066C57F55 /* ToolsStore.swift */; };
+		9ACFCBFC3299E32966B88B84 /* VisibilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BA9C975D4F5895B4024FEBA /* VisibilityTests.swift */; };
 		A64EAF0E22D58774094B7E25 /* ServicesSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 014486A7C62E9E124C7DC13A /* ServicesSection.swift */; };
 		A777436FEA24293CCBD56D40 /* ServicesStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB67FCB44D148A8FB4F37DC1 /* ServicesStore.swift */; };
 		B3549EBF169AF2823996F747 /* FakeBrewServicesClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02BD25B090D900EB4245DBA0 /* FakeBrewServicesClient.swift */; };
+		BA975C055AE700D6C3269546 /* OrbStackClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15058464B0B0A75A005DF1CD /* OrbStackClient.swift */; };
 		BD4680F972166BC1BED847D6 /* BrewServicesClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9790AD9FB380B4696F4B5C5 /* BrewServicesClient.swift */; };
 		BD6434CA5607712F095A7132 /* MiseError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35583D8EB1A2C2E91E27EECC /* MiseError.swift */; };
 		CF750E13AC3100C4E9E7E713 /* MenuBarRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DA4ADEFB4BEA84E857D0D47 /* MenuBarRootView.swift */; };
+		DA3B7871A47C28AE15F70F58 /* ContainersStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE3F98E4B39E22209AA9AA5C /* ContainersStore.swift */; };
 		DD739433283DA9AB70288BC7 /* PortDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A2F9C5674A144DB1CD53DE4 /* PortDetector.swift */; };
 		FA0B73FE2E43F7E77F418CF7 /* DevEnvManagerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99CC9032FC4421629867A862 /* DevEnvManagerApp.swift */; };
 		FBA877E96DDB0BFFAE3F0CB1 /* BrewServicesClientProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C9588049A5B5DE434C0F56D /* BrewServicesClientProtocol.swift */; };
@@ -45,15 +55,24 @@
 		014486A7C62E9E124C7DC13A /* ServicesSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServicesSection.swift; sourceTree = "<group>"; };
 		02BD25B090D900EB4245DBA0 /* FakeBrewServicesClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FakeBrewServicesClient.swift; sourceTree = "<group>"; };
 		0C64D6ECBDCBB94DFB46356E /* FakeMiseClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FakeMiseClient.swift; sourceTree = "<group>"; };
+		15058464B0B0A75A005DF1CD /* OrbStackClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrbStackClient.swift; sourceTree = "<group>"; };
 		2A2F9C5674A144DB1CD53DE4 /* PortDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortDetector.swift; sourceTree = "<group>"; };
 		2C9588049A5B5DE434C0F56D /* BrewServicesClientProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrewServicesClientProtocol.swift; sourceTree = "<group>"; };
 		2CA54617D273C4819E3D001D /* DevEnvManagerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DevEnvManagerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		337D98E986D442710EE906DD /* ContainersSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContainersSection.swift; sourceTree = "<group>"; };
 		35583D8EB1A2C2E91E27EECC /* MiseError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MiseError.swift; sourceTree = "<group>"; };
 		42645E2DDF3D56D285C34538 /* MiseClientProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MiseClientProtocol.swift; sourceTree = "<group>"; };
 		4DA4ADEFB4BEA84E857D0D47 /* MenuBarRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarRootView.swift; sourceTree = "<group>"; };
 		5194D0A502DD8D638DC6EBED /* ToolRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolRowView.swift; sourceTree = "<group>"; };
+		6560EDD4DAD0B757E9222353 /* FakeOrbStackClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FakeOrbStackClient.swift; sourceTree = "<group>"; };
+		6D7F33E4F224575B91C2CE5B /* OrbStackModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrbStackModels.swift; sourceTree = "<group>"; };
+		7AEE96257678F43655DC503D /* .gitkeep */ = {isa = PBXFileReference; path = .gitkeep; sourceTree = "<group>"; };
+		7BA9C975D4F5895B4024FEBA /* VisibilityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisibilityTests.swift; sourceTree = "<group>"; };
+		916065C6985560781BA0ED55 /* OrbStackClientProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrbStackClientProtocol.swift; sourceTree = "<group>"; };
 		99CC9032FC4421629867A862 /* DevEnvManagerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DevEnvManagerApp.swift; sourceTree = "<group>"; };
 		9E107677412B8858FA70176A /* DevEnvManager.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = DevEnvManager.entitlements; sourceTree = "<group>"; };
+		AE868E8E86396AE6D0E93708 /* OrbStackError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrbStackError.swift; sourceTree = "<group>"; };
+		B2BCCC551F177D2CE745141D /* PopoverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopoverTests.swift; sourceTree = "<group>"; };
 		B82B609610FD00031F5CB5FC /* BrewError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrewError.swift; sourceTree = "<group>"; };
 		B84B8AE81EB71CE066C57F55 /* ToolsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolsStore.swift; sourceTree = "<group>"; };
 		B91AF867AD9A80192BF6FF98 /* MiseClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MiseClient.swift; sourceTree = "<group>"; };
@@ -61,8 +80,10 @@
 		C82D4D64D74C97DFC18387A8 /* CommandExecutor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommandExecutor.swift; sourceTree = "<group>"; };
 		CCD523EF43D3614BF1EFD20F /* DevEnvManager.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DevEnvManager.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CDAB3260BBC57E1478F3E636 /* LayoutConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutConstants.swift; sourceTree = "<group>"; };
+		D8E996EEB93DB30AFAB570C2 /* test_swift_validation.bats */ = {isa = PBXFileReference; path = test_swift_validation.bats; sourceTree = "<group>"; };
 		D9790AD9FB380B4696F4B5C5 /* BrewServicesClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrewServicesClient.swift; sourceTree = "<group>"; };
 		EB67FCB44D148A8FB4F37DC1 /* ServicesStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServicesStore.swift; sourceTree = "<group>"; };
+		EE3F98E4B39E22209AA9AA5C /* ContainersStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContainersStore.swift; sourceTree = "<group>"; };
 		F0C555DEE068DC64A768E248 /* ToolsDiskCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolsDiskCache.swift; sourceTree = "<group>"; };
 		F59377E6A0E43F1300D62065 /* MiseModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MiseModels.swift; sourceTree = "<group>"; };
 		F9090EDD493AD2B5553E48ED /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -71,13 +92,6 @@
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
-		00F9EC80B7B609505B34638C /* Settings */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Settings;
-			sourceTree = "<group>";
-		};
 		086735A36565E5656A0A43FA /* Cache */ = {
 			isa = PBXGroup;
 			children = (
@@ -89,6 +103,7 @@
 		2205F61C02AC97CD1A2E3E3C /* Stores */ = {
 			isa = PBXGroup;
 			children = (
+				EE3F98E4B39E22209AA9AA5C /* ContainersStore.swift */,
 				EB67FCB44D148A8FB4F37DC1 /* ServicesStore.swift */,
 				B84B8AE81EB71CE066C57F55 /* ToolsStore.swift */,
 			);
@@ -128,6 +143,7 @@
 		3C91F91CACFC6635F23A9D10 /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
+				7AEE96257678F43655DC503D /* .gitkeep */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -147,7 +163,6 @@
 			isa = PBXGroup;
 			children = (
 				268A1F0E5A26F635B6685976 /* MenuBar */,
-				00F9EC80B7B609505B34638C /* Settings */,
 				8B1B87F891A346F830CDCD4F /* Shared */,
 			);
 			path = Presentation;
@@ -174,6 +189,10 @@
 		65F9F5B15715A9AF53C90115 /* OrbStack */ = {
 			isa = PBXGroup;
 			children = (
+				15058464B0B0A75A005DF1CD /* OrbStackClient.swift */,
+				916065C6985560781BA0ED55 /* OrbStackClientProtocol.swift */,
+				AE868E8E86396AE6D0E93708 /* OrbStackError.swift */,
+				6D7F33E4F224575B91C2CE5B /* OrbStackModels.swift */,
 			);
 			path = OrbStack;
 			sourceTree = "<group>";
@@ -206,6 +225,10 @@
 			children = (
 				02BD25B090D900EB4245DBA0 /* FakeBrewServicesClient.swift */,
 				0C64D6ECBDCBB94DFB46356E /* FakeMiseClient.swift */,
+				6560EDD4DAD0B757E9222353 /* FakeOrbStackClient.swift */,
+				B2BCCC551F177D2CE745141D /* PopoverTests.swift */,
+				D8E996EEB93DB30AFAB570C2 /* test_swift_validation.bats */,
+				7BA9C975D4F5895B4024FEBA /* VisibilityTests.swift */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -239,6 +262,7 @@
 		BEF64FAB188A2EE91BB10AAC /* Sections */ = {
 			isa = PBXGroup;
 			children = (
+				337D98E986D442710EE906DD /* ContainersSection.swift */,
 				014486A7C62E9E124C7DC13A /* ServicesSection.swift */,
 			);
 			path = Sections;
@@ -279,6 +303,7 @@
 			buildConfigurationList = 029C1C295728A635639C74B9 /* Build configuration list for PBXNativeTarget "DevEnvManagerTests" */;
 			buildPhases = (
 				B3D04A1064E4D5814135A3EE /* Sources */,
+				416DCB39AC9FD8B9B14EFCE4 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -316,7 +341,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
-				LastUpgradeCheck = 1500;
+				LastUpgradeCheck = 1610;
 				TargetAttributes = {
 					375CA41B8125AA236F460943 = {
 						DevelopmentTeam = "";
@@ -348,6 +373,17 @@
 		};
 /* End PBXProject section */
 
+/* Begin PBXResourcesBuildPhase section */
+		416DCB39AC9FD8B9B14EFCE4 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7416ED9FF2F6933A50CF94DC /* test_swift_validation.bats in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		B3D04A1064E4D5814135A3EE /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -355,6 +391,9 @@
 			files = (
 				B3549EBF169AF2823996F747 /* FakeBrewServicesClient.swift in Sources */,
 				8E9BEB93EDC7D9CAEACF22C4 /* FakeMiseClient.swift in Sources */,
+				5205612C14EF9ECD206B0A78 /* FakeOrbStackClient.swift in Sources */,
+				203F4D39BB8FE53F9635589C /* PopoverTests.swift in Sources */,
+				9ACFCBFC3299E32966B88B84 /* VisibilityTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -368,6 +407,8 @@
 				BD4680F972166BC1BED847D6 /* BrewServicesClient.swift in Sources */,
 				FBA877E96DDB0BFFAE3F0CB1 /* BrewServicesClientProtocol.swift in Sources */,
 				69D3B03BFA5A5F6C18B3958B /* CommandExecutor.swift in Sources */,
+				0F024C681AA43CBD1AEEEE7C /* ContainersSection.swift in Sources */,
+				DA3B7871A47C28AE15F70F58 /* ContainersStore.swift in Sources */,
 				FA0B73FE2E43F7E77F418CF7 /* DevEnvManagerApp.swift in Sources */,
 				4F6A020A647D5F57F7FCEFDB /* LayoutConstants.swift in Sources */,
 				CF750E13AC3100C4E9E7E713 /* MenuBarRootView.swift in Sources */,
@@ -375,6 +416,10 @@
 				2FD61DCB67F6003B446A0541 /* MiseClientProtocol.swift in Sources */,
 				BD6434CA5607712F095A7132 /* MiseError.swift in Sources */,
 				5351BAC059D25B804387A7D0 /* MiseModels.swift in Sources */,
+				BA975C055AE700D6C3269546 /* OrbStackClient.swift in Sources */,
+				659D4DE6F788826676DF3B7D /* OrbStackClientProtocol.swift in Sources */,
+				36DC73E8A6A9BE34E97042F1 /* OrbStackError.swift in Sources */,
+				01F07FB8EFE0C36F8A728085 /* OrbStackModels.swift in Sources */,
 				DD739433283DA9AB70288BC7 /* PortDetector.swift in Sources */,
 				A64EAF0E22D58774094B7E25 /* ServicesSection.swift in Sources */,
 				A777436FEA24293CCBD56D40 /* ServicesStore.swift in Sources */,
@@ -485,8 +530,8 @@
 				SDKROOT = macosx;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
-				SWIFT_STRICT_CONCURRENCY = complete;
-				SWIFT_VERSION = 6.0;
+				SWIFT_STRICT_CONCURRENCY = minimal;
+				SWIFT_VERSION = 5.10;
 			};
 			name = Release;
 		};
@@ -586,8 +631,8 @@
 				SDKROOT = macosx;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_STRICT_CONCURRENCY = complete;
-				SWIFT_VERSION = 6.0;
+				SWIFT_STRICT_CONCURRENCY = minimal;
+				SWIFT_VERSION = 5.10;
 			};
 			name = Debug;
 		};

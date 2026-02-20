@@ -187,6 +187,8 @@ The `config/main.pkl` file is the source of truth. It compiles to `~/.config/mis
 | `mise run setup-mcp` | Configure mise MCP for Claude |
 | `mise run setup-extensions` | Install GitHub Copilot extension |
 | `mise run devenv-app:install` | Install DevEnvManager menu bar app |
+| `mise run menubar:status` | Check SwiftBar menu bar status |
+| `mise run menubar:validate` | Validate menu bar process + visibility |
 
 ## Project Structure
 

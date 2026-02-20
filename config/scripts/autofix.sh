@@ -22,14 +22,13 @@ set -euo pipefail
 
 # Colors (disabled in non-interactive or CI)
 if [[ -t 1 && -z "${CI:-}" && -z "${NO_COLOR:-}" ]]; then
-    RED='\033[0;31m'
     GREEN='\033[0;32m'
     YELLOW='\033[1;33m'
     BLUE='\033[0;34m'
     CYAN='\033[0;36m'
     NC='\033[0m'
 else
-    RED='' GREEN='' YELLOW='' BLUE='' CYAN='' NC=''
+    GREEN='' YELLOW='' BLUE='' CYAN='' NC=''
 fi
 
 # Detect platform
@@ -47,7 +46,6 @@ init_backup_dir() {
     fi
 }
 MISE_MANAGED_TOOLS="bun pixi chezmoi usage pkl node starship ripgrep fd zoxide pitchfork opencode claude gh jq yq bat eza delta fzf"
-BOOTSTRAP_TOOLS="mise uv uvx"
 
 # Counters
 ISSUES_FOUND=0
@@ -210,9 +208,6 @@ detect_npm_global() {
     fi
     
     # Check for global packages
-    local npm_global_prefix
-    npm_global_prefix=$(npm config get prefix 2>/dev/null || echo "")
-    
     # Check if npm is pointing to system or standalone
     local npm_path
     npm_path=$(which npm 2>/dev/null || echo "")
@@ -320,7 +315,17 @@ detect_brew_cli() {
         return
     fi
     
-    if ! command -v brew &>/dev/null; then
+    BREW_BIN="$(command -v brew 2>/dev/null || true)"
+    if [[ -z "$BREW_BIN" ]]; then
+        for candidate in /opt/homebrew/bin/brew /usr/local/bin/brew; do
+            if [[ -x "$candidate" ]]; then
+                BREW_BIN="$candidate"
+                break
+            fi
+        done
+    fi
+
+    if [[ -z "$BREW_BIN" ]]; then
         log_ok "Homebrew not installed"
         return
     fi
@@ -330,12 +335,12 @@ detect_brew_cli() {
     
     local found=0
     for tool in $cli_tools_to_check; do
-        if brew list "$tool" &>/dev/null; then
-            log_issue "BREW_CLI" "$tool" "Installed via Homebrew" "brew uninstall $tool && mise use -g $tool"
+        if "$BREW_BIN" list "$tool" &>/dev/null; then
+            log_issue "BREW_CLI" "$tool" "Installed via Homebrew" "$BREW_BIN uninstall $tool && mise use -g $tool"
             ((++found))
             
             if [[ "$MODE" == "fix" ]]; then
-                brew uninstall "$tool" 2>/dev/null || true
+                "$BREW_BIN" uninstall "$tool" 2>/dev/null || true
                 mise use -g "$tool" 2>/dev/null || true
                 log_fixed "$tool" "Migrated from Homebrew to mise"
             fi

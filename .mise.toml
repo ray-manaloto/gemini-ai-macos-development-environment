@@ -78,6 +78,10 @@ fi
 description = "List all installed project skills"
 run = "bunx skills list"
 
+[tasks."skills:guard"]
+description = "Enforce required workflow skills are present and healthy"
+run = "bash {{config_root}}/config/scripts/skills-guard.sh"
+
 [tasks."hooks:install"]
 description = "Install lefthook-managed git hooks"
 run = """
