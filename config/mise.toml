@@ -629,16 +629,32 @@ if [ ! -x "$SCRIPT" ]; then
 fi
 
 echo "Checking SwiftBar..."
-bash "$SCRIPT" --process "SwiftBar" --label "SwiftBar" --strict
+if [ -d "/Applications/SwiftBar.app" ]; then
+  bash "$SCRIPT" --process "SwiftBar" --label "SwiftBar" --strict
+else
+  echo "Skipping SwiftBar (not installed)"
+fi
 
 echo "Checking DevEnvManager (Swift)..."
-bash "$SCRIPT" --process "DevEnvManager" --label "DevEnvManager (Swift)" --strict
+if [ -d "$HOME/Applications/DevEnvManager.app" ] && [ "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' \"$HOME/Applications/DevEnvManager.app/Contents/Info.plist\" 2>/dev/null || true)" != "com.devenvmanager.tauri" ]; then
+  bash "$SCRIPT" --process "DevEnvManager" --label "DevEnvManager (Swift)" --strict
+else
+  echo "Skipping DevEnvManager (Swift) (not installed as Swift build)"
+fi
 
 echo "Checking DevEnvManager-Iced..."
-bash "$SCRIPT" --process "devenv-manager-iced" --label "DevEnvManager-Iced" --match "DevEnvManager" --status-file "$HOME/.config/dev-env/menubar/iced.json" --strict
+if pgrep -f "devenv-manager-iced" >/dev/null 2>&1; then
+  bash "$SCRIPT" --process "devenv-manager-iced" --label "DevEnvManager-Iced" --match "DevEnvManager" --status-file "$HOME/.config/dev-env/menubar/iced.json" --strict
+else
+  echo "Skipping DevEnvManager-Iced (process not running)"
+fi
 
 echo "Checking DevEnvManager-Tauri..."
-bash "$SCRIPT" --process "devenv-manager-tauri" --pattern "devenv-manager-tauri|DevEnvManager" --label "DevEnvManager-Tauri" --match "DevEnvManager" --status-file "$HOME/.config/dev-env/menubar/tauri.json" --strict
+if pgrep -f "devenv-manager-tauri|DevEnvManager" >/dev/null 2>&1; then
+  bash "$SCRIPT" --process "devenv-manager-tauri" --pattern "devenv-manager-tauri|DevEnvManager" --label "DevEnvManager-Tauri" --match "DevEnvManager" --status-file "$HOME/.config/dev-env/menubar/tauri.json" --strict
+else
+  echo "Skipping DevEnvManager-Tauri (process not running)"
+fi
 """
 
 [tasks."menubar:ensure"]
@@ -843,11 +859,22 @@ fi
 # Check for XcodeGen
 if ! command -v xcodegen &> /dev/null; then
   echo "📥 Installing XcodeGen..."
-  mise use -g "ubi:yonaskolb/XcodeGen"
+  mise use -g "github:yonaskolb/XcodeGen"
   mise reshim
 fi
 
-cd "{{config_root}}/DevEnvManager"
+ROOT_DIR="{{config_root}}"
+if [ ! -d "$ROOT_DIR/DevEnvManager" ]; then
+  ROOT_DIR="$PWD"
+fi
+
+if [ ! -d "$ROOT_DIR/DevEnvManager" ]; then
+  echo "❌ Could not find DevEnvManager source directory."
+  echo "Expected at: $ROOT_DIR/DevEnvManager"
+  exit 1
+fi
+
+cd "$ROOT_DIR/DevEnvManager"
 
 # Generate Xcode project
 echo "📝 Generating Xcode project..."
